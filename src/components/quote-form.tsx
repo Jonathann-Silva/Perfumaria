@@ -1,0 +1,310 @@
+'use client';
+
+import { useState } from 'react';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import type { Customer, Product } from '@/lib/types';
+import {
+  suggestCommonPartsServices,
+  type SuggestCommonPartsServicesOutput,
+} from '@/ai/flows/suggest-common-parts-services';
+import { Loader2, Plus, Sparkles, Trash2, Wand2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+  } from '@/components/ui/table';
+
+type QuoteItem = {
+    product: Product;
+    quantity: number;
+}
+
+export function QuoteForm({
+  customers,
+  products,
+}: {
+  customers: Customer[];
+  products: Product[];
+}) {
+  const { toast } = useToast();
+  const [vehicleMake, setVehicleMake] = useState('');
+  const [vehicleModel, setVehicleModel] = useState('');
+  const [vehicleYear, setVehicleYear] = useState('');
+  const [recentServices, setRecentServices] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [suggestions, setSuggestions] =
+    useState<SuggestCommonPartsServicesOutput | null>(null);
+
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [quoteItems, setQuoteItems] = useState<QuoteItem[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<string>("");
+
+  const handleGetSuggestions = async () => {
+    if (!vehicleMake || !vehicleModel || !vehicleYear) {
+      toast({
+        title: 'Campos obrigatórios',
+        description: 'Por favor, preencha Marca, Modelo e Ano do veículo.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setIsLoading(true);
+    setSuggestions(null);
+    try {
+      const result = await suggestCommonPartsServices({
+        vehicleMake,
+        vehicleModel,
+        vehicleYear: parseInt(vehicleYear, 10),
+        customerName: selectedCustomer?.name || 'Cliente',
+        recentServices,
+      });
+      setSuggestions(result);
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: 'Erro na IA',
+        description:
+          'Não foi possível obter sugestões. Por favor, tente novamente.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const addProductToQuote = (productName: string) => {
+    const productToAdd = products.find(p => p.name === productName);
+    if (productToAdd && !quoteItems.find(item => item.product.id === productToAdd.id)) {
+        setQuoteItems([...quoteItems, { product: productToAdd, quantity: 1}]);
+    }
+  };
+
+  const addManualProductToQuote = () => {
+    if (!selectedProduct) return;
+    const productToAdd = products.find(p => p.id === selectedProduct);
+    if (productToAdd && !quoteItems.find(item => item.product.id === productToAdd.id)) {
+        setQuoteItems([...quoteItems, { product: productToAdd, quantity: 1}]);
+    }
+    setSelectedProduct("");
+  };
+
+  const removeProductFromQuote = (productId: string) => {
+    setQuoteItems(quoteItems.filter(item => item.product.id !== productId));
+  }
+
+  const updateQuantity = (productId: string, quantity: number) => {
+    setQuoteItems(quoteItems.map(item => item.product.id === productId ? {...item, quantity: Math.max(1, quantity) } : item));
+  }
+
+  const total = quoteItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+
+  return (
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+      <div className="lg:col-span-2">
+        <Card>
+            <CardHeader>
+                <CardTitle>Detalhes do Orçamento</CardTitle>
+                <CardDescription>Selecione o cliente e adicione os itens para o orçamento.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div>
+                    <Label htmlFor="customer">Cliente</Label>
+                    <Select onValueChange={(value) => setSelectedCustomer(customers.find(c => c.id === value) || null)}>
+                        <SelectTrigger id="customer">
+                            <SelectValue placeholder="Selecione um cliente" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {customers.map((customer) => (
+                            <SelectItem key={customer.id} value={customer.id}>
+                                {customer.name} - {customer.vehicle}
+                            </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+                
+                <div className="space-y-2">
+                    <Label>Itens do Orçamento</Label>
+                    <Card>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Item</TableHead>
+                                    <TableHead className='w-[100px]'>Qtd.</TableHead>
+                                    <TableHead className="text-right w-[120px]">Preço Unit.</TableHead>
+                                    <TableHead className="text-right w-[120px]">Subtotal</TableHead>
+                                    <TableHead className="w-[50px]"></TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {quoteItems.length === 0 && (
+                                    <TableRow>
+                                        <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                                            Nenhum item adicionado
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                                {quoteItems.map(item => (
+                                    <TableRow key={item.product.id}>
+                                        <TableCell className="font-medium">{item.product.name} <span className='text-muted-foreground text-xs'>({item.product.type})</span></TableCell>
+                                        <TableCell>
+                                            <Input type="number" value={item.quantity} onChange={(e) => updateQuantity(item.product.id, parseInt(e.target.value))} className="w-20" min="1"/>
+                                        </TableCell>
+                                        <TableCell className="text-right">R$ {item.product.price.toFixed(2)}</TableCell>
+                                        <TableCell className="text-right">R$ {(item.product.price * item.quantity).toFixed(2)}</TableCell>
+                                        <TableCell>
+                                            <Button variant="ghost" size="icon" onClick={() => removeProductFromQuote(item.product.id)}>
+                                                <Trash2 className="h-4 w-4 text-destructive"/>
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </Card>
+                </div>
+
+                <div className="flex items-center gap-4">
+                    <Select value={selectedProduct} onValueChange={setSelectedProduct}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Adicionar produto ou serviço..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {products.filter(p => !quoteItems.find(qi => qi.product.id === p.id)).map((product) => (
+                                <SelectItem key={product.id} value={product.id}>
+                                {product.name} (R$ {product.price.toFixed(2)})
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Button onClick={addManualProductToQuote}><Plus className="mr-2 h-4 w-4"/>Adicionar Item</Button>
+                </div>
+            </CardContent>
+            <CardFooter className="flex justify-between items-center bg-muted/50 p-6 rounded-b-lg">
+                <div className="text-2xl font-bold">Total: R$ {total.toFixed(2)}</div>
+                <Button size="lg">Gerar Orçamento</Button>
+            </CardFooter>
+        </Card>
+      </div>
+
+      <div className="space-y-6">
+        <Card className="bg-primary/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-6 w-6 text-primary" />
+              Sugestões com IA
+            </CardTitle>
+            <CardDescription>
+              Preencha os dados do veículo para receber sugestões de peças e
+              serviços com base no nosso modelo de IA.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <Label htmlFor="make">Marca</Label>
+                    <Input id="make" value={vehicleMake} onChange={(e) => setVehicleMake(e.target.value)} placeholder="Ex: Toyota" />
+                </div>
+                <div>
+                    <Label htmlFor="model">Modelo</Label>
+                    <Input id="model" value={vehicleModel} onChange={(e) => setVehicleModel(e.target.value)} placeholder="Ex: Corolla" />
+                </div>
+            </div>
+            <div>
+              <Label htmlFor="year">Ano</Label>
+              <Input id="year" type="number" value={vehicleYear} onChange={(e) => setVehicleYear(e.target.value)} placeholder="Ex: 2021" />
+            </div>
+            <div>
+              <Label htmlFor="history">Histórico de Serviços Recentes</Label>
+              <Textarea id="history" value={recentServices} onChange={(e) => setRecentServices(e.target.value)} placeholder="Ex: Troca de óleo há 6 meses" />
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button
+              onClick={handleGetSuggestions}
+              disabled={isLoading}
+              className="w-full"
+            >
+              {isLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Wand2 className="mr-2 h-4 w-4" />
+              )}
+              {isLoading ? 'Gerando Sugestões...' : 'Obter Sugestões da IA'}
+            </Button>
+          </CardFooter>
+        </Card>
+
+        {suggestions && (
+          <Card>
+            <CardHeader>
+                <CardTitle>Sugestões Geradas</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <Accordion type="single" collapsible defaultValue="services">
+                    <AccordionItem value="services">
+                        <AccordionTrigger>Serviços Sugeridos</AccordionTrigger>
+                        <AccordionContent>
+                            <div className="space-y-2">
+                                {suggestions.suggestedServices.map((service, index) => (
+                                    <div key={index} className="flex items-center justify-between rounded-md border p-2">
+                                        <span>{service}</span>
+                                        <Button size="sm" variant="outline" onClick={() => addProductToQuote(service)}>
+                                            <Plus className="h-4 w-4"/>
+                                        </Button>
+                                    </div>
+                                ))}
+                            </div>
+                        </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="parts">
+                        <AccordionTrigger>Peças Sugeridas</AccordionTrigger>
+                        <AccordionContent>
+                            <div className="space-y-2">
+                            {suggestions.suggestedParts.map((part, index) => (
+                                <div key={index} className="flex items-center justify-between rounded-md border p-2">
+                                    <span>{part}</span>
+                                    <Button size="sm" variant="outline" onClick={() => addProductToQuote(part)}>
+                                        <Plus className="h-4 w-4"/>
+                                    </Button>
+                                </div>
+                            ))}
+                            </div>
+                        </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+}
