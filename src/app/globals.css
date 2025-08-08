@@ -89,24 +89,39 @@ body {
 
 @media print {
   body {
-    background: none;
+    background: white;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   .no-print {
-    display: none;
+    display: none !important;
   }
   .print-only {
-    display: block;
+    display: block !important;
   }
   .printable-area {
-    display: block;
+    display: block !important;
     width: 100%;
-    position: absolute;
+    height: 100%;
+    position: fixed;
     top: 0;
     left: 0;
     padding: 2rem;
+    background: white;
+    z-index: 9999;
   }
-  .printable-area .card {
-    border: none;
-    box-shadow: none;
+  .printable-area .card, .printable-area .table, .printable-area tr, .printable-area td {
+    border: none !important;
+    box-shadow: none !important;
+  }
+  .printable-area .text-right {
+      text-align: right;
+  }
+  .printable-area .font-bold {
+      font-weight: 700;
+  }
+  .printable-area .text-lg {
+      font-size: 1.125rem;
+      line-height: 1.75rem;
   }
 }

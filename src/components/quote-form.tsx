@@ -137,7 +137,7 @@ export function QuoteForm({
   return (
     <>
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 no-print">
-        <div className="lg:col-span-2 printable-area">
+        <div className="lg:col-span-2">
           <Card>
               <CardHeader>
                   <CardTitle>Detalhes do Orçamento</CardTitle>
@@ -325,7 +325,7 @@ export function QuoteForm({
         </div>
       </div>
 
-      <div className="hidden print-only">
+      <div className="hidden print-only printable-area">
         <div className="flex justify-between items-start mb-8">
             <div>
                 <div className="flex items-center gap-3 mb-4">
