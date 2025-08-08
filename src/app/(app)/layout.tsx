@@ -119,15 +119,30 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </a>
               </SidebarMenuButton>
             </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                href="/settings"
+                asChild
+                isActive={isActive('/settings')}
+                tooltip="Configurações"
+              >
+                <a href="/settings">
+                  <Settings />
+                  <span>Configurações</span>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarContent>
       </Sidebar>
       <SidebarInset>
         <header className="flex h-14 items-center justify-between border-b bg-card p-4 lg:justify-end">
             <SidebarTrigger className="lg:hidden"/>
-            <Button variant="outline">
-                <Settings className="mr-2" />
-                Configurações
+            <Button variant="outline" asChild>
+                <a href="/settings">
+                  <Settings className="mr-2" />
+                  Configurações
+                </a>
             </Button>
         </header>
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
