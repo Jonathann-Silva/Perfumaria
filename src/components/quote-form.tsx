@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -25,13 +26,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import type { Customer, Product } from '@/lib/types';
 import {
   suggestCommonPartsServices,
   type SuggestCommonPartsServicesOutput,
 } from '@/ai/flows/suggest-common-parts-services';
-import { Loader2, Plus, Sparkles, Trash2, Wand2 } from 'lucide-react';
+import { Loader2, Plus, Sparkles, Trash2, Wand2, Star } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
     Table,
@@ -67,7 +69,18 @@ export function QuoteForm({
   const [quoteItems, setQuoteItems] = useState<QuoteItem[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<string>("");
 
+  const [currentPlan, setCurrentPlan] = useState<'free' | 'pro'>('free');
+  const isProPlan = currentPlan === 'pro';
+
   const handleGetSuggestions = async () => {
+    if (!isProPlan) {
+        toast({
+            title: 'Funcionalidade Pro',
+            description: 'Faça upgrade para o plano Pro para usar as sugestões de IA.',
+            variant: 'destructive',
+        });
+        return;
+    }
     if (!vehicleMake || !vehicleModel || !vehicleYear) {
       toast({
         title: 'Campos obrigatórios',
@@ -216,54 +229,81 @@ export function QuoteForm({
       </div>
 
       <div className="space-y-6">
-        <Card className="bg-primary/5">
+        <Card>
+            <CardHeader>
+                <CardTitle>Plano Atual</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <RadioGroup value={currentPlan} onValueChange={(value) => setCurrentPlan(value as 'free' | 'pro')}>
+                    <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="free" id="free" />
+                        <Label htmlFor="free">Free</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="pro" id="pro" />
+                        <Label htmlFor="pro">Pro</Label>
+                    </div>
+                </RadioGroup>
+            </CardContent>
+        </Card>
+
+        <Card className={`bg-primary/5 ${!isProPlan && 'opacity-50'}`}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Sparkles className="h-6 w-6 text-primary" />
               Sugestões com IA
             </CardTitle>
             <CardDescription>
-              Preencha os dados do veículo para receber sugestões de peças e
-              serviços com base no nosso modelo de IA.
+              {isProPlan
+                ? 'Preencha os dados do veículo para receber sugestões de peças e serviços com base no nosso modelo de IA.'
+                : 'Disponível apenas no plano Pro.'}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <Label htmlFor="make">Marca</Label>
-                    <Input id="make" value={vehicleMake} onChange={(e) => setVehicleMake(e.target.value)} placeholder="Ex: Toyota" />
+            <fieldset disabled={!isProPlan} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <Label htmlFor="make">Marca</Label>
+                        <Input id="make" value={vehicleMake} onChange={(e) => setVehicleMake(e.target.value)} placeholder="Ex: Toyota" />
+                    </div>
+                    <div>
+                        <Label htmlFor="model">Modelo</Label>
+                        <Input id="model" value={vehicleModel} onChange={(e) => setVehicleModel(e.target.value)} placeholder="Ex: Corolla" />
+                    </div>
                 </div>
                 <div>
-                    <Label htmlFor="model">Modelo</Label>
-                    <Input id="model" value={vehicleModel} onChange={(e) => setVehicleModel(e.target.value)} placeholder="Ex: Corolla" />
+                <Label htmlFor="year">Ano</Label>
+                <Input id="year" type="number" value={vehicleYear} onChange={(e) => setVehicleYear(e.target.value)} placeholder="Ex: 2021" />
                 </div>
-            </div>
-            <div>
-              <Label htmlFor="year">Ano</Label>
-              <Input id="year" type="number" value={vehicleYear} onChange={(e) => setVehicleYear(e.target.value)} placeholder="Ex: 2021" />
-            </div>
-            <div>
-              <Label htmlFor="history">Histórico de Serviços Recentes</Label>
-              <Textarea id="history" value={recentServices} onChange={(e) => setRecentServices(e.target.value)} placeholder="Ex: Troca de óleo há 6 meses" />
-            </div>
+                <div>
+                <Label htmlFor="history">Histórico de Serviços Recentes</Label>
+                <Textarea id="history" value={recentServices} onChange={(e) => setRecentServices(e.target.value)} placeholder="Ex: Troca de óleo há 6 meses" />
+                </div>
+            </fieldset>
           </CardContent>
           <CardFooter>
             <Button
               onClick={handleGetSuggestions}
-              disabled={isLoading}
+              disabled={isLoading || !isProPlan}
               className="w-full"
             >
               {isLoading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
+              ) : isProPlan ? (
                 <Wand2 className="mr-2 h-4 w-4" />
+              ) : (
+                <Star className="mr-2 h-4 w-4" />
               )}
-              {isLoading ? 'Gerando Sugestões...' : 'Obter Sugestões da IA'}
+              {isLoading
+                ? 'Gerando Sugestões...'
+                : isProPlan
+                ? 'Obter Sugestões da IA'
+                : 'Seja Pro para usar IA'}
             </Button>
           </CardFooter>
         </Card>
 
-        {suggestions && (
+        {suggestions && isProPlan && (
           <Card>
             <CardHeader>
                 <CardTitle>Sugestões Geradas</CardTitle>
