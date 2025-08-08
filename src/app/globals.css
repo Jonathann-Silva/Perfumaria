@@ -86,3 +86,27 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@media print {
+  body {
+    background: none;
+  }
+  .no-print {
+    display: none;
+  }
+  .print-only {
+    display: block;
+  }
+  .printable-area {
+    display: block;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 2rem;
+  }
+  .printable-area .card {
+    border: none;
+    box-shadow: none;
+  }
+}
