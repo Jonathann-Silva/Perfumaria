@@ -144,6 +144,13 @@ export function QuoteForm({
     setCustomItemPrice('');
   };
 
+  const handleCustomItemKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        addCustomItemToQuote();
+    }
+  }
+
   const removeProductFromQuote = (productId: string) => {
     setQuoteItems(quoteItems.filter(item => item.product.id !== productId));
   }
@@ -252,7 +259,7 @@ export function QuoteForm({
                         </div>
                          <div className="space-y-1.5">
                             <Label htmlFor="custom-item-price">Preço (R$)</Label>
-                            <Input id="custom-item-price" type="number" value={customItemPrice} onChange={e => setCustomItemPrice(e.target.value)} placeholder="Ex: 50.00" />
+                            <Input id="custom-item-price" type="number" value={customItemPrice} onChange={e => setCustomItemPrice(e.target.value)} onKeyDown={handleCustomItemKeyDown} placeholder="Ex: 50.00" />
                         </div>
                       <Button onClick={addCustomItemToQuote}><Plus className="mr-2 h-4 w-4"/>Adicionar Item</Button>
                   </div>
