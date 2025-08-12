@@ -65,7 +65,11 @@ export function QuoteForm({
   const [suggestions, setSuggestions] =
     useState<SuggestCommonPartsServicesOutput | null>(null);
 
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [customerName, setCustomerName] = useState('');
+  const [customerVehicle, setCustomerVehicle] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+
   const [quoteItems, setQuoteItems] = useState<QuoteItem[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<string>("");
 
@@ -85,7 +89,7 @@ export function QuoteForm({
         vehicleMake,
         vehicleModel,
         vehicleYear: parseInt(vehicleYear, 10),
-        customerName: selectedCustomer?.name || 'Cliente',
+        customerName: customerName || 'Cliente',
         recentServices,
       });
       setSuggestions(result);
@@ -141,24 +145,32 @@ export function QuoteForm({
           <Card>
               <CardHeader>
                   <CardTitle>Detalhes do Orçamento</CardTitle>
-                  <CardDescription>Selecione o cliente e adicione os itens para o orçamento.</CardDescription>
+                  <CardDescription>Preencha os dados do cliente e adicione os itens para o orçamento.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                  <div>
-                      <Label htmlFor="customer">Cliente</Label>
-                      <Select onValueChange={(value) => setSelectedCustomer(customers.find(c => c.id === value) || null)}>
-                          <SelectTrigger id="customer">
-                              <SelectValue placeholder="Selecione um cliente" />
-                          </SelectTrigger>
-                          <SelectContent>
-                              {customers.map((customer) => (
-                              <SelectItem key={customer.id} value={customer.id}>
-                                  {customer.name} - {customer.vehicle}
-                              </SelectItem>
-                              ))}
-                          </SelectContent>
-                      </Select>
-                  </div>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Informações do Cliente</CardTitle>
+                    </CardHeader>
+                    <CardContent className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                      <div className="space-y-2">
+                          <Label htmlFor="customer-name">Nome do Cliente</Label>
+                          <Input id="customer-name" value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Ex: João da Silva" />
+                      </div>
+                       <div className="space-y-2">
+                          <Label htmlFor="customer-vehicle">Veículo</Label>
+                          <Input id="customer-vehicle" value={customerVehicle} onChange={(e) => setCustomerVehicle(e.target.value)} placeholder="Ex: Toyota Corolla 2021" />
+                      </div>
+                      <div className="space-y-2">
+                          <Label htmlFor="customer-email">Email</Label>
+                          <Input id="customer-email" type="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} placeholder="Ex: joao.silva@email.com" />
+                      </div>
+                      <div className="space-y-2">
+                          <Label htmlFor="customer-phone">Telefone</Label>
+                          <Input id="customer-phone" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="Ex: (11) 98765-4321" />
+                      </div>
+                    </CardContent>
+                  </Card>
                   
                   <div className="space-y-2">
                       <Label>Itens do Orçamento</Label>
@@ -342,16 +354,16 @@ export function QuoteForm({
             </div>
         </div>
 
-        {selectedCustomer && (
+        {customerName && (
             <Card className="mb-8">
                 <CardHeader>
                     <CardTitle>Informações do Cliente</CardTitle>
                 </CardHeader>
                 <CardContent className='grid grid-cols-2 gap-4'>
-                    <div><span className="font-semibold">Nome:</span> {selectedCustomer.name}</div>
-                    <div><span className="font-semibold">Email:</span> {selectedCustomer.email}</div>
-                    <div><span className="font-semibold">Telefone:</span> {selectedCustomer.phone}</div>
-                    <div><span className="font-semibold">Veículo:</span> {selectedCustomer.vehicle}</div>
+                    <div><span className="font-semibold">Nome:</span> {customerName}</div>
+                    {customerEmail && <div><span className="font-semibold">Email:</span> {customerEmail}</div>}
+                    {customerPhone && <div><span className="font-semibold">Telefone:</span> {customerPhone}</div>}
+                    {customerVehicle && <div><span className="font-semibold">Veículo:</span> {customerVehicle}</div>}
                 </CardContent>
             </Card>
         )}
