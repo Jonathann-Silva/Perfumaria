@@ -219,8 +219,11 @@ export function QuoteForm({
                                 <Input id="custom-item-name" value={customItemName} onChange={e => setCustomItemName(e.target.value)} placeholder="Ex: Troca de pneu" />
                             </div>
                             <div className="space-y-1.5">
-                                <Label htmlFor="custom-item-price">Preço (R$)</Label>
-                                <Input id="custom-item-price" type="number" value={customItemPrice} onChange={e => setCustomItemPrice(e.target.value)} onKeyDown={handleCustomItemKeyDown} placeholder="Ex: 50.00" className="no-spinner" />
+                                <Label htmlFor="custom-item-price">Preço</Label>
+                                <div className="relative">
+                                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">R$</span>
+                                    <Input id="custom-item-price" type="number" value={customItemPrice} onChange={e => setCustomItemPrice(e.target.value)} onKeyDown={handleCustomItemKeyDown} placeholder="50,00" className="no-spinner pl-9" />
+                                </div>
                             </div>
                         <Button onClick={addCustomItemToQuote}><Plus className="mr-2 h-4 w-4"/>Adicionar</Button>
                     </div>
@@ -444,3 +447,5 @@ export function QuoteForm({
     </>
   );
 }
+
+    
