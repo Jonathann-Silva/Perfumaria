@@ -31,3 +31,13 @@ export type Sale = {
     items: { name: string; quantity: number; price: number }[];
     total: number;
 }
+
+export type Schedule = {
+  id: string;
+  customerName: string;
+  vehicle: string;
+  service: string;
+  date: string;
+  time: string;
+  status: 'Agendado' | 'Concluído' | 'Cancelado';
+};

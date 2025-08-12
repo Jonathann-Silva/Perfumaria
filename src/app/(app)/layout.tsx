@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { usePathname } from 'next/navigation';
 import {
+  Calendar,
   FileText,
   LayoutDashboard,
   Package,
@@ -77,6 +78,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <a href="/quotes">
                   <FileText />
                   <span>Orçamentos</span>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+             <SidebarMenuItem>
+              <SidebarMenuButton
+                href="/schedules"
+                asChild
+                isActive={isActive('/schedules')}
+                tooltip="Agendamentos"
+              >
+                <a href="/schedules">
+                  <Calendar />
+                  <span>Agendamentos</span>
                 </a>
               </SidebarMenuButton>
             </SidebarMenuItem>

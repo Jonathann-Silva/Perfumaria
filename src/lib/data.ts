@@ -1,4 +1,4 @@
-import type { Customer, Product, Quote, Sale } from './types';
+import type { Customer, Product, Quote, Sale, Schedule } from './types';
 
 export const customers: Customer[] = [
   { id: '1', name: 'João da Silva', email: 'joao.silva@email.com', phone: '(11) 98765-4321', vehicle: 'Toyota Corolla 2021', lastService: '2023-10-15' },
@@ -33,4 +33,11 @@ export const sales: Sale[] = [
     { id: 'S-002', customerName: 'Ana Souza', date: '2024-02-28', items: [
         { name: 'Pastilha de Freio (par)', quantity: 2, price: 95.00 },
     ], total: 190.00 },
+];
+
+export const schedules: Schedule[] = [
+    { id: 'A-001', customerName: 'Maria Oliveira', vehicle: 'Honda Civic 2019', service: 'Revisão Completa', date: '2024-05-28', time: '10:00', status: 'Agendado' },
+    { id: 'A-002', customerName: 'Carlos Pereira', vehicle: 'Ford Ka 2022', service: 'Troca de Óleo do Motor', date: '2024-05-28', time: '14:00', status: 'Agendado' },
+    { id: 'A-003', customerName: 'Paulo Santos', vehicle: 'Volkswagen Gol 2018', service: 'Alinhamento e Balanceamento', date: '2024-05-29', time: '09:00', status: 'Concluído' },
+    { id: 'A-004', customerName: 'João da Silva', vehicle: 'Toyota Corolla 2021', service: 'Troca de Pastilha de Freio', date: '2024-05-30', time: '11:00', status: 'Cancelado' },
 ];
