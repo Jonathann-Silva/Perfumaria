@@ -71,7 +71,8 @@ export function QuoteForm({
   const [customerPhone, setCustomerPhone] = useState('');
 
   const [quoteItems, setQuoteItems] = useState<QuoteItem[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState<string>("");
+  const [customItemName, setCustomItemName] = useState('');
+  const [customItemPrice, setCustomItemPrice] = useState('');
 
   const handleGetSuggestions = async () => {
     if (!vehicleMake || !vehicleModel || !vehicleYear) {
@@ -110,16 +111,42 @@ export function QuoteForm({
     const productToAdd = products.find(p => p.name === productName);
     if (productToAdd && !quoteItems.find(item => item.product.id === productToAdd.id)) {
         setQuoteItems([...quoteItems, { product: productToAdd, quantity: 1}]);
+    } else if (!productToAdd) {
+        // If suggested product is not in the list, add it as a custom item with price 0
+        const newProduct: Product = {
+            id: `custom-${Date.now()}`,
+            name: productName,
+            type: 'Serviço', // Or 'Peça', default to 'Serviço'
+            price: 0,
+            stock: 0
+        }
+        setQuoteItems([...quoteItems, { product: newProduct, quantity: 1 }]);
+        toast({ title: 'Item adicionado', description: `${productName} foi adicionado. Ajuste o preço se necessário.`});
     }
   };
 
-  const addManualProductToQuote = () => {
-    if (!selectedProduct) return;
-    const productToAdd = products.find(p => p.id === selectedProduct);
-    if (productToAdd && !quoteItems.find(item => item.product.id === productToAdd.id)) {
-        setQuoteItems([...quoteItems, { product: productToAdd, quantity: 1}]);
+  const addCustomItemToQuote = () => {
+    const price = parseFloat(customItemPrice);
+    if (!customItemName || isNaN(price) || price < 0) {
+        toast({
+            title: 'Dados inválidos',
+            description: 'Por favor, preencha o nome e um preço válido para o item.',
+            variant: 'destructive'
+        });
+        return;
     }
-    setSelectedProduct("");
+
+    const newItem: Product = {
+        id: `custom-${customItemName}-${Date.now()}`,
+        name: customItemName,
+        type: 'Serviço', // Defaulting to service, can be changed if needed
+        price: price,
+        stock: 0, // Not applicable for custom items
+    };
+
+    setQuoteItems([...quoteItems, { product: newItem, quantity: 1}]);
+    setCustomItemName('');
+    setCustomItemPrice('');
   };
 
   const removeProductFromQuote = (productId: string) => {
@@ -213,20 +240,16 @@ export function QuoteForm({
                       </Card>
                   </div>
 
-                  <div className="flex items-center gap-4 no-print">
-                      <Select value={selectedProduct} onValueChange={setSelectedProduct}>
-                          <SelectTrigger>
-                              <SelectValue placeholder="Adicionar produto ou serviço..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                              {products.filter(p => !quoteItems.find(qi => qi.product.id === p.id)).map((product) => (
-                                  <SelectItem key={product.id} value={product.id}>
-                                  {product.name} (R$ {product.price.toFixed(2)})
-                                  </SelectItem>
-                              ))}
-                          </SelectContent>
-                      </Select>
-                      <Button onClick={addManualProductToQuote}><Plus className="mr-2 h-4 w-4"/>Adicionar Item</Button>
+                  <div className="grid grid-cols-1 md:grid-cols-[1fr_120px_auto] items-end gap-2 no-print">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="custom-item-name">Nome do Item</Label>
+                            <Input id="custom-item-name" value={customItemName} onChange={e => setCustomItemName(e.target.value)} placeholder="Ex: Troca de pneu" />
+                        </div>
+                         <div className="space-y-1.5">
+                            <Label htmlFor="custom-item-price">Preço (R$)</Label>
+                            <Input id="custom-item-price" type="number" value={customItemPrice} onChange={e => setCustomItemPrice(e.target.value)} placeholder="Ex: 50.00" />
+                        </div>
+                      <Button onClick={addCustomItemToQuote}><Plus className="mr-2 h-4 w-4"/>Adicionar Item</Button>
                   </div>
               </CardContent>
               <CardFooter className="flex justify-between items-center bg-muted/50 p-6 rounded-b-lg">
