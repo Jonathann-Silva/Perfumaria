@@ -211,57 +211,57 @@ export function QuoteForm({
                     </CardContent>
                   </Card>
                   
-                  <div className="space-y-2">
-                      <Label>Itens do Orçamento</Label>
-                      <Card>
-                          <Table>
-                              <TableHeader>
-                                  <TableRow>
-                                      <TableHead>Item</TableHead>
-                                      <TableHead className='w-[100px]'>Qtd.</TableHead>
-                                      <TableHead className="text-right w-[120px]">Preço Unit.</TableHead>
-                                      <TableHead className="text-right w-[120px]">Subtotal</TableHead>
-                                      <TableHead className="w-[50px] no-print"></TableHead>
-                                  </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                  {quoteItems.length === 0 && (
-                                      <TableRow>
-                                          <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                                              Nenhum item adicionado
-                                          </TableCell>
-                                      </TableRow>
-                                  )}
-                                  {quoteItems.map(item => (
-                                      <TableRow key={item.product.id}>
-                                          <TableCell className="font-medium">{item.product.name} <span className='text-muted-foreground text-xs'>({item.product.type})</span></TableCell>
-                                          <TableCell>
-                                              <Input type="number" value={item.quantity} onChange={(e) => updateQuantity(item.product.id, parseInt(e.target.value))} className="w-20" min="1"/>
-                                          </TableCell>
-                                          <TableCell className="text-right">R$ {item.product.price.toFixed(2)}</TableCell>
-                                          <TableCell className="text-right">R$ {(item.product.price * item.quantity).toFixed(2)}</TableCell>
-                                          <TableCell className="no-print">
-                                              <Button variant="ghost" size="icon" onClick={() => removeProductFromQuote(item.product.id)}>
-                                                  <Trash2 className="h-4 w-4 text-destructive"/>
-                                              </Button>
-                                          </TableCell>
-                                      </TableRow>
-                                  ))}
-                              </TableBody>
-                          </Table>
-                      </Card>
-                  </div>
+                  <div>
+                    <Label>Itens do Orçamento</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-[1fr_120px_auto] items-end gap-2 no-print p-4 border rounded-t-lg bg-muted/25">
+                            <div className="space-y-1.5">
+                                <Label htmlFor="custom-item-name">Adicionar Item ou Serviço</Label>
+                                <Input id="custom-item-name" value={customItemName} onChange={e => setCustomItemName(e.target.value)} placeholder="Ex: Troca de pneu" />
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label htmlFor="custom-item-price">Preço (R$)</Label>
+                                <Input id="custom-item-price" type="number" value={customItemPrice} onChange={e => setCustomItemPrice(e.target.value)} onKeyDown={handleCustomItemKeyDown} placeholder="Ex: 50.00" />
+                            </div>
+                        <Button onClick={addCustomItemToQuote}><Plus className="mr-2 h-4 w-4"/>Adicionar</Button>
+                    </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-[1fr_120px_auto] items-end gap-2 no-print">
-                        <div className="space-y-1.5">
-                            <Label htmlFor="custom-item-name">Nome do Item</Label>
-                            <Input id="custom-item-name" value={customItemName} onChange={e => setCustomItemName(e.target.value)} placeholder="Ex: Troca de pneu" />
-                        </div>
-                         <div className="space-y-1.5">
-                            <Label htmlFor="custom-item-price">Preço (R$)</Label>
-                            <Input id="custom-item-price" type="number" value={customItemPrice} onChange={e => setCustomItemPrice(e.target.value)} onKeyDown={handleCustomItemKeyDown} placeholder="Ex: 50.00" />
-                        </div>
-                      <Button onClick={addCustomItemToQuote}><Plus className="mr-2 h-4 w-4"/>Adicionar Item</Button>
+                    <Card className='rounded-t-none'>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Item</TableHead>
+                                    <TableHead className='w-[100px]'>Qtd.</TableHead>
+                                    <TableHead className="text-right w-[120px]">Preço Unit.</TableHead>
+                                    <TableHead className="text-right w-[120px]">Subtotal</TableHead>
+                                    <TableHead className="w-[50px] no-print"></TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {quoteItems.length === 0 && (
+                                    <TableRow>
+                                        <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                                            Nenhum item adicionado
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                                {quoteItems.map(item => (
+                                    <TableRow key={item.product.id}>
+                                        <TableCell className="font-medium">{item.product.name} <span className='text-muted-foreground text-xs'>({item.product.type})</span></TableCell>
+                                        <TableCell>
+                                            <Input type="number" value={item.quantity} onChange={(e) => updateQuantity(item.product.id, parseInt(e.target.value))} className="w-20" min="1"/>
+                                        </TableCell>
+                                        <TableCell className="text-right">R$ {item.product.price.toFixed(2)}</TableCell>
+                                        <TableCell className="text-right">R$ {(item.product.price * item.quantity).toFixed(2)}</TableCell>
+                                        <TableCell className="no-print">
+                                            <Button variant="ghost" size="icon" onClick={() => removeProductFromQuote(item.product.id)}>
+                                                <Trash2 className="h-4 w-4 text-destructive"/>
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </Card>
                   </div>
               </CardContent>
               <CardFooter className="flex justify-between items-center bg-muted/50 p-6 rounded-b-lg">
