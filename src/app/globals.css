@@ -89,38 +89,50 @@ body {
 
 @media print {
   body {
-    background: white;
+    background: white !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
+
+  body * {
+    visibility: hidden;
+  }
+
   .no-print {
     display: none !important;
   }
+
+  #printable-quote, #printable-quote * {
+    visibility: visible;
+  }
+
+  #printable-quote {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    padding: 2rem;
+  }
+
   .print-only {
     display: block !important;
   }
-  .printable-area {
-    display: block !important;
-    width: 100%;
-    height: 100%;
-    position: fixed;
-    top: 0;
-    left: 0;
-    padding: 2rem;
-    background: white;
-    z-index: 9999;
-  }
-  .printable-area .card, .printable-area .table, .printable-area tr, .printable-area td {
+
+  #printable-quote .card,
+  #printable-quote .table,
+  #printable-quote tr,
+  #printable-quote td {
     border: none !important;
     box-shadow: none !important;
   }
-  .printable-area .text-right {
+
+  #printable-quote .text-right {
       text-align: right;
   }
-  .printable-area .font-bold {
+  #printable-quote .font-bold {
       font-weight: 700;
   }
-  .printable-area .text-lg {
+  #printable-quote .text-lg {
       font-size: 1.125rem;
       line-height: 1.75rem;
   }

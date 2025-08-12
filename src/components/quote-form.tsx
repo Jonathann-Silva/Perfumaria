@@ -19,13 +19,6 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import type { Customer, Product } from '@/lib/types';
 import {
@@ -167,7 +160,7 @@ export function QuoteForm({
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 no-print">
+      <div id="quote-form-container" className="grid grid-cols-1 gap-8 lg:grid-cols-3 no-print">
         <div className="lg:col-span-2">
           <Card>
               <CardHeader>
@@ -360,7 +353,7 @@ export function QuoteForm({
         </div>
       </div>
 
-      <div className="hidden print-only printable-area">
+      <div id="printable-quote" className="hidden print-only">
         <div className="flex justify-between items-start mb-8">
             <div>
                 <div className="flex items-center gap-3 mb-4">
@@ -426,8 +419,6 @@ export function QuoteForm({
             <p>Este orçamento é válido por 15 dias.</p>
             <p>Obrigado pela sua preferência!</p>
         </div>
-
-
       </div>
     </>
   );
