@@ -66,6 +66,8 @@ export function QuoteForm({
   const [quoteItems, setQuoteItems] = useState<QuoteItem[]>([]);
   const [customItemName, setCustomItemName] = useState('');
   const [customItemPrice, setCustomItemPrice] = useState('');
+  const [isQuoteGenerated, setIsQuoteGenerated] = useState(false);
+
 
   const handleGetSuggestions = async () => {
     if (!vehicleMake || !vehicleModel || !vehicleYear) {
@@ -148,6 +150,16 @@ export function QuoteForm({
 
   const updateQuantity = (productId: string, quantity: number) => {
     setQuoteItems(quoteItems.map(item => item.product.id === productId ? {...item, quantity: Math.max(1, quantity) } : item));
+  }
+
+  const handleGenerateQuote = () => {
+    // Here you would typically save the quote to a database
+    // For now, we'll just simulate it
+    setIsQuoteGenerated(true);
+    toast({
+        title: 'Orçamento Gerado!',
+        description: 'O orçamento foi salvo com sucesso e pode ser impresso.'
+    });
   }
 
   const handlePrint = () => {
@@ -248,11 +260,13 @@ export function QuoteForm({
               <CardFooter className="flex justify-between items-center bg-muted/50 p-6 rounded-b-lg">
                   <div className="text-2xl font-bold">Total: R$ {total.toFixed(2)}</div>
                   <div className='flex gap-2'>
-                    <Button size="lg" variant="outline" onClick={handlePrint} className="no-print">
+                    <Button size="lg" variant="outline" onClick={handlePrint} disabled={!isQuoteGenerated} className="no-print">
                         <Printer className="mr-2 h-4 w-4" />
                         Imprimir
                     </Button>
-                    <Button size="lg" className="no-print">Gerar Orçamento</Button>
+                    <Button size="lg" onClick={handleGenerateQuote} disabled={isQuoteGenerated || quoteItems.length === 0} className="no-print">
+                        {isQuoteGenerated ? 'Orçamento Gerado' : 'Gerar Orçamento'}
+                    </Button>
                   </div>
               </CardFooter>
           </Card>
