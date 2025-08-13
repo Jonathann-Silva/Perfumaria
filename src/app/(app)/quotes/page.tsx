@@ -28,7 +28,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 
 export default function QuotesPage() {
@@ -129,63 +128,63 @@ export default function QuotesPage() {
               )}
             </TableBody>
           </Table>
-
-          {selectedQuote && (
-            <Dialog
-              open={!!selectedQuote}
-              onOpenChange={(isOpen) => !isOpen && setSelectedQuote(null)}
-            >
-              <DialogContent className="max-w-xl">
-                <DialogHeader>
-                  <DialogTitle>Detalhes do Orçamento - {selectedQuote.id}</DialogTitle>
-                  <DialogDescription asChild>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 pt-2">
-                        <div><b>Cliente:</b> {selectedQuote.customerName}</div>
-                        <div><b>Veículo:</b> {selectedQuote.vehicle}</div>
-                        <div><b>Data:</b> {selectedQuote.date}</div>
-                        <div><b>Status:</b> <Badge variant={getStatusVariant(selectedQuote.status)}>{selectedQuote.status}</Badge></div>
-                    </div>
-                  </DialogDescription>
-                </DialogHeader>
-                <div>
-                  <h4 className="mb-2 mt-4 font-semibold">Itens do Orçamento</h4>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Item</TableHead>
-                        <TableHead className="text-center">Qtd.</TableHead>
-                        <TableHead className="text-right">Preço Unit.</TableHead>
-                        <TableHead className="text-right">Subtotal</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {selectedQuote.items.map((item, index) => (
-                        <TableRow key={index}>
-                          <TableCell>{item.name}</TableCell>
-                          <TableCell className="text-center">
-                            {item.quantity}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            R$ {item.price.toFixed(2)}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            R$ {(item.price * item.quantity).toFixed(2)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                  <div className="mt-4 flex justify-end">
-                    <div className="text-lg font-bold">
-                      Total: R$ {selectedQuote.total.toFixed(2)}
-                    </div>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
-          )}
         </CardContent>
       </Card>
+      
+      {selectedQuote && (
+        <Dialog
+          open={!!selectedQuote}
+          onOpenChange={(isOpen) => !isOpen && setSelectedQuote(null)}
+        >
+          <DialogContent className="max-w-xl">
+            <DialogHeader>
+              <DialogTitle>Detalhes do Orçamento - {selectedQuote.id}</DialogTitle>
+              <DialogDescription asChild>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1 pt-2">
+                    <div><b>Cliente:</b> {selectedQuote.customerName}</div>
+                    <div><b>Veículo:</b> {selectedQuote.vehicle}</div>
+                    <div><b>Data:</b> {selectedQuote.date}</div>
+                    <div><b>Status:</b> <Badge variant={getStatusVariant(selectedQuote.status)}>{selectedQuote.status}</Badge></div>
+                </div>
+              </DialogDescription>
+            </DialogHeader>
+            <div>
+              <h4 className="mb-2 mt-4 font-semibold">Itens do Orçamento</h4>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Item</TableHead>
+                    <TableHead className="text-center">Qtd.</TableHead>
+                    <TableHead className="text-right">Preço Unit.</TableHead>
+                    <TableHead className="text-right">Subtotal</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {selectedQuote.items.map((item, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{item.name}</TableCell>
+                      <TableCell className="text-center">
+                        {item.quantity}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        R$ {item.price.toFixed(2)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        R$ {(item.price * item.quantity).toFixed(2)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              <div className="mt-4 flex justify-end">
+                <div className="text-lg font-bold">
+                  Total: R$ {selectedQuote.total.toFixed(2)}
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
