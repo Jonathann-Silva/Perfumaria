@@ -30,7 +30,7 @@ export const quotes: Quote[] = [
             { name: 'Filtro de Óleo', quantity: 1, price: 45.00 }
         ],
         total: 195.00, 
-        status: 'Aprovado' 
+        status: 'Pendente' 
     },
     { 
         id: 'Q-002', 
@@ -52,7 +52,7 @@ export const quotes: Quote[] = [
             { name: 'Pastilha de Freio (par)', quantity: 1, price: 95.00 }
         ],
         total: 95.00, 
-        status: 'Rejeitado' 
+        status: 'Pendente' 
     },
 ];
 
