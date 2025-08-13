@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import {
   Calendar,
   FileText,
+  History,
   LayoutDashboard,
   Package,
   PlusCircle,
@@ -104,6 +105,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <a href="/sales">
                   <ShoppingCart />
                   <span>Vendas</span>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+             <SidebarMenuItem>
+              <SidebarMenuButton
+                href="/history"
+                asChild
+                isActive={isActive('/history')}
+                tooltip="Histórico"
+              >
+                <a href="/history">
+                  <History />
+                  <span>Histórico</span>
                 </a>
               </SidebarMenuButton>
             </SidebarMenuItem>
