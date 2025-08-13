@@ -48,79 +48,76 @@ function RecentSales({ recentSales }: { recentSales: Sale[] }) {
     const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Vendas Recentes</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Cliente</TableHead>
-                            <TableHead className="text-right">Total</TableHead>
-                            <TableHead className="text-right">Data</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {recentSales.map((sale) => (
-                             <Dialog key={sale.id}>
-                                <DialogTrigger asChild>
-                                    <TableRow className="cursor-pointer" onClick={() => setSelectedSale(sale)}>
-                                        <TableCell>{sale.customerName}</TableCell>
-                                        <TableCell className="text-right">R$ {sale.total.toFixed(2)}</TableCell>
-                                        <TableCell className="text-right">{sale.date}</TableCell>
+        <Dialog open={!!selectedSale} onOpenChange={(isOpen) => !isOpen && setSelectedSale(null)}>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Vendas Recentes</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Cliente</TableHead>
+                                <TableHead className="text-right">Total</TableHead>
+                                <TableHead className="text-right">Data</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {recentSales.map((sale) => (
+                                 <DialogTrigger key={sale.id} asChild>
+                                     <TableRow className="cursor-pointer" onClick={() => setSelectedSale(sale)}>
+                                         <TableCell>{sale.customerName}</TableCell>
+                                         <TableCell className="text-right">R$ {sale.total.toFixed(2)}</TableCell>
+                                         <TableCell className="text-right">{sale.date}</TableCell>
+                                     </TableRow>
+                                 </DialogTrigger>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+            {selectedSale && (
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Detalhes da Venda - {selectedSale.id}</DialogTitle>
+                        <DialogDescription asChild>
+                          <div>
+                            <div><b>Cliente:</b> {selectedSale.customerName}</div>
+                            <div><b>Data:</b> {selectedSale.date}</div>
+                          </div>
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div>
+                        <h4 className="font-semibold mb-2 mt-4">Itens da Venda</h4>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Item</TableHead>
+                                    <TableHead className="text-center">Qtd.</TableHead>
+                                    <TableHead className="text-right">Preço Unit.</TableHead>
+                                    <TableHead className="text-right">Subtotal</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {selectedSale.items.map((item, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell>{item.name}</TableCell>
+                                        <TableCell className="text-center">{item.quantity}</TableCell>
+                                        <TableCell className="text-right">R$ {item.price.toFixed(2)}</TableCell>
+                                        <TableCell className="text-right">R$ {(item.price * item.quantity).toFixed(2)}</TableCell>
                                     </TableRow>
-                                </DialogTrigger>
-                             </Dialog>
-                        ))}
-                    </TableBody>
-                </Table>
-
-                 {selectedSale && (
-                    <Dialog open={!!selectedSale} onOpenChange={(isOpen) => !isOpen && setSelectedSale(null)}>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Detalhes da Venda - {selectedSale.id}</DialogTitle>
-                                <DialogDescription asChild>
-                                  <div>
-                                    <div><b>Cliente:</b> {selectedSale.customerName}</div>
-                                    <div><b>Data:</b> {selectedSale.date}</div>
-                                  </div>
-                                </DialogDescription>
-                            </DialogHeader>
-                            <div>
-                                <h4 className="font-semibold mb-2 mt-4">Itens da Venda</h4>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Item</TableHead>
-                                            <TableHead className="text-center">Qtd.</TableHead>
-                                            <TableHead className="text-right">Preço Unit.</TableHead>
-                                            <TableHead className="text-right">Subtotal</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {selectedSale.items.map((item, index) => (
-                                            <TableRow key={index}>
-                                                <TableCell>{item.name}</TableCell>
-                                                <TableCell className="text-center">{item.quantity}</TableCell>
-                                                <TableCell className="text-right">R$ {item.price.toFixed(2)}</TableCell>
-                                                <TableCell className="text-right">R$ {(item.price * item.quantity).toFixed(2)}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                                <div className="mt-4 flex justify-end">
-                                    <div className="text-lg font-bold">
-                                        Total: R$ {selectedSale.total.toFixed(2)}
-                                    </div>
-                                </div>
+                                ))}
+                            </TableBody>
+                        </Table>
+                        <div className="mt-4 flex justify-end">
+                            <div className="text-lg font-bold">
+                                Total: R$ {selectedSale.total.toFixed(2)}
                             </div>
-                        </DialogContent>
-                    </Dialog>
-                )}
-            </CardContent>
-        </Card>
+                        </div>
+                    </div>
+                </DialogContent>
+            )}
+        </Dialog>
     )
 }
 
