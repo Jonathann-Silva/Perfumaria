@@ -14,7 +14,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { Product } from '@/lib/types';
-import { Plus, Trash2, Printer, WandSparkles } from 'lucide-react';
+import { Plus, Trash2, Printer } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
     Table,
@@ -24,7 +24,7 @@ import {
     TableHeader,
     TableRow,
   } from '@/components/ui/table';
-import { AutoFlowLogo } from './icons';
+import { AutoFlowLogo, WhatsAppIcon } from './icons';
 
 type QuoteItem = {
     product: Product;
@@ -90,7 +90,7 @@ export function QuoteForm() {
     setIsQuoteGenerated(true);
     toast({
         title: 'Orçamento Gerado!',
-        description: 'O orçamento foi salvo com sucesso e pode ser impresso.'
+        description: 'O orçamento foi salvo com sucesso e pode ser impresso ou enviado.'
     });
   }
 
@@ -100,6 +100,33 @@ export function QuoteForm() {
 
   const total = quoteItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
   const today = new Date().toLocaleDateString('pt-BR');
+
+  const handleSendWhatsApp = () => {
+    if (!customerPhone) {
+      toast({
+        title: 'Telefone do cliente não encontrado',
+        description: 'Por favor, insira o número de telefone do cliente para enviar o orçamento.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    let message = `*Orçamento AutoFlow Oficina*\n\n`;
+    message += `Olá ${customerName},\n`;
+    message += `Segue o orçamento para o veículo ${customerVehicle} (${customerVehiclePlate}):\n\n`;
+    message += `*Itens:*\n`;
+    quoteItems.forEach(item => {
+      message += `- ${item.product.name} (Qtd: ${item.quantity}) - R$ ${(item.product.price * item.quantity).toFixed(2)}\n`;
+    });
+    message += `\n*Total: R$ ${total.toFixed(2)}*\n\n`;
+    message += `Este orçamento é válido por 15 dias.\n`;
+    message += `Qualquer dúvida, estamos à disposição!`;
+
+    const cleanedPhone = customerPhone.replace(/\D/g, '');
+    const whatsappUrl = `https://wa.me/55${cleanedPhone}?text=${encodeURIComponent(message)}`;
+    
+    window.open(whatsappUrl, '_blank');
+  };
 
 
   return (
@@ -200,6 +227,10 @@ export function QuoteForm() {
             <CardFooter className="flex justify-between items-center bg-muted/50 p-6 rounded-b-lg">
                 <div className="text-2xl font-bold">Total: R$ {total.toFixed(2)}</div>
                 <div className='flex gap-2'>
+                   <Button size="lg" variant="outline" onClick={handleSendWhatsApp} disabled={!isQuoteGenerated} className="no-print bg-green-500 text-white hover:bg-green-600">
+                      <WhatsAppIcon className="mr-2 h-4 w-4" />
+                      Enviar via WhatsApp
+                  </Button>
                   <Button size="lg" variant="outline" onClick={handlePrint} disabled={!isQuoteGenerated} className="no-print">
                       <Printer className="mr-2 h-4 w-4" />
                       Imprimir
