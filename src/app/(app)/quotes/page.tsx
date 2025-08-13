@@ -98,27 +98,24 @@ export default function QuotesPage() {
             </TableHeader>
             <TableBody>
               {filteredQuotes.map((quote) => (
-                <Dialog key={quote.id}>
-                  <DialogTrigger asChild>
-                    <TableRow
-                      className="cursor-pointer"
-                      onClick={() => setSelectedQuote(quote)}
-                    >
-                      <TableCell className="font-medium">{quote.id}</TableCell>
-                      <TableCell>{quote.customerName}</TableCell>
-                      <TableCell>{quote.vehicle}</TableCell>
-                      <TableCell>{quote.date}</TableCell>
-                      <TableCell className="text-right">
-                        R$ {quote.total.toFixed(2)}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Badge variant={getStatusVariant(quote.status)}>
-                          {quote.status}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  </DialogTrigger>
-                </Dialog>
+                <TableRow
+                  key={quote.id}
+                  className="cursor-pointer"
+                  onClick={() => setSelectedQuote(quote)}
+                >
+                  <TableCell className="font-medium">{quote.id}</TableCell>
+                  <TableCell>{quote.customerName}</TableCell>
+                  <TableCell>{quote.vehicle}</TableCell>
+                  <TableCell>{quote.date}</TableCell>
+                  <TableCell className="text-right">
+                    R$ {quote.total.toFixed(2)}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Badge variant={getStatusVariant(quote.status)}>
+                      {quote.status}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
               ))}
               {filteredQuotes.length === 0 && (
                 <TableRow>
