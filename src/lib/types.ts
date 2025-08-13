@@ -24,7 +24,9 @@ export type QuoteItem = {
 export type Quote = {
   id: string;
   customerName: string;
+  customerPhone?: string;
   vehicle: string;
+  vehiclePlate?: string;
   date: string;
   items: QuoteItem[];
   total: number;

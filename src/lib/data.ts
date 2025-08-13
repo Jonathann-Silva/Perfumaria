@@ -23,7 +23,9 @@ export const quotes: Quote[] = [
     { 
         id: 'Q-001', 
         customerName: 'João da Silva', 
-        vehicle: 'Toyota Corolla 2021', 
+        customerPhone: '11987654321',
+        vehicle: 'Toyota Corolla 2021',
+        vehiclePlate: 'ABC-1234', 
         date: '2024-03-01', 
         items: [
             { name: 'Troca de Óleo do Motor', quantity: 1, price: 150.00 },
@@ -35,7 +37,9 @@ export const quotes: Quote[] = [
     { 
         id: 'Q-002', 
         customerName: 'Maria Oliveira', 
+        customerPhone: '21912345678',
         vehicle: 'Honda Civic 2019', 
+        vehiclePlate: 'DEF-5678',
         date: '2024-03-05', 
         items: [
             { name: 'Alinhamento e Balanceamento', quantity: 1, price: 120.00 }
@@ -46,7 +50,9 @@ export const quotes: Quote[] = [
     { 
         id: 'Q-003', 
         customerName: 'Carlos Pereira', 
-        vehicle: 'Ford Ka 2022', 
+        customerPhone: '31955551234',
+        vehicle: 'Ford Ka 2022',
+        vehiclePlate: 'GHI-9012',
         date: '2024-03-10', 
         items: [
             { name: 'Pastilha de Freio (par)', quantity: 1, price: 95.00 }

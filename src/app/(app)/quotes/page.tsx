@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -21,13 +22,14 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { quotes } from '@/lib/data';
 import type { Quote } from '@/lib/types';
-import { PlusCircle, Search } from 'lucide-react';
+import { PlusCircle, Search, Printer } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import {
   Select,
@@ -36,8 +38,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+import { AutoFlowLogo, WhatsAppIcon } from '@/components/icons';
 
 export default function QuotesPage() {
+  const { toast } = useToast();
   const [quotesData, setQuotesData] = useState<Quote[]>(quotes);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null);
@@ -79,91 +84,124 @@ export default function QuotesPage() {
     );
   }, [searchTerm, quotesData]);
 
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleSendWhatsApp = () => {
+    if (!selectedQuote || !selectedQuote.customerPhone) {
+      toast({
+        title: 'Telefone do cliente não encontrado',
+        description: 'Por favor, edite o orçamento para adicionar o número de telefone do cliente.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    let message = `*Orçamento AutoFlow Oficina*\n\n`;
+    message += `Olá ${selectedQuote.customerName},\n`;
+    message += `Segue o orçamento para o veículo ${selectedQuote.vehicle} (${selectedQuote.vehiclePlate || ''}):\n\n`;
+    message += `*Itens:*\n`;
+    selectedQuote.items.forEach(item => {
+      message += `- ${item.name} (Qtd: ${item.quantity}) - R$ ${(item.price * item.quantity).toFixed(2)}\n`;
+    });
+    message += `\n*Total: R$ ${selectedQuote.total.toFixed(2)}*\n\n`;
+    message += `Este orçamento é válido por 15 dias.\n`;
+    message += `Qualquer dúvida, estamos à disposição!`;
+
+    const cleanedPhone = selectedQuote.customerPhone.replace(/\D/g, '');
+    const whatsappUrl = `https://wa.me/55${cleanedPhone}?text=${encodeURIComponent(message)}`;
+    
+    window.open(whatsappUrl, '_blank');
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Orçamentos</h1>
-        <Button asChild>
-          <a href="/quotes/new">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Novo Orçamento
-          </a>
-        </Button>
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Histórico de Orçamentos</CardTitle>
-          <div className="relative mt-2">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Buscar por cliente ou veículo..."
-              className="w-full rounded-lg bg-background pl-8"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Veículo</TableHead>
-                <TableHead>Data</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-                <TableHead className="text-center">Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredQuotes.map((quote) => (
-                <TableRow
-                  key={quote.id}
-                  className="cursor-pointer"
-                  onClick={() => setSelectedQuote(quote)}
-                >
-                  <TableCell className="font-medium">{quote.id}</TableCell>
-                  <TableCell>{quote.customerName}</TableCell>
-                  <TableCell>{quote.vehicle}</TableCell>
-                  <TableCell>{quote.date}</TableCell>
-                  <TableCell className="text-right">
-                    R$ {quote.total.toFixed(2)}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Badge variant={getStatusVariant(quote.status)}>
-                      {quote.status}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {filteredQuotes.length === 0 && (
+    <>
+      <div className="space-y-6 no-print">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold tracking-tight">Orçamentos</h1>
+          <Button asChild>
+            <a href="/quotes/new">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Novo Orçamento
+            </a>
+          </Button>
+        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Histórico de Orçamentos</CardTitle>
+            <div className="relative mt-2">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Buscar por cliente ou veículo..."
+                className="w-full rounded-lg bg-background pl-8"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell
-                    colSpan={6}
-                    className="py-10 text-center text-muted-foreground"
-                  >
-                    Nenhum orçamento encontrado.
-                  </TableCell>
+                  <TableHead>ID</TableHead>
+                  <TableHead>Cliente</TableHead>
+                  <TableHead>Veículo</TableHead>
+                  <TableHead>Data</TableHead>
+                  <TableHead className="text-right">Total</TableHead>
+                  <TableHead className="text-center">Status</TableHead>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+              </TableHeader>
+              <TableBody>
+                {filteredQuotes.map((quote) => (
+                  <TableRow
+                    key={quote.id}
+                    className="cursor-pointer"
+                    onClick={() => setSelectedQuote(quote)}
+                  >
+                    <TableCell className="font-medium">{quote.id}</TableCell>
+                    <TableCell>{quote.customerName}</TableCell>
+                    <TableCell>{quote.vehicle}</TableCell>
+                    <TableCell>{quote.date}</TableCell>
+                    <TableCell className="text-right">
+                      R$ {quote.total.toFixed(2)}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge variant={getStatusVariant(quote.status)}>
+                        {quote.status}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {filteredQuotes.length === 0 && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={6}
+                      className="py-10 text-center text-muted-foreground"
+                    >
+                      Nenhum orçamento encontrado.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
       
       {selectedQuote && (
         <Dialog
           open={!!selectedQuote}
           onOpenChange={(isOpen) => !isOpen && setSelectedQuote(null)}
         >
-          <DialogContent className="max-w-xl">
+          <DialogContent className="max-w-3xl no-print">
             <DialogHeader>
               <DialogTitle>Detalhes do Orçamento - {selectedQuote.id}</DialogTitle>
               <DialogDescription asChild>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1 pt-2">
                     <div><b>Cliente:</b> {selectedQuote.customerName}</div>
-                    <div><b>Veículo:</b> {selectedQuote.vehicle}</div>
+                    <div><b>Veículo:</b> {selectedQuote.vehicle} {selectedQuote.vehiclePlate && `(${selectedQuote.vehiclePlate})`}</div>
                     <div><b>Data:</b> {selectedQuote.date}</div>
                      <div className='flex items-center gap-2'>
                       <b>Status:</b>
@@ -220,9 +258,86 @@ export default function QuotesPage() {
                 </div>
               </div>
             </div>
+             <DialogFooter className='mt-4'>
+                <Button variant="outline" onClick={handleSendWhatsApp} className="bg-green-500 text-white hover:bg-green-600 hover:text-white">
+                  <WhatsAppIcon className="mr-2 h-4 w-4" />
+                  Enviar via WhatsApp
+                </Button>
+                <Button variant="outline" onClick={handlePrint}>
+                  <Printer className="mr-2 h-4 w-4" />
+                  Imprimir
+                </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       )}
-    </div>
+
+      {selectedQuote && (
+        <div id="printable-quote" className="hidden print-only">
+          <div className="flex justify-between items-start mb-8">
+              <div>
+                  <div className="flex items-center gap-3 mb-4">
+                      <AutoFlowLogo className="size-10 text-primary" />
+                      <h1 className="text-3xl font-bold">AutoFlow Oficina</h1>
+                  </div>
+                  <p>Avenida Paulista, 1000</p>
+                  <p>São Paulo - SP, 01310-100</p>
+                  <p>contato@autoflow.com</p>
+              </div>
+              <div className="text-right">
+                  <h2 className="text-2xl font-bold mb-2">Orçamento #{selectedQuote.id}</h2>
+                  <p>Data: {selectedQuote.date}</p>
+              </div>
+          </div>
+
+          <Card className="mb-8">
+              <CardHeader>
+                  <CardTitle>Informações do Cliente</CardTitle>
+              </CardHeader>
+              <CardContent className='grid grid-cols-2 gap-4'>
+                  <div><span className="font-semibold">Nome:</span> {selectedQuote.customerName}</div>
+                  {selectedQuote.customerPhone && <div><span className="font-semibold">Telefone:</span> {selectedQuote.customerPhone}</div>}
+                  {selectedQuote.vehicle && <div><span className="font-semibold">Veículo:</span> {selectedQuote.vehicle} {selectedQuote.vehiclePlate && `(${selectedQuote.vehiclePlate})`}</div>}
+              </CardContent>
+          </Card>
+
+          <h3 className="text-xl font-bold mb-4">Itens do Orçamento</h3>
+          <Table>
+              <TableHeader>
+                  <TableRow>
+                      <TableHead>Item</TableHead>
+                      <TableHead className='text-center'>Qtd.</TableHead>
+                      <TableHead className="text-right">Preço Unit.</TableHead>
+                      <TableHead className="text-right">Subtotal</TableHead>
+                  </TableRow>
+              </TableHeader>
+              <TableBody>
+                  {selectedQuote.items.map(item => (
+                      <TableRow key={item.name}>
+                          <TableCell className="font-medium">{item.name}</TableCell>
+                          <TableCell className='text-center'>{item.quantity}</TableCell>
+                          <TableCell className="text-right">R$ {item.price.toFixed(2)}</TableCell>
+                          <TableCell className="text-right">R$ {(item.price * item.quantity).toFixed(2)}</TableCell>
+                      </TableRow>
+                  ))}
+              </TableBody>
+          </Table>
+
+          <div className="flex justify-end mt-8">
+              <div className="w-1/3">
+                  <div className="flex justify-between text-lg">
+                      <span>Total</span>
+                      <span className="font-bold">R$ {selectedQuote.total.toFixed(2)}</span>
+                  </div>
+              </div>
+          </div>
+
+          <div className="mt-24 text-center text-sm text-muted-foreground">
+              <p>Este orçamento é válido por 15 dias.</p>
+              <p>Obrigado pela sua preferência!</p>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
