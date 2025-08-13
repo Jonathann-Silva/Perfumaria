@@ -15,11 +15,18 @@ export type Product = {
   stock: number;
 };
 
+export type QuoteItem = {
+    name: string;
+    quantity: number;
+    price: number;
+};
+
 export type Quote = {
   id: string;
   customerName: string;
   vehicle: string;
   date: string;
+  items: QuoteItem[];
   total: number;
   status: 'Pendente' | 'Aprovado' | 'Rejeitado';
 };

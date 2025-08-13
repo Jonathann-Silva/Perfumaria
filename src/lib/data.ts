@@ -20,9 +20,40 @@ export const products: Product[] = [
 ];
 
 export const quotes: Quote[] = [
-    { id: 'Q-001', customerName: 'João da Silva', vehicle: 'Toyota Corolla 2021', date: '2024-03-01', total: 195.00, status: 'Aprovado' },
-    { id: 'Q-002', customerName: 'Maria Oliveira', vehicle: 'Honda Civic 2019', date: '2024-03-05', total: 120.00, status: 'Pendente' },
-    { id: 'Q-003', customerName: 'Carlos Pereira', vehicle: 'Ford Ka 2022', date: '2024-03-10', total: 95.00, status: 'Rejeitado' },
+    { 
+        id: 'Q-001', 
+        customerName: 'João da Silva', 
+        vehicle: 'Toyota Corolla 2021', 
+        date: '2024-03-01', 
+        items: [
+            { name: 'Troca de Óleo do Motor', quantity: 1, price: 150.00 },
+            { name: 'Filtro de Óleo', quantity: 1, price: 45.00 }
+        ],
+        total: 195.00, 
+        status: 'Aprovado' 
+    },
+    { 
+        id: 'Q-002', 
+        customerName: 'Maria Oliveira', 
+        vehicle: 'Honda Civic 2019', 
+        date: '2024-03-05', 
+        items: [
+            { name: 'Alinhamento e Balanceamento', quantity: 1, price: 120.00 }
+        ],
+        total: 120.00, 
+        status: 'Pendente' 
+    },
+    { 
+        id: 'Q-003', 
+        customerName: 'Carlos Pereira', 
+        vehicle: 'Ford Ka 2022', 
+        date: '2024-03-10', 
+        items: [
+            { name: 'Pastilha de Freio (par)', quantity: 1, price: 95.00 }
+        ],
+        total: 95.00, 
+        status: 'Rejeitado' 
+    },
 ];
 
 export const sales: Sale[] = [
