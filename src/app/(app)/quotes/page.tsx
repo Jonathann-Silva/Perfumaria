@@ -29,10 +29,31 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export default function QuotesPage() {
+  const [quotesData, setQuotesData] = useState<Quote[]>(quotes);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null);
+
+  const handleStatusChange = (quoteId: string, newStatus: 'Pendente' | 'Aprovado' | 'Rejeitado') => {
+    const updatedQuotes = quotesData.map((quote) => {
+      if (quote.id === quoteId) {
+        return { ...quote, status: newStatus };
+      }
+      return quote;
+    });
+    setQuotesData(updatedQuotes);
+    if(selectedQuote) {
+        setSelectedQuote({...selectedQuote, status: newStatus})
+    }
+  };
 
   const getStatusVariant = (status: 'Pendente' | 'Aprovado' | 'Rejeitado') => {
     switch (status) {
@@ -49,14 +70,14 @@ export default function QuotesPage() {
 
   const filteredQuotes = useMemo(() => {
     if (!searchTerm) {
-      return quotes;
+      return quotesData;
     }
-    return quotes.filter(
+    return quotesData.filter(
       (quote) =>
         quote.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         quote.vehicle.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [searchTerm]);
+  }, [searchTerm, quotesData]);
 
   return (
     <div className="space-y-6">
@@ -144,7 +165,24 @@ export default function QuotesPage() {
                     <div><b>Cliente:</b> {selectedQuote.customerName}</div>
                     <div><b>Veículo:</b> {selectedQuote.vehicle}</div>
                     <div><b>Data:</b> {selectedQuote.date}</div>
-                    <div><b>Status:</b> <Badge variant={getStatusVariant(selectedQuote.status)}>{selectedQuote.status}</Badge></div>
+                     <div className='flex items-center gap-2'>
+                      <b>Status:</b>
+                      <Select 
+                          value={selectedQuote.status} 
+                          onValueChange={(newStatus: 'Pendente' | 'Aprovado' | 'Rejeitado') => handleStatusChange(selectedQuote.id, newStatus)}
+                      >
+                        <SelectTrigger className="w-[140px] h-8 text-xs">
+                          <SelectValue>
+                             <Badge variant={getStatusVariant(selectedQuote.status)}>{selectedQuote.status}</Badge>
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Pendente">Pendente</SelectItem>
+                          <SelectItem value="Aprovado">Aprovado</SelectItem>
+                          <SelectItem value="Rejeitado">Rejeitado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                     </div>
                 </div>
               </DialogDescription>
             </DialogHeader>
