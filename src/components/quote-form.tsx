@@ -90,7 +90,8 @@ export function QuoteForm() {
     setIsQuoteGenerated(true);
     toast({
         title: 'Orçamento Gerado!',
-        description: 'O orçamento foi salvo com sucesso e pode ser impresso ou enviado.'
+        description: 'O orçamento foi salvo com sucesso e pode ser impresso ou enviado.',
+        duration: 2000,
     });
   }
 

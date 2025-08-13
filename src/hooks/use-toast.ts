@@ -1,3 +1,4 @@
+
 "use client"
 
 // Inspired by react-hot-toast library
@@ -183,6 +184,19 @@ function useToast() {
       }
     }
   }, [state])
+
+  React.useEffect(() => {
+    state.toasts.forEach((toast) => {
+      if (toast.duration) {
+        const timeout = setTimeout(() => {
+          dispatch({ type: 'DISMISS_TOAST', toastId: toast.id });
+        }, toast.duration);
+
+        return () => clearTimeout(timeout);
+      }
+    });
+  }, [state.toasts]);
+
 
   return {
     ...state,
