@@ -1,3 +1,7 @@
+
+'use client';
+
+import { useState } from 'react';
 import {
   Card,
   CardContent,
@@ -15,6 +19,16 @@ import {
 import { customers, products, quotes, sales } from '@/lib/data';
 import type { Sale } from '@/lib/types';
 import { DollarSign, Users, Package, FileText } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+
 
 function StatCard({ title, value, icon: Icon }: { title: string, value: string, icon: React.ElementType }) {
     return (
@@ -31,6 +45,8 @@ function StatCard({ title, value, icon: Icon }: { title: string, value: string, 
 }
 
 function RecentSales({ recentSales }: { recentSales: Sale[] }) {
+    const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
+
     return (
         <Card>
             <CardHeader>
@@ -47,14 +63,60 @@ function RecentSales({ recentSales }: { recentSales: Sale[] }) {
                     </TableHeader>
                     <TableBody>
                         {recentSales.map((sale) => (
-                            <TableRow key={sale.id}>
-                                <TableCell>{sale.customerName}</TableCell>
-                                <TableCell className="text-right">R$ {sale.total.toFixed(2)}</TableCell>
-                                <TableCell className="text-right">{sale.date}</TableCell>
-                            </TableRow>
+                             <Dialog key={sale.id}>
+                                <DialogTrigger asChild>
+                                    <TableRow className="cursor-pointer" onClick={() => setSelectedSale(sale)}>
+                                        <TableCell>{sale.customerName}</TableCell>
+                                        <TableCell className="text-right">R$ {sale.total.toFixed(2)}</TableCell>
+                                        <TableCell className="text-right">{sale.date}</TableCell>
+                                    </TableRow>
+                                </DialogTrigger>
+                             </Dialog>
                         ))}
                     </TableBody>
                 </Table>
+
+                 {selectedSale && (
+                    <Dialog open={!!selectedSale} onOpenChange={(isOpen) => !isOpen && setSelectedSale(null)}>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Detalhes da Venda - {selectedSale.id}</DialogTitle>
+                                <DialogDescription>
+                                    <p><b>Cliente:</b> {selectedSale.customerName}</p>
+                                    <p><b>Data:</b> {selectedSale.date}</p>
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div>
+                                <h4 className="font-semibold mb-2">Itens da Venda</h4>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Item</TableHead>
+                                            <TableHead className="text-center">Qtd.</TableHead>
+                                            <TableHead className="text-right">Preço Unit.</TableHead>
+                                            <TableHead className="text-right">Subtotal</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {selectedSale.items.map((item, index) => (
+                                            <TableRow key={index}>
+                                                <TableCell>{item.name}</TableCell>
+                                                <TableCell className="text-center">{item.quantity}</TableCell>
+                                                <TableCell className="text-right">R$ {item.price.toFixed(2)}</TableCell>
+                                                <TableCell className="text-right">R$ {(item.price * item.quantity).toFixed(2)}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                                <div className="mt-4 flex justify-end">
+                                    <div className="text-lg font-bold">
+                                        Total: R$ {selectedSale.total.toFixed(2)}
+                                    </div>
+                                </div>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                )}
             </CardContent>
         </Card>
     )
@@ -76,7 +138,7 @@ export default function DashboardPage() {
         <StatCard title="Orçamentos Pendentes" value={`${pendingQuotes}`} icon={FileText} />
       </div>
       <div>
-        <RecentSales recentSales={sales} />
+        <RecentSales recentSales={sales.slice(0, 5)} />
       </div>
     </div>
   );
