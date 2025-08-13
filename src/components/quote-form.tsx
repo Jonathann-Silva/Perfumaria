@@ -14,7 +14,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { Product } from '@/lib/types';
-import { Plus, Trash2, Printer } from 'lucide-react';
+import { Plus, Trash2, Printer, WandSparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
     Table,
@@ -36,6 +36,7 @@ export function QuoteForm() {
   
   const [customerName, setCustomerName] = useState('');
   const [customerVehicle, setCustomerVehicle] = useState('');
+  const [customerVehiclePlate, setCustomerVehiclePlate] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
 
@@ -119,9 +120,15 @@ export function QuoteForm() {
                         <Label htmlFor="customer-name">Nome do Cliente</Label>
                         <Input id="customer-name" value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Ex: João da Silva" />
                     </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="customer-vehicle">Veículo</Label>
-                        <Input id="customer-vehicle" value={customerVehicle} onChange={(e) => setCustomerVehicle(e.target.value)} placeholder="Ex: Toyota Corolla 2021" />
+                     <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="customer-vehicle">Veículo</Label>
+                            <Input id="customer-vehicle" value={customerVehicle} onChange={(e) => setCustomerVehicle(e.target.value)} placeholder="Ex: Toyota Corolla" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="customer-vehicle-plate">Placa</Label>
+                            <Input id="customer-vehicle-plate" value={customerVehiclePlate} onChange={(e) => setCustomerVehiclePlate(e.target.value)} placeholder="Ex: ABC-1234" />
+                        </div>
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="customer-email">Email</Label>
@@ -231,7 +238,7 @@ export function QuoteForm() {
                     <div><span className="font-semibold">Nome:</span> {customerName}</div>
                     {customerEmail && <div><span className="font-semibold">Email:</span> {customerEmail}</div>}
                     {customerPhone && <div><span className="font-semibold">Telefone:</span> {customerPhone}</div>}
-                    {customerVehicle && <div><span className="font-semibold">Veículo:</span> {customerVehicle}</div>}
+                    {customerVehicle && <div><span className="font-semibold">Veículo:</span> {customerVehicle} {customerVehiclePlate && `(${customerVehiclePlate})`}</div>}
                 </CardContent>
             </Card>
         )}
