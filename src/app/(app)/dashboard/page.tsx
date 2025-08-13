@@ -81,13 +81,15 @@ function RecentSales({ recentSales }: { recentSales: Sale[] }) {
                         <DialogContent>
                             <DialogHeader>
                                 <DialogTitle>Detalhes da Venda - {selectedSale.id}</DialogTitle>
-                                <DialogDescription>
-                                    <p><b>Cliente:</b> {selectedSale.customerName}</p>
-                                    <p><b>Data:</b> {selectedSale.date}</p>
+                                <DialogDescription asChild>
+                                  <div>
+                                    <div><b>Cliente:</b> {selectedSale.customerName}</div>
+                                    <div><b>Data:</b> {selectedSale.date}</div>
+                                  </div>
                                 </DialogDescription>
                             </DialogHeader>
                             <div>
-                                <h4 className="font-semibold mb-2">Itens da Venda</h4>
+                                <h4 className="font-semibold mb-2 mt-4">Itens da Venda</h4>
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
