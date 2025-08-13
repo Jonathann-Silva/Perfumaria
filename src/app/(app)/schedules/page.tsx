@@ -1,3 +1,7 @@
+
+'use client';
+
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -14,10 +18,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { schedules } from '@/lib/data';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Search } from 'lucide-react';
 
 export default function SchedulesPage() {
+  const [searchTerm, setSearchTerm] = useState('');
+
   const getStatusVariant = (status: 'Agendado' | 'Concluído' | 'Cancelado') => {
     switch (status) {
       case 'Concluído':
@@ -31,6 +38,19 @@ export default function SchedulesPage() {
     }
   };
 
+  const filteredSchedules = useMemo(() => {
+    if (!searchTerm) {
+      return schedules;
+    }
+    return schedules.filter(
+      (schedule) =>
+        schedule.customerName
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        schedule.vehicle.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [searchTerm]);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -43,6 +63,16 @@ export default function SchedulesPage() {
       <Card>
         <CardHeader>
           <CardTitle>Próximos Agendamentos</CardTitle>
+           <div className="relative mt-2">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Buscar por cliente, carro ou placa..."
+              className="w-full rounded-lg bg-background pl-8"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -57,18 +87,29 @@ export default function SchedulesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {schedules.map((schedule) => (
+              {filteredSchedules.map((schedule) => (
                 <TableRow key={schedule.id}>
-                  <TableCell className="font-medium">{schedule.customerName}</TableCell>
+                  <TableCell className="font-medium">
+                    {schedule.customerName}
+                  </TableCell>
                   <TableCell>{schedule.vehicle}</TableCell>
                   <TableCell>{schedule.service}</TableCell>
                   <TableCell>{schedule.date}</TableCell>
                   <TableCell>{schedule.time}</TableCell>
                   <TableCell className="text-center">
-                    <Badge variant={getStatusVariant(schedule.status)}>{schedule.status}</Badge>
+                    <Badge variant={getStatusVariant(schedule.status)}>
+                      {schedule.status}
+                    </Badge>
                   </TableCell>
                 </TableRow>
               ))}
+               {filteredSchedules.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
+                    Nenhum agendamento encontrado.
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>
