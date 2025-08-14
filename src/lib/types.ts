@@ -33,6 +33,14 @@ export type Quote = {
   status: 'Pendente' | 'Aprovado' | 'Rejeitado';
 };
 
+export type SaleItem = {
+    id: string;
+    name: string;
+    quantity: number;
+    price: number;
+    type: 'Peça' | 'Serviço' | 'Custom';
+}
+
 export type Sale = {
     id: string;
     customerName: string;

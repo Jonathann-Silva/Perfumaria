@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import type { Product } from '@/lib/types';
+import type { SaleItem } from '@/lib/types';
 import { Plus, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -24,56 +24,59 @@ import {
     TableHeader,
     TableRow,
   } from '@/components/ui/table';
-import { products } from '@/lib/data';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-  } from '@/components/ui/select';
-
-type SaleItem = {
-    product: Product;
-    quantity: number;
-}
 
 export function SalesForm() {
   const { toast } = useToast();
   
   const [customerName, setCustomerName] = useState('');
   const [saleItems, setSaleItems] = useState<SaleItem[]>([]);
-  const [selectedProductId, setSelectedProductId] = useState<string | undefined>(undefined);
+  
+  const [itemName, setItemName] = useState('');
+  const [itemPrice, setItemPrice] = useState('');
+  const [itemQuantity, setItemQuantity] = useState('1');
 
-  const addProductToSale = () => {
-    if (!selectedProductId) {
+  const addItemToSale = () => {
+    const price = parseFloat(itemPrice);
+    const quantity = parseInt(itemQuantity, 10);
+
+    if (!itemName || isNaN(price) || price < 0 || isNaN(quantity) || quantity <= 0) {
         toast({
-            title: 'Nenhum produto selecionado',
-            description: 'Por favor, selecione um produto ou serviço para adicionar.',
+            title: 'Dados inválidos',
+            description: 'Por favor, preencha nome, preço e quantidade válidos para o item.',
             variant: 'destructive'
         });
         return;
     }
-    
-    const product = products.find(p => p.id === selectedProductId);
-    if (!product) return;
 
-    const existingItem = saleItems.find(item => item.product.id === product.id);
+    const newItem: SaleItem = {
+        id: `custom-${itemName}-${Date.now()}`,
+        name: itemName,
+        price: price,
+        quantity: quantity,
+        type: 'Custom'
+    };
 
-    if (existingItem) {
-        updateQuantity(product.id, existingItem.quantity + 1);
-    } else {
-        setSaleItems([...saleItems, { product, quantity: 1}]);
-    }
-    setSelectedProductId(undefined);
+    setSaleItems([...saleItems, newItem]);
+
+    // Reset fields
+    setItemName('');
+    setItemPrice('');
+    setItemQuantity('1');
   };
-
-  const removeProductFromSale = (productId: string) => {
-    setSaleItems(saleItems.filter(item => item.product.id !== productId));
+  
+  const handleItemInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        addItemToSale();
+    }
   }
 
-  const updateQuantity = (productId: string, quantity: number) => {
-    setSaleItems(saleItems.map(item => item.product.id === productId ? {...item, quantity: Math.max(1, quantity) } : item));
+  const removeProductFromSale = (itemId: string) => {
+    setSaleItems(saleItems.filter(item => item.id !== itemId));
+  }
+
+  const updateQuantity = (itemId: string, quantity: number) => {
+    setSaleItems(saleItems.map(item => item.id === itemId ? {...item, quantity: Math.max(1, quantity) } : item));
   }
 
   const handleFinalizeSale = () => {
@@ -103,7 +106,7 @@ export function SalesForm() {
     setSaleItems([]);
   }
 
-  const total = saleItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+  const total = saleItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   return (
     <>
@@ -120,21 +123,23 @@ export function SalesForm() {
                 
                 <div>
                   <Label>Itens da Venda</Label>
-                  <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] items-end gap-2 p-4 border rounded-t-lg bg-muted/25">
+                  <div className="grid grid-cols-1 md:grid-cols-[1fr_120px_100px_auto] items-end gap-2 p-4 border rounded-t-lg bg-muted/25">
                         <div className="space-y-1.5">
-                            <Label>Adicionar Produto ou Serviço</Label>
-                             <Select value={selectedProductId} onValueChange={setSelectedProductId}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Selecione um item..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {products.map(product => (
-                                        <SelectItem key={product.id} value={product.id}>{product.name} - R$ {product.price.toFixed(2)}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <Label htmlFor="item-name">Adicionar Produto ou Serviço</Label>
+                            <Input id="item-name" value={itemName} onChange={e => setItemName(e.target.value)} placeholder="Ex: Troca de pneu" />
                         </div>
-                      <Button onClick={addProductToSale}><Plus className="mr-2 h-4 w-4"/>Adicionar</Button>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="item-price">Preço</Label>
+                            <div className="relative">
+                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">R$</span>
+                                <Input id="item-price" type="number" value={itemPrice} onChange={e => setItemPrice(e.target.value)} placeholder="50,00" className="no-spinner pl-9" />
+                            </div>
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="item-quantity">Qtd.</Label>
+                            <Input id="item-quantity" type="number" value={itemQuantity} onChange={e => setItemQuantity(e.target.value)} onKeyDown={handleItemInputKeyDown} min="1" className="no-spinner" />
+                        </div>
+                      <Button onClick={addItemToSale}><Plus className="mr-2 h-4 w-4"/>Adicionar</Button>
                   </div>
 
                   <Card className='rounded-t-none'>
@@ -157,15 +162,15 @@ export function SalesForm() {
                                   </TableRow>
                               )}
                               {saleItems.map(item => (
-                                  <TableRow key={item.product.id}>
-                                      <TableCell className="font-medium">{item.product.name} <span className='text-muted-foreground text-xs'>({item.product.type})</span></TableCell>
+                                  <TableRow key={item.id}>
+                                      <TableCell className="font-medium">{item.name}</TableCell>
                                       <TableCell>
-                                          <Input type="number" value={item.quantity} onChange={(e) => updateQuantity(item.product.id, parseInt(e.target.value))} className="w-20" min="1"/>
+                                          <Input type="number" value={item.quantity} onChange={(e) => updateQuantity(item.id, parseInt(e.target.value))} className="w-20" min="1"/>
                                       </TableCell>
-                                      <TableCell className="text-right">R$ {item.product.price.toFixed(2)}</TableCell>
-                                      <TableCell className="text-right">R$ {(item.product.price * item.quantity).toFixed(2)}</TableCell>
+                                      <TableCell className="text-right">R$ {item.price.toFixed(2)}</TableCell>
+                                      <TableCell className="text-right">R$ {(item.price * item.quantity).toFixed(2)}</TableCell>
                                       <TableCell>
-                                          <Button variant="ghost" size="icon" onClick={() => removeProductFromSale(item.product.id)}>
+                                          <Button variant="ghost" size="icon" onClick={() => removeProductFromSale(item.id)}>
                                               <Trash2 className="h-4 w-4 text-destructive"/>
                                           </Button>
                                       </TableCell>
