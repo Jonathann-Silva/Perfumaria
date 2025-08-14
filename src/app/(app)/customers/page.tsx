@@ -33,18 +33,22 @@ import { PlusCircle, User, Mail, Phone, Car, Edit, X, Save } from 'lucide-react'
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
-    null
-  );
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
-
+  const [isNewCustomerDialogOpen, setIsNewCustomerDialogOpen] = useState(false);
+  const [newCustomerData, setNewCustomerData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    vehicle: '',
+  });
 
   const handleRowClick = (customer: Customer) => {
     setSelectedCustomer(customer);
-    setEditingCustomer(customer); // Prepara os dados para edição
-    setIsEditing(false); // Garante que o modo de edição não esteja ativo ao abrir
-  }
+    setEditingCustomer({ ...customer });
+    setIsEditing(false);
+  };
 
   const handleCloseDialog = () => {
     setSelectedCustomer(null);
@@ -55,32 +59,42 @@ export default function CustomersPage() {
   const handleSave = () => {
     if (!editingCustomer) return;
 
-    // Atualiza a lista de clientes
     const updatedCustomers = customers.map(c => 
         c.id === editingCustomer.id ? editingCustomer : c
     );
     setCustomers(updatedCustomers);
-
-    // Atualiza o cliente selecionado para refletir as mudanças
     setSelectedCustomer(editingCustomer);
-    
-    // Sai do modo de edição
     setIsEditing(false);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!editingCustomer) return;
     const { id, value } = e.target;
     setEditingCustomer({ ...editingCustomer, [id]: value });
   };
 
+  const handleNewCustomerInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setNewCustomerData({ ...newCustomerData, [id]: value });
+  };
+
+  const handleAddNewCustomer = () => {
+    const newCustomer: Customer = {
+      id: `${Date.now()}`,
+      ...newCustomerData,
+      lastService: new Date().toISOString().split('T')[0], // Today's date
+    };
+    setCustomers([...customers, newCustomer]);
+    setIsNewCustomerDialogOpen(false);
+    setNewCustomerData({ name: '', email: '', phone: '', vehicle: '' }); // Reset form
+  };
 
   return (
     <>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight">Clientes</h1>
-          <Button>
+          <Button onClick={() => setIsNewCustomerDialogOpen(true)}>
             <PlusCircle className="mr-2 h-4 w-4" />
             Novo Cliente
           </Button>
@@ -122,6 +136,42 @@ export default function CustomersPage() {
         </Card>
       </div>
 
+      {/* New Customer Dialog */}
+      <Dialog open={isNewCustomerDialogOpen} onOpenChange={setIsNewCustomerDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Adicionar Novo Cliente</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">Nome</Label>
+              <Input id="name" value={newCustomerData.name} onChange={handleNewCustomerInputChange} className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="email" className="text-right">Email</Label>
+              <Input id="email" value={newCustomerData.email} onChange={handleNewCustomerInputChange} className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="phone" className="text-right">Telefone</Label>
+              <Input id="phone" value={newCustomerData.phone} onChange={handleNewCustomerInputChange} className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="vehicle" className="text-right">Veículo</Label>
+              <Input id="vehicle" value={newCustomerData.vehicle} onChange={handleNewCustomerInputChange} className="col-span-3" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsNewCustomerDialogOpen(false)}>
+              <X className="mr-2 h-4 w-4" /> Cancelar
+            </Button>
+            <Button onClick={handleAddNewCustomer}>
+              <Save className="mr-2 h-4 w-4" /> Salvar Cliente
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Customer Details/Edit Dialog */}
       {selectedCustomer && (
         <Dialog
           open={!!selectedCustomer}
@@ -159,19 +209,19 @@ export default function CustomersPage() {
                 <div className="grid gap-4 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="name" className="text-right">Nome</Label>
-                        <Input id="name" value={editingCustomer.name} onChange={handleInputChange} className="col-span-3" />
+                        <Input id="name" value={editingCustomer.name} onChange={handleEditInputChange} className="col-span-3" />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="email" className="text-right">Email</Label>
-                        <Input id="email" value={editingCustomer.email} onChange={handleInputChange} className="col-span-3" />
+                        <Input id="email" value={editingCustomer.email} onChange={handleEditInputChange} className="col-span-3" />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="phone" className="text-right">Telefone</Label>
-                        <Input id="phone" value={editingCustomer.phone} onChange={handleInputChange} className="col-span-3" />
+                        <Input id="phone" value={editingCustomer.phone} onChange={handleEditInputChange} className="col-span-3" />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="vehicle" className="text-right">Veículo</Label>
-                        <Input id="vehicle" value={editingCustomer.vehicle} onChange={handleInputChange} className="col-span-3" />
+                        <Input id="vehicle" value={editingCustomer.vehicle} onChange={handleEditInputChange} className="col-span-3" />
                     </div>
                 </div>
             ) : (
