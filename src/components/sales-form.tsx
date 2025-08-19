@@ -17,13 +17,23 @@ import type { SaleItem } from '@/lib/types';
 import { Plus, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-  } from '@/components/ui/table';
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+type PaymentMethod = 'credit_card_on_time' | 'debit_card' | 'pix' | 'credit_card_installments' | '';
+
 
 export function SalesForm() {
   const { toast } = useToast();
@@ -34,6 +44,10 @@ export function SalesForm() {
   const [itemName, setItemName] = useState('');
   const [itemPrice, setItemPrice] = useState('');
   const [itemQuantity, setItemQuantity] = useState('1');
+  
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('');
+  const [installments, setInstallments] = useState(2);
+
 
   const addItemToSale = () => {
     const price = parseFloat(itemPrice);
@@ -88,12 +102,21 @@ export function SalesForm() {
         toast({ title: 'Cliente não informado', description: 'Por favor, informe o nome do cliente.', variant: 'destructive'});
         return;
     }
+     if (!paymentMethod) {
+        toast({ title: 'Forma de pagamento não selecionada', description: 'Por favor, selecione uma forma de pagamento.', variant: 'destructive'});
+        return;
+    }
+
 
     // Here you would typically save the sale to a database
     console.log({
         customerName,
         items: saleItems,
         total,
+        payment: {
+            method: paymentMethod,
+            installments: paymentMethod === 'credit_card_installments' ? installments : 1
+        }
     });
     
     toast({
@@ -104,6 +127,8 @@ export function SalesForm() {
     // Reset form
     setCustomerName('');
     setSaleItems([]);
+    setPaymentMethod('');
+    setInstallments(2);
   }
 
   const total = saleItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -179,6 +204,39 @@ export function SalesForm() {
                           </TableBody>
                       </Table>
                   </Card>
+                </div>
+                
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-4 items-end'>
+                    <div className="space-y-2">
+                        <Label htmlFor='payment-method'>Forma de Pagamento</Label>
+                        <Select value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as PaymentMethod)}>
+                            <SelectTrigger id='payment-method'>
+                                <SelectValue placeholder="Selecione a forma de pagamento" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="credit_card_on_time">Cartão de Crédito à Vista</SelectItem>
+                                <SelectItem value="debit_card">Débito</SelectItem>
+                                <SelectItem value="pix">PIX</SelectItem>
+                                <SelectItem value="credit_card_installments">Cartão de Crédito Parcelado</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    
+                    {paymentMethod === 'credit_card_installments' && (
+                        <div className='space-y-2'>
+                            <Label htmlFor='installments'>Número de Parcelas</Label>
+                             <Select value={String(installments)} onValueChange={(value) => setInstallments(Number(value))}>
+                                <SelectTrigger id='installments'>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {[...Array(9)].map((_, i) => (
+                                        <SelectItem key={i+2} value={String(i+2)}>{i+2}x</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
                 </div>
             </CardContent>
             <CardFooter className="flex justify-between items-center bg-muted/50 p-6 rounded-b-lg">
