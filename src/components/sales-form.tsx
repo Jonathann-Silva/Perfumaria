@@ -63,8 +63,20 @@ export function SalesForm() {
   }, [itemName]);
 
   const handleProductSelect = (product: Product) => {
-    setItemName(product.name);
-    setItemPrice(String(product.price));
+    const newItem: SaleItem = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      quantity: 1, // Default quantity
+      type: product.type,
+    };
+
+    setSaleItems(prevItems => [...prevItems, newItem]);
+    
+    // Reset fields
+    setItemName('');
+    setItemPrice('');
+    setItemQuantity('1');
     setIsSearchPopoverOpen(false);
   };
 
