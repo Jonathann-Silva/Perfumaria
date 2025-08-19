@@ -4,6 +4,10 @@ export type Customer = {
   email: string;
   phone: string;
   vehicle: string;
+  vehiclePlate: string;
+  addressStreet: string;
+  addressNeighborhood: string;
+  addressNumber: string;
   lastService: string;
 };
 

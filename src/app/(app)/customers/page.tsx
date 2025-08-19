@@ -29,7 +29,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { customers as initialCustomers } from '@/lib/data';
 import type { Customer } from '@/lib/types';
-import { PlusCircle, User, Mail, Phone, Car, Edit, X, Save } from 'lucide-react';
+import { PlusCircle, User, Mail, Phone, Car, Edit, X, Save, Home } from 'lucide-react';
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
@@ -42,6 +42,10 @@ export default function CustomersPage() {
     email: '',
     phone: '',
     vehicle: '',
+    vehiclePlate: '',
+    addressStreet: '',
+    addressNeighborhood: '',
+    addressNumber: '',
   });
 
   const handleRowClick = (customer: Customer) => {
@@ -86,7 +90,16 @@ export default function CustomersPage() {
     };
     setCustomers([...customers, newCustomer]);
     setIsNewCustomerDialogOpen(false);
-    setNewCustomerData({ name: '', email: '', phone: '', vehicle: '' }); // Reset form
+    setNewCustomerData({
+      name: '',
+      email: '',
+      phone: '',
+      vehicle: '',
+      vehiclePlate: '',
+      addressStreet: '',
+      addressNeighborhood: '',
+      addressNumber: '',
+    }); // Reset form
   };
 
   return (
@@ -138,7 +151,7 @@ export default function CustomersPage() {
 
       {/* New Customer Dialog */}
       <Dialog open={isNewCustomerDialogOpen} onOpenChange={setIsNewCustomerDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>Adicionar Novo Cliente</DialogTitle>
           </DialogHeader>
@@ -159,6 +172,22 @@ export default function CustomersPage() {
               <Label htmlFor="vehicle" className="text-right">Veículo</Label>
               <Input id="vehicle" value={newCustomerData.vehicle} onChange={handleNewCustomerInputChange} className="col-span-3" />
             </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="vehiclePlate" className="text-right">Placa</Label>
+              <Input id="vehiclePlate" value={newCustomerData.vehiclePlate} onChange={handleNewCustomerInputChange} className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="addressStreet" className="text-right">Rua</Label>
+              <Input id="addressStreet" value={newCustomerData.addressStreet} onChange={handleNewCustomerInputChange} className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="addressNeighborhood" className="text-right">Bairro</Label>
+              <Input id="addressNeighborhood" value={newCustomerData.addressNeighborhood} onChange={handleNewCustomerInputChange} className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="addressNumber" className="text-right">Número</Label>
+              <Input id="addressNumber" value={newCustomerData.addressNumber} onChange={handleNewCustomerInputChange} className="col-span-3" />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsNewCustomerDialogOpen(false)}>
@@ -177,7 +206,7 @@ export default function CustomersPage() {
           open={!!selectedCustomer}
           onOpenChange={(isOpen) => !isOpen && handleCloseDialog()}
         >
-          <DialogContent>
+          <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
               <DialogTitle>
                 <div className="flex items-center gap-2">
@@ -198,7 +227,11 @@ export default function CustomersPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Car className="h-4 w-4 text-muted-foreground" />
-                        <span>{selectedCustomer.vehicle}</span>
+                        <span>{selectedCustomer.vehicle} ({selectedCustomer.vehiclePlate})</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Home className="h-4 w-4 text-muted-foreground" />
+                        <span>{selectedCustomer.addressStreet}, {selectedCustomer.addressNumber} - {selectedCustomer.addressNeighborhood}</span>
                       </div>
                     </div>
                   </DialogDescription>
@@ -222,6 +255,22 @@ export default function CustomersPage() {
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="vehicle" className="text-right">Veículo</Label>
                         <Input id="vehicle" value={editingCustomer.vehicle} onChange={handleEditInputChange} className="col-span-3" />
+                    </div>
+                     <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="vehiclePlate" className="text-right">Placa</Label>
+                        <Input id="vehiclePlate" value={editingCustomer.vehiclePlate} onChange={handleEditInputChange} className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="addressStreet" className="text-right">Rua</Label>
+                        <Input id="addressStreet" value={editingCustomer.addressStreet} onChange={handleEditInputChange} className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="addressNeighborhood" className="text-right">Bairro</Label>
+                        <Input id="addressNeighborhood" value={editingCustomer.addressNeighborhood} onChange={handleEditInputChange} className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="addressNumber" className="text-right">Número</Label>
+                        <Input id="addressNumber" value={editingCustomer.addressNumber} onChange={handleEditInputChange} className="col-span-3" />
                     </div>
                 </div>
             ) : (
