@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -14,7 +14,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { SaleItem } from '@/lib/types';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   Table,
@@ -31,6 +31,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { products } from '@/lib/data';
+import type { Product } from '@/lib/types';
 
 type PaymentMethod = 'credit_card_on_time' | 'debit_card' | 'pix' | 'credit_card_installments' | '';
 
@@ -47,6 +54,19 @@ export function SalesForm() {
   
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('');
   const [installments, setInstallments] = useState(2);
+
+  const [isSearchPopoverOpen, setIsSearchPopoverOpen] = useState(false);
+
+  const filteredProducts = useMemo(() => {
+    if (!itemName) return products;
+    return products.filter(p => p.name.toLowerCase().includes(itemName.toLowerCase()));
+  }, [itemName]);
+
+  const handleProductSelect = (product: Product) => {
+    setItemName(product.name);
+    setItemPrice(String(product.price));
+    setIsSearchPopoverOpen(false);
+  };
 
 
   const addItemToSale = () => {
@@ -151,7 +171,39 @@ export function SalesForm() {
                   <div className="grid grid-cols-1 md:grid-cols-[1fr_120px_100px_auto] items-end gap-2 p-4 border rounded-t-lg bg-muted/25">
                         <div className="space-y-1.5">
                             <Label htmlFor="item-name">Adicionar Produto ou Serviço</Label>
-                            <Input id="item-name" value={itemName} onChange={e => setItemName(e.target.value)} placeholder="Ex: Troca de pneu" />
+                            <Popover open={isSearchPopoverOpen} onOpenChange={setIsSearchPopoverOpen}>
+                                <PopoverTrigger asChild>
+                                    <div className="relative">
+                                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                        <Input 
+                                            id="item-name" 
+                                            value={itemName} 
+                                            onChange={e => setItemName(e.target.value)} 
+                                            placeholder="Digite para buscar ou adicionar novo item..."
+                                            className="pl-8"
+                                            autoComplete="off"
+                                        />
+                                    </div>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-[--radix-popover-trigger-width] max-h-60 overflow-y-auto p-0">
+                                    {filteredProducts.length > 0 ? (
+                                        <div className="divide-y">
+                                        {filteredProducts.map(product => (
+                                            <button 
+                                                key={product.id}
+                                                onClick={() => handleProductSelect(product)}
+                                                className="flex justify-between w-full text-left px-3 py-2 text-sm hover:bg-accent"
+                                            >
+                                                <span>{product.name}</span>
+                                                <span className="text-muted-foreground">R$ {product.price.toFixed(2)}</span>
+                                            </button>
+                                        ))}
+                                        </div>
+                                    ) : (
+                                        <p className="p-3 text-center text-sm text-muted-foreground">Nenhum produto encontrado.</p>
+                                    )}
+                                </PopoverContent>
+                            </Popover>
                         </div>
                         <div className="space-y-1.5">
                             <Label htmlFor="item-price">Preço</Label>
