@@ -169,12 +169,11 @@ export default function CustomersPage() {
               <Input id="phone" value={newCustomerData.phone} onChange={handleNewCustomerInputChange} className="col-span-3" />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="vehicle" className="text-right">Veículo</Label>
-              <Input id="vehicle" value={newCustomerData.vehicle} onChange={handleNewCustomerInputChange} className="col-span-3" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="vehiclePlate" className="text-right">Placa</Label>
-              <Input id="vehiclePlate" value={newCustomerData.vehiclePlate} onChange={handleNewCustomerInputChange} className="col-span-3" />
+                <Label htmlFor="vehicle" className="text-right">Veículo/Placa</Label>
+                <div className="col-span-3 grid grid-cols-3 gap-2">
+                    <Input id="vehicle" placeholder="Veículo" value={newCustomerData.vehicle} onChange={handleNewCustomerInputChange} className="col-span-2" />
+                    <Input id="vehiclePlate" placeholder="Placa" value={newCustomerData.vehiclePlate} onChange={handleNewCustomerInputChange} className="col-span-1" />
+                </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="addressStreet" className="text-right">Rua</Label>
@@ -253,12 +252,11 @@ export default function CustomersPage() {
                         <Input id="phone" value={editingCustomer.phone} onChange={handleEditInputChange} className="col-span-3" />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="vehicle" className="text-right">Veículo</Label>
-                        <Input id="vehicle" value={editingCustomer.vehicle} onChange={handleEditInputChange} className="col-span-3" />
-                    </div>
-                     <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="vehiclePlate" className="text-right">Placa</Label>
-                        <Input id="vehiclePlate" value={editingCustomer.vehiclePlate} onChange={handleEditInputChange} className="col-span-3" />
+                        <Label htmlFor="vehicle" className="text-right">Veículo/Placa</Label>
+                        <div className="col-span-3 grid grid-cols-3 gap-2">
+                            <Input id="vehicle" placeholder="Veículo" value={editingCustomer.vehicle} onChange={handleEditInputChange} className="col-span-2" />
+                            <Input id="vehiclePlate" placeholder="Placa" value={editingCustomer.vehiclePlate} onChange={handleEditInputChange} className="col-span-1" />
+                        </div>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="addressStreet" className="text-right">Rua</Label>
