@@ -21,7 +21,7 @@ import type { ShopProfile } from '@/lib/types';
 
 export default function SettingsPage() {
   const { toast } = useToast();
-  const { profile: initialProfile, loading: isLoading } from useShop();
+  const { profile: initialProfile, loading: isLoading } = useShop();
   const [profile, setProfile] = useState<ShopProfile | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
