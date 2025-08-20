@@ -1,4 +1,5 @@
 
+
 export type Customer = {
   id: string;
   name: string;
@@ -70,4 +71,5 @@ export type ShopProfile = {
   address: string;
   cnpj: string;
   subscriptionStatus: 'active' | 'overdue' | 'inactive';
+  nextDueDate?: string; // ISO date string e.g., "2024-07-25"
 };

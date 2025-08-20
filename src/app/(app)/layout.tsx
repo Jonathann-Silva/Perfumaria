@@ -37,6 +37,7 @@ import { Loader2 } from 'lucide-react';
 import { useShop } from '@/components/shop-provider';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PaymentWall } from '@/components/payment-wall';
+import { SubscriptionWarning } from '@/components/subscription-warning';
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -235,6 +236,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
             <SidebarTrigger className="lg:hidden"/>
         </header>
         <main className="relative flex-1 overflow-y-auto p-4 md:p-6">
+            <SubscriptionWarning />
             {children}
             {!isSubscriptionActive && !isSubscriptionPage && <PaymentWall />}
         </main>

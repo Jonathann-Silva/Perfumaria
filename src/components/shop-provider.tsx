@@ -5,6 +5,7 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { db } from '@/lib/firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
 import type { ShopProfile } from '@/lib/types';
+import { addDays, formatISO, setDate } from 'date-fns';
 
 interface ShopContextType {
   profile: ShopProfile | null;
@@ -20,17 +21,27 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const docRef = doc(db, 'shopSettings', 'profile');
     
-    // Use onSnapshot to listen for real-time updates
     const unsubscribe = onSnapshot(docRef, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data() as Partial<ShopProfile>;
-        // Set default status to 'overdue' for testing the payment wall
+        
+        // --- SIMULATION LOGIC ---
+        // To test the warning, we set a due date that is X days from now.
+        // For a real app, this date would come from the payment gateway.
+        const today = new Date();
+        // For this test, let's set a due date 5 days from today
+        const simulatedDueDate = addDays(today, 5);
+        // --- END SIMULATION LOGIC ---
+
         const profileData: ShopProfile = {
           name: data.name || 'EngrenApp',
           phone: data.phone || '(11) 98765-4321',
           address: data.address || 'Avenida Paulista, 1000, São Paulo - SP, 01310-100',
           cnpj: data.cnpj || '00.000.000/0001-00',
-          subscriptionStatus: data.subscriptionStatus || 'overdue',
+          // If a status exists, use it. Otherwise, default to 'active' for testing the warning.
+          subscriptionStatus: data.subscriptionStatus || 'active', 
+          // Use a real due date if available, otherwise use our simulation
+          nextDueDate: data.nextDueDate || formatISO(simulatedDueDate, { representation: 'date' }),
         };
         setProfile(profileData);
       } else {
@@ -40,7 +51,8 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
           phone: '(11) 98765-4321',
           address: 'Avenida Paulista, 1000, São Paulo - SP, 01310-100',
           cnpj: '00.000.000/0001-00',
-          subscriptionStatus: 'overdue', // Default to overdue to show the payment wall
+          subscriptionStatus: 'overdue', 
+          nextDueDate: formatISO(new Date(), { representation: 'date' })
         });
       }
       setLoading(false);
@@ -49,7 +61,6 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
     });
 
-    // Clean up the listener on unmount
     return () => unsubscribe();
   }, []);
 
