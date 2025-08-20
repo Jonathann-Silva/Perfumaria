@@ -2,12 +2,13 @@
 'use client';
 
 import * as React from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Calendar,
   FileText,
   History,
   LayoutDashboard,
+  LogOut,
   Package,
   PlusCircle,
   Settings,
@@ -18,6 +19,7 @@ import {
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
@@ -28,10 +30,44 @@ import {
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { AutoFlowLogo } from '@/components/icons';
+import { AuthProvider, useAuth } from '@/components/auth-provider';
+import { getAuth, signOut } from 'firebase/auth';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isActive = (path: string) => pathname === path;
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const handleLogout = async () => {
+    const auth = getAuth();
+    try {
+      await signOut(auth);
+      toast({
+        title: 'Você saiu!',
+        description: 'Você foi desconectado com sucesso.',
+      });
+      router.push('/login');
+    } catch (error) {
+      console.error('Error signing out: ', error);
+      toast({
+        title: 'Erro ao sair',
+        description: 'Não foi possível desconectar. Tente novamente.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  if (loading || !user) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <SidebarProvider>
@@ -163,6 +199,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarContent>
+        <SidebarFooter>
+          <SidebarMenu>
+             <SidebarMenuItem>
+                <SidebarMenuButton onClick={handleLogout} tooltip="Sair">
+                    <LogOut />
+                    <span>Sair</span>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
       </Sidebar>
       <SidebarInset>
         <header className="flex h-14 items-center justify-end border-b bg-card p-4">
@@ -174,4 +220,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </SidebarInset>
     </SidebarProvider>
   );
+}
+
+export default function AppLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <AuthProvider>
+      <AppLayoutContent>{children}</AppLayoutContent>
+    </AuthProvider>
+  )
 }
