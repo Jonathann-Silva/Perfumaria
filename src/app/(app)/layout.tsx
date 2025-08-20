@@ -36,6 +36,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useShop } from '@/components/shop-provider';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PaymentWall } from '@/components/payment-wall';
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -71,6 +72,9 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
+
+  const isSubscriptionActive = profile?.subscriptionStatus === 'active';
+  const isSubscriptionPage = pathname === '/subscription';
 
   return (
     <SidebarProvider>
@@ -230,8 +234,9 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         <header className="flex h-14 items-center justify-end border-b bg-card p-4">
             <SidebarTrigger className="lg:hidden"/>
         </header>
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+        <main className="relative flex-1 overflow-y-auto p-4 md:p-6">
             {children}
+            {!isSubscriptionActive && !isSubscriptionPage && <PaymentWall />}
         </main>
       </SidebarInset>
     </SidebarProvider>

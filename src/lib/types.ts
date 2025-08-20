@@ -69,4 +69,5 @@ export type ShopProfile = {
   phone: string;
   address: string;
   cnpj: string;
+  subscriptionStatus: 'active' | 'overdue' | 'inactive';
 };

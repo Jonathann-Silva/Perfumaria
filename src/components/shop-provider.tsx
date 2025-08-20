@@ -23,7 +23,16 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
     // Use onSnapshot to listen for real-time updates
     const unsubscribe = onSnapshot(docRef, (docSnap) => {
       if (docSnap.exists()) {
-        setProfile(docSnap.data() as ShopProfile);
+        const data = docSnap.data() as Partial<ShopProfile>;
+        // Set default status to 'overdue' for testing the payment wall
+        const profileData: ShopProfile = {
+          name: data.name || 'EngrenApp',
+          phone: data.phone || '(11) 98765-4321',
+          address: data.address || 'Avenida Paulista, 1000, São Paulo - SP, 01310-100',
+          cnpj: data.cnpj || '00.000.000/0001-00',
+          subscriptionStatus: data.subscriptionStatus || 'overdue',
+        };
+        setProfile(profileData);
       } else {
         // Set default values if no profile exists yet
         setProfile({
@@ -31,6 +40,7 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
           phone: '(11) 98765-4321',
           address: 'Avenida Paulista, 1000, São Paulo - SP, 01310-100',
           cnpj: '00.000.000/0001-00',
+          subscriptionStatus: 'overdue', // Default to overdue to show the payment wall
         });
       }
       setLoading(false);
