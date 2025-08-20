@@ -5,6 +5,7 @@ import * as React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   Calendar,
+  CreditCard,
   FileText,
   History,
   LayoutDashboard,
@@ -186,6 +187,19 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 </a>
               </SidebarMenuButton>
             </SidebarMenuItem>
+             <SidebarMenuItem>
+                <SidebarMenuButton
+                    href="/subscription"
+                    asChild
+                    isActive={isActive('/subscription')}
+                    tooltip="Assinatura"
+                >
+                    <a href="/subscription">
+                        <CreditCard />
+                        <span>Assinatura</span>
+                    </a>
+                </SidebarMenuButton>
+             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton
                 href="/settings"
