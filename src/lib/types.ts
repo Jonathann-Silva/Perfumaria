@@ -1,3 +1,4 @@
+
 export type Customer = {
   id: string;
   name: string;
@@ -61,4 +62,10 @@ export type Schedule = {
   date: string;
   time: string;
   status: 'Agendado' | 'Concluído' | 'Cancelado';
+};
+
+export type ShopProfile = {
+  name: string;
+  email: string;
+  address: string;
 };

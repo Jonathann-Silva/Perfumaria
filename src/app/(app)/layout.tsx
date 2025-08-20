@@ -21,10 +21,9 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-  SidebarInset,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuButton,
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
@@ -34,11 +33,14 @@ import { AuthProvider, useAuth } from '@/components/auth-provider';
 import { getAuth, signOut } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { ShopProvider, useShop } from '@/components/shop-provider';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isActive = (path: string) => pathname === path;
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const { profile, loading: shopLoading } = useShop();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -61,7 +63,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     }
   };
 
-  if (loading || !user) {
+  if (authLoading || !user) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -75,7 +77,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         <SidebarHeader className="items-center justify-start gap-3 p-3">
           <AutoFlowLogo className="size-8 text-sidebar-primary" />
           <span className="text-xl font-semibold text-sidebar-foreground">
-            AutoFlow
+            {shopLoading ? <Skeleton className="h-6 w-24" /> : profile?.name || 'AutoFlow'}
           </span>
         </SidebarHeader>
         <SidebarContent>
@@ -225,7 +227,9 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider>
-      <AppLayoutContent>{children}</AppLayoutContent>
+      <ShopProvider>
+        <AppLayoutContent>{children}</AppLayoutContent>
+      </ShopProvider>
     </AuthProvider>
   )
 }

@@ -14,54 +14,27 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { Loader2, Save } from 'lucide-react';
-
-type ShopProfile = {
-  name: string;
-  email: string;
-  address: string;
-};
+import { useShop } from '@/components/shop-provider';
+import type { ShopProfile } from '@/lib/types';
 
 export default function SettingsPage() {
   const { toast } = useToast();
+  const { profile: initialProfile, loading: isLoading } = useShop();
   const [profile, setProfile] = useState<ShopProfile>({
     name: '',
     email: '',
     address: '',
   });
-  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const docRef = doc(db, 'shopSettings', 'profile');
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setProfile(docSnap.data() as ShopProfile);
-        } else {
-          // Set default values if no profile exists yet
-          setProfile({
-            name: 'AutoFlow Oficina',
-            email: 'contato@autoflow.com',
-            address: 'Avenida Paulista, 1000, São Paulo - SP, 01310-100',
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching profile: ", error);
-        toast({
-          title: 'Erro ao carregar perfil',
-          description: 'Não foi possível buscar as informações da oficina.',
-          variant: 'destructive',
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    if (initialProfile) {
+      setProfile(initialProfile);
+    }
+  }, [initialProfile]);
 
-    fetchProfile();
-  }, [toast]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -72,7 +45,7 @@ export default function SettingsPage() {
     setIsSaving(true);
     try {
       const docRef = doc(db, 'shopSettings', 'profile');
-      await setDoc(docRef, profile);
+      await setDoc(docRef, profile, { merge: true });
       toast({
         title: 'Sucesso!',
         description: 'As informações da oficina foram salvas.',
