@@ -191,19 +191,6 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 </a>
               </SidebarMenuButton>
             </SidebarMenuItem>
-             <SidebarMenuItem>
-                <SidebarMenuButton
-                    href="/subscription"
-                    asChild
-                    isActive={isActive('/subscription')}
-                    tooltip="Assinatura"
-                >
-                    <a href="/subscription">
-                        <CreditCard />
-                        <span>Assinatura</span>
-                    </a>
-                </SidebarMenuButton>
-             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton
                 href="/settings"
@@ -217,6 +204,19 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 </a>
               </SidebarMenuButton>
             </SidebarMenuItem>
+            <SidebarMenuItem>
+                <SidebarMenuButton
+                    href="/subscription"
+                    asChild
+                    isActive={isActive('/subscription')}
+                    tooltip="Assinatura"
+                >
+                    <a href="/subscription">
+                        <CreditCard />
+                        <span>Assinatura</span>
+                    </a>
+                </SidebarMenuButton>
+             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter>
