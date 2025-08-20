@@ -22,14 +22,12 @@ import type { ShopProfile } from '@/lib/types';
 export default function SettingsPage() {
   const { toast } = useToast();
   const { profile: initialProfile, loading: isLoading } = useShop();
-  const [profile, setProfile] = useState<ShopProfile>({
-    name: '',
-    phone: '',
-    address: '',
-  });
+  // Initialize state with null or the initial profile to better handle loading.
+  const [profile, setProfile] = useState<ShopProfile | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
+    // When the initialProfile is loaded (and not null), update our local state.
     if (initialProfile) {
       setProfile(initialProfile);
     }
@@ -38,10 +36,12 @@ export default function SettingsPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
-    setProfile((prevProfile) => ({ ...prevProfile, [id]: value }));
+    // We can safely assume profile is not null when inputs are rendered.
+    setProfile((prevProfile) => ({ ...prevProfile!, [id]: value }));
   };
 
   const handleSave = async () => {
+    if (!profile) return;
     setIsSaving(true);
     try {
       const docRef = doc(db, 'shopSettings', 'profile');
@@ -62,6 +62,28 @@ export default function SettingsPage() {
     }
   };
 
+  // While loading or if profile is still null, show the loader.
+  if (isLoading || !profile) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold tracking-tight">Configurações</h1>
+        <Card>
+          <CardHeader>
+            <CardTitle>Perfil da Oficina</CardTitle>
+            <CardDescription>
+              Atualize as informações do seu negócio.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex justify-center items-center h-24">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold tracking-tight">Configurações</h1>
@@ -73,11 +95,6 @@ export default function SettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {isLoading ? (
-            <div className="flex justify-center items-center h-24">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : (
             <>
               <div className="space-y-2">
                 <Label htmlFor="name">Nome da Oficina</Label>
@@ -100,7 +117,6 @@ export default function SettingsPage() {
                 Salvar Alterações
               </Button>
             </>
-          )}
         </CardContent>
       </Card>
       <Card>
