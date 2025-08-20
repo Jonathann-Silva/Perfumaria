@@ -27,8 +27,8 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
       } else {
         // Set default values if no profile exists yet
         setProfile({
-          name: 'AutoFlow',
-          email: 'contato@autoflow.com',
+          name: 'EngrenApp',
+          email: 'contato@engrenapp.com',
           address: 'Avenida Paulista, 1000, São Paulo - SP, 01310-100',
         });
       }

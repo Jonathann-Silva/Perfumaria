@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'AutoFlow',
+  title: 'EngrenApp',
   description: 'Gerenciador de oficina mecânica',
 };
 

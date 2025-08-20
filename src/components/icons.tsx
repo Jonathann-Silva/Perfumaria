@@ -1,7 +1,7 @@
 
 import type { SVGProps } from 'react';
 
-export function AutoFlowLogo(props: SVGProps<SVGSVGElement>) {
+export function EngrenAppLogo(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

@@ -24,7 +24,7 @@ import {
     TableHeader,
     TableRow,
   } from '@/components/ui/table';
-import { AutoFlowLogo, WhatsAppIcon } from './icons';
+import { EngrenAppLogo, WhatsAppIcon } from './icons';
 
 type QuoteItem = {
     product: Product;
@@ -112,7 +112,7 @@ export function QuoteForm() {
       return;
     }
 
-    let message = `*Orçamento AutoFlow Oficina*\n\n`;
+    let message = `*Orçamento EngrenApp Oficina*\n\n`;
     message += `Olá ${customerName},\n`;
     message += `Segue o orçamento para o veículo ${customerVehicle} (${customerVehiclePlate}):\n\n`;
     message += `*Itens:*\n`;
@@ -248,8 +248,8 @@ export function QuoteForm() {
         <div className="flex justify-between items-start mb-8">
             <div>
                 <div className="flex items-center gap-3 mb-4">
-                    <AutoFlowLogo className="size-10 text-primary" />
-                    <h1 className="text-3xl font-bold">AutoFlow Oficina</h1>
+                    <EngrenAppLogo className="size-10 text-primary" />
+                    <h1 className="text-3xl font-bold">EngrenApp Oficina</h1>
                 </div>
                 <p>Avenida Paulista, 1000</p>
                 <p>São Paulo - SP, 01310-100</p>
