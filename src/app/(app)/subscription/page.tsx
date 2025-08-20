@@ -13,7 +13,7 @@ import { CheckCircle } from 'lucide-react';
 export default function SubscriptionPage() {
   const currentPlan = {
     name: 'Plano Pro',
-    price: 'R$ 99,90/mês',
+    price: 'R$ 60,00/mês',
     features: [
       'Gerenciamento de Clientes Ilimitado',
       'Criação de Orçamentos e Vendas',
