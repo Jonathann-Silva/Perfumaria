@@ -1,12 +1,6 @@
 import type { Customer, Product, Quote, Sale, Schedule } from './types';
 
-export const customers: Customer[] = [
-  { id: '1', name: 'João da Silva', email: 'joao.silva@email.com', phone: '(11) 98765-4321', vehicle: 'Toyota Corolla 2021', vehiclePlate: 'ABC-1234', addressStreet: 'Rua das Flores', addressNeighborhood: 'Centro', addressNumber: '123', lastService: '2023-10-15' },
-  { id: '2', name: 'Maria Oliveira', email: 'maria.o@email.com', phone: '(21) 91234-5678', vehicle: 'Honda Civic 2019', vehiclePlate: 'DEF-5678', addressStreet: 'Avenida Brasil', addressNeighborhood: 'Lapa', addressNumber: '456', lastService: '2023-11-20' },
-  { id: '3', name: 'Carlos Pereira', email: 'carlos.p@email.com', phone: '(31) 95555-1234', vehicle: 'Ford Ka 2022', vehiclePlate: 'GHI-9012', addressStreet: 'Rua da Saudade', addressNeighborhood: 'Savassi', addressNumber: '789', lastService: '2024-01-05' },
-  { id: '4', name: 'Ana Souza', email: 'ana.souza@email.com', phone: '(41) 98888-9999', vehicle: 'Chevrolet Onix 2020', vehiclePlate: 'JKL-3456', addressStreet: 'Alameda dos Anjos', addressNeighborhood: 'Batel', addressNumber: '101', lastService: '2023-09-01' },
-  { id: '5', name: 'Paulo Santos', email: 'paulo.santos@email.com', phone: '(51) 97777-6666', vehicle: 'Volkswagen Gol 2018', vehiclePlate: 'MNO-7890', addressStreet: 'Travessa dos Ventos', addressNeighborhood: 'Moinhos de Vento', addressNumber: '212', lastService: '2024-02-10' },
-];
+export const customers: Customer[] = [];
 
 export const products: Product[] = [
   { id: '1', name: 'Troca de Óleo do Motor', type: 'Serviço', price: 150.00, stock: 999 },

@@ -1,7 +1,9 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, addDoc, doc, updateDoc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -27,12 +29,14 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { customers as initialCustomers } from '@/lib/data';
 import type { Customer } from '@/lib/types';
-import { PlusCircle, User, Mail, Phone, Car, Edit, X, Save, Home } from 'lucide-react';
+import { PlusCircle, User, Mail, Phone, Car, Edit, X, Save, Home, Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function CustomersPage() {
-  const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
+  const { toast } = useToast();
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
@@ -48,6 +52,28 @@ export default function CustomersPage() {
     addressNumber: '',
   });
 
+  const fetchCustomers = async () => {
+    try {
+      const customersCollection = collection(db, 'customers');
+      const customersSnapshot = await getDocs(customersCollection);
+      const customersList = customersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Customer));
+      setCustomers(customersList);
+    } catch (error) {
+      console.error("Error fetching customers: ", error);
+      toast({
+        title: 'Erro ao buscar clientes',
+        description: 'Não foi possível carregar a lista de clientes.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCustomers();
+  }, []);
+
   const handleRowClick = (customer: Customer) => {
     setSelectedCustomer(customer);
     setEditingCustomer({ ...customer });
@@ -60,15 +86,35 @@ export default function CustomersPage() {
     setIsEditing(false);
   };
 
-  const handleSave = () => {
-    if (!editingCustomer) return;
+  const handleSave = async () => {
+    if (!editingCustomer || !editingCustomer.id) return;
 
-    const updatedCustomers = customers.map(c => 
-        c.id === editingCustomer.id ? editingCustomer : c
-    );
-    setCustomers(updatedCustomers);
-    setSelectedCustomer(editingCustomer);
-    setIsEditing(false);
+    try {
+        const customerDoc = doc(db, 'customers', editingCustomer.id);
+        // We shouldn't update the ID, so we create a new object without it
+        const { id, ...customerToUpdate } = editingCustomer;
+        await updateDoc(customerDoc, customerToUpdate);
+        
+        toast({
+            title: 'Cliente atualizado!',
+            description: 'Os dados do cliente foram salvos com sucesso.',
+        });
+
+        // Update local state
+        const updatedCustomers = customers.map(c => 
+            c.id === editingCustomer.id ? editingCustomer : c
+        );
+        setCustomers(updatedCustomers);
+        setSelectedCustomer(editingCustomer);
+        setIsEditing(false);
+    } catch (error) {
+        console.error("Error updating customer: ", error);
+        toast({
+            title: 'Erro ao atualizar',
+            description: 'Não foi possível salvar as alterações.',
+            variant: 'destructive',
+        });
+    }
   };
 
   const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -82,24 +128,40 @@ export default function CustomersPage() {
     setNewCustomerData({ ...newCustomerData, [id]: value });
   };
 
-  const handleAddNewCustomer = () => {
-    const newCustomer: Customer = {
-      id: `${Date.now()}`,
-      ...newCustomerData,
-      lastService: new Date().toISOString().split('T')[0], // Today's date
-    };
-    setCustomers([...customers, newCustomer]);
-    setIsNewCustomerDialogOpen(false);
-    setNewCustomerData({
-      name: '',
-      email: '',
-      phone: '',
-      vehicle: '',
-      vehiclePlate: '',
-      addressStreet: '',
-      addressNeighborhood: '',
-      addressNumber: '',
-    }); // Reset form
+  const handleAddNewCustomer = async () => {
+    try {
+        const newCustomer: Omit<Customer, 'id' | 'lastService'> = {
+            ...newCustomerData,
+        };
+        const docRef = await addDoc(collection(db, 'customers'), {
+            ...newCustomer,
+            lastService: new Date().toISOString().split('T')[0],
+        });
+
+        setCustomers([...customers, { id: docRef.id, ...newCustomer, lastService: new Date().toISOString().split('T')[0] }]);
+        setIsNewCustomerDialogOpen(false);
+        setNewCustomerData({
+            name: '',
+            email: '',
+            phone: '',
+            vehicle: '',
+            vehiclePlate: '',
+            addressStreet: '',
+            addressNeighborhood: '',
+            addressNumber: '',
+        });
+         toast({
+            title: 'Cliente adicionado!',
+            description: 'O novo cliente foi salvo com sucesso.',
+        });
+    } catch (error) {
+        console.error("Error adding customer: ", error);
+         toast({
+            title: 'Erro ao adicionar cliente',
+            description: 'Não foi possível salvar o novo cliente.',
+            variant: 'destructive',
+        });
+    }
   };
 
   return (
@@ -117,34 +179,40 @@ export default function CustomersPage() {
             <CardTitle>Lista de Clientes</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Telefone</TableHead>
-                  <TableHead>Veículo</TableHead>
-                  <TableHead>Último Serviço</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {customers.map((customer) => (
-                  <TableRow
-                    key={customer.id}
-                    className="cursor-pointer"
-                    onClick={() => handleRowClick(customer)}
-                  >
-                    <TableCell className="font-medium">
-                      {customer.name}
-                    </TableCell>
-                    <TableCell>{customer.email}</TableCell>
-                    <TableCell>{customer.phone}</TableCell>
-                    <TableCell>{customer.vehicle}</TableCell>
-                    <TableCell>{customer.lastService}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+             {isLoading ? (
+                <div className="flex justify-center items-center h-40">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+            ) : (
+                <Table>
+                <TableHeader>
+                    <TableRow>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Telefone</TableHead>
+                    <TableHead>Veículo</TableHead>
+                    <TableHead>Último Serviço</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {customers.map((customer) => (
+                    <TableRow
+                        key={customer.id}
+                        className="cursor-pointer"
+                        onClick={() => handleRowClick(customer)}
+                    >
+                        <TableCell className="font-medium">
+                        {customer.name}
+                        </TableCell>
+                        <TableCell>{customer.email}</TableCell>
+                        <TableCell>{customer.phone}</TableCell>
+                        <TableCell>{customer.vehicle}</TableCell>
+                        <TableCell>{customer.lastService}</TableCell>
+                    </TableRow>
+                    ))}
+                </TableBody>
+                </Table>
+            )}
           </CardContent>
         </Card>
       </div>
