@@ -68,4 +68,5 @@ export type ShopProfile = {
   name: string;
   phone: string;
   address: string;
+  cnpj: string;
 };

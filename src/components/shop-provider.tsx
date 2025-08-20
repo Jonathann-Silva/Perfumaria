@@ -30,6 +30,7 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
           name: 'EngrenApp',
           phone: '(11) 98765-4321',
           address: 'Avenida Paulista, 1000, São Paulo - SP, 01310-100',
+          cnpj: '00.000.000/0001-00',
         });
       }
       setLoading(false);
