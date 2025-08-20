@@ -28,7 +28,7 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
         // Set default values if no profile exists yet
         setProfile({
           name: 'EngrenApp',
-          email: 'contato@engrenapp.com',
+          phone: '(11) 98765-4321',
           address: 'Avenida Paulista, 1000, São Paulo - SP, 01310-100',
         });
       }

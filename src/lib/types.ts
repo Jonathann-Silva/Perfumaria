@@ -66,6 +66,6 @@ export type Schedule = {
 
 export type ShopProfile = {
   name: string;
-  email: string;
+  phone: string;
   address: string;
 };

@@ -24,7 +24,7 @@ export default function SettingsPage() {
   const { profile: initialProfile, loading: isLoading } = useShop();
   const [profile, setProfile] = useState<ShopProfile>({
     name: '',
-    email: '',
+    phone: '',
     address: '',
   });
   const [isSaving, setIsSaving] = useState(false);
@@ -84,8 +84,8 @@ export default function SettingsPage() {
                 <Input id="name" value={profile.name} onChange={handleInputChange} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email de Contato</Label>
-                <Input id="email" type="email" value={profile.email} onChange={handleInputChange} />
+                <Label htmlFor="phone">Telefone pra contato</Label>
+                <Input id="phone" type="tel" value={profile.phone} onChange={handleInputChange} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="address">Endereço</Label>
