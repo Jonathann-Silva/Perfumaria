@@ -28,13 +28,12 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
 import { EngrenAppLogo } from '@/components/icons';
 import { AuthProvider, useAuth } from '@/components/auth-provider';
 import { getAuth, signOut } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import { ShopProvider, useShop } from '@/components/shop-provider';
+import { useShop } from '@/components/shop-provider';
 import { Skeleton } from '@/components/ui/skeleton';
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
@@ -228,9 +227,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider>
-      <ShopProvider>
         <AppLayoutContent>{children}</AppLayoutContent>
-      </ShopProvider>
     </AuthProvider>
   )
 }

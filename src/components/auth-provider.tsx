@@ -5,6 +5,8 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { usePathname, useRouter } from 'next/navigation';
+import { ShopProvider } from './shop-provider';
+import { Loader2 } from 'lucide-react';
 
 interface AuthContextType {
   user: User | null;
@@ -38,6 +40,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => unsubscribe();
   }, [router, pathname]);
 
+  // If we are still loading the authentication state, show a global loader
+  if (loading) {
+    return (
+       <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
+  // If there's a user, it means we are on an authenticated page,
+  // so we can safely wrap the children with ShopProvider.
+  if (user) {
+    return (
+       <AuthContext.Provider value={{ user, loading }}>
+        <ShopProvider>
+          {children}
+        </ShopProvider>
+      </AuthContext.Provider>
+    )
+  }
+  
+  // If there's no user, we are on the login page, so we don't need the ShopProvider.
   return (
     <AuthContext.Provider value={{ user, loading }}>
       {children}
