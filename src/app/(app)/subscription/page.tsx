@@ -79,7 +79,7 @@ export default function SubscriptionPage() {
           <CardTitle className="text-2xl">{currentPlan.name}</CardTitle>
           <CardDescription>
             {isSubscriptionActive 
-              ? "Sua assinatura está ativa. A próxima cobrança será todo dia 10."
+              ? "Sua assinatura está ativa. A próxima cobrança será todo dia 25."
               : "Escolha um método de pagamento para ativar sua assinatura."
             }
           </CardDescription>
