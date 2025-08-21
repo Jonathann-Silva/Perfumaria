@@ -1,69 +1,123 @@
 
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 import { usePathname, useRouter } from 'next/navigation';
-import { ShopProvider } from './shop-provider';
 import { Loader2 } from 'lucide-react';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import type { ShopProfile } from '@/lib/types';
+import { formatISO, getDate } from 'date-fns';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  profile: ShopProfile | null;
+  refreshProfile?: () => void;
 }
 
-const AuthContext = createContext<AuthContextType>({ user: null, loading: true });
+const AuthContext = createContext<AuthContextType>({ user: null, loading: true, profile: null });
+
+function getDefaultNextDueDate(): string {
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    
+    let dueDate = new Date(currentYear, currentMonth, 10);
+
+    // If the 10th of the current month has already passed, set it to the 10th of the next month.
+    if (getDate(today) > 10) {
+        dueDate.setMonth(currentMonth + 1);
+    }
+    
+    return formatISO(dueDate, { representation: 'date' });
+}
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<ShopProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+  const fetchProfile = useCallback((currentUser: User) => {
+    if (!currentUser) return;
+    const docRef = doc(db, 'users', currentUser.uid, 'shopSettings', 'profile');
+    
+    const unsubscribe = onSnapshot(docRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data() as Partial<ShopProfile>;
+        const profileData: ShopProfile = {
+          name: data.name || 'Sua Oficina',
+          phone: data.phone || '',
+          address: data.address || '',
+          cnpj: data.cnpj || '',
+          logoUrl: data.logoUrl || '',
+          subscriptionStatus: data.subscriptionStatus === true || String(data.subscriptionStatus).toLowerCase() === 'true',
+          nextDueDate: data.nextDueDate || getDefaultNextDueDate(),
+        };
+        setProfile(profileData);
+      } else {
+        // If profile doesn't exist for a logged-in user, create a default one
+        const defaultProfile: ShopProfile = {
+          name: 'Sua Oficina',
+          phone: '',
+          address: '',
+          cnpj: '',
+          logoUrl: '',
+          subscriptionStatus: false, // Default to inactive for new users
+          nextDueDate: getDefaultNextDueDate()
+        };
+        setDoc(docRef, defaultProfile).then(() => {
+          setProfile(defaultProfile);
+        });
+      }
       setLoading(false);
+    }, (error) => {
+      console.error("Error fetching shop profile: ", error);
+      setLoading(false);
+    });
 
+    return unsubscribe;
+  }, []);
+
+
+  useEffect(() => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
       const isAuthPage = pathname === '/login';
 
-      if (!user && !isAuthPage) {
-        router.push('/login');
-      }
-      
-      if (user && isAuthPage) {
-        router.push('/dashboard');
+      if (currentUser) {
+        const unsubscribeProfile = fetchProfile(currentUser);
+        if (isAuthPage) {
+            router.push('/dashboard');
+        }
+        return () => {
+          if (unsubscribeProfile) unsubscribeProfile();
+        };
+      } else {
+        setProfile(null);
+        setLoading(false);
+        if (!isAuthPage) {
+          router.push('/login');
+        }
       }
     });
 
-    return () => unsubscribe();
-  }, [router, pathname]);
+    return () => unsubscribeAuth();
+  }, [router, pathname, fetchProfile]);
 
-  // If we are still loading the authentication state, show a global loader
   if (loading) {
     return (
        <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
-    )
-  }
-
-  // If there's a user, it means we are on an authenticated page,
-  // so we can safely wrap the children with ShopProvider.
-  if (user) {
-    return (
-       <AuthContext.Provider value={{ user, loading }}>
-        <ShopProvider>
-          {children}
-        </ShopProvider>
-      </AuthContext.Provider>
-    )
+    );
   }
   
-  // If there's no user, we are on the login page, so we don't need the ShopProvider.
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, loading, profile, refreshProfile: user ? () => fetchProfile(user) : undefined }}>
       {children}
     </AuthContext.Provider>
   );

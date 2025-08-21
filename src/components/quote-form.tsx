@@ -26,7 +26,7 @@ import {
     TableRow,
   } from '@/components/ui/table';
 import { WhatsAppIcon } from './icons';
-import { useShop } from './shop-provider';
+import { useAuth } from './auth-provider';
 
 type QuoteItem = {
     product: Product;
@@ -35,7 +35,7 @@ type QuoteItem = {
 
 export function QuoteForm() {
   const { toast } = useToast();
-  const { profile } = useShop();
+  const { profile } = useAuth();
   
   const [customerName, setCustomerName] = useState('');
   const [customerVehicle, setCustomerVehicle] = useState('');

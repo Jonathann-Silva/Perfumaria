@@ -71,6 +71,6 @@ export type ShopProfile = {
   address: string;
   cnpj: string;
   logoUrl?: string;
-  subscriptionStatus: 'active' | 'overdue' | 'inactive';
+  subscriptionStatus: boolean;
   nextDueDate?: string; // ISO date string e.g., "2024-07-25"
 };

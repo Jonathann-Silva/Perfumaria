@@ -12,19 +12,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useShop } from './shop-provider';
+import { useAuth } from './auth-provider';
 import { differenceInDays, parseISO, getDate } from 'date-fns';
 import { AlertTriangle } from 'lucide-react';
 
 export function SubscriptionWarning() {
   const router = useRouter();
-  const { profile } = useShop();
+  const { profile } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [daysRemaining, setDaysRemaining] = useState(0);
 
   useEffect(() => {
     // The main condition: the subscription MUST be 'active' for the warning to appear.
-    if (profile && profile.subscriptionStatus === 'active' && profile.nextDueDate) {
+    if (profile && profile.subscriptionStatus === true && profile.nextDueDate) {
       const sessionKey = 'subscription_warning_shown';
       const hasBeenShown = sessionStorage.getItem(sessionKey);
 

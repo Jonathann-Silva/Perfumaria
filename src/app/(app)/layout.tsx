@@ -34,7 +34,6 @@ import { AuthProvider, useAuth } from '@/components/auth-provider';
 import { getAuth, signOut } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import { useShop } from '@/components/shop-provider';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PaymentWall } from '@/components/payment-wall';
 import { SubscriptionWarning } from '@/components/subscription-warning';
@@ -42,8 +41,7 @@ import { SubscriptionWarning } from '@/components/subscription-warning';
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isActive = (path: string) => pathname === path;
-  const { user, loading: authLoading } = useAuth();
-  const { profile, loading: shopLoading } = useShop();
+  const { user, loading: authLoading, profile, loading: shopLoading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -74,7 +72,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     );
   }
 
-  const isSubscriptionActive = profile?.subscriptionStatus === 'active';
+  const isSubscriptionActive = profile?.subscriptionStatus === true;
   const isSubscriptionPage = pathname === '/subscription';
 
   return (

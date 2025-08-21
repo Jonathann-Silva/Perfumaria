@@ -41,12 +41,12 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { WhatsAppIcon } from '@/components/icons';
-import { useShop } from '@/components/shop-provider';
+import { useAuth } from '@/components/auth-provider';
 
 
 export default function QuotesPage() {
   const { toast } = useToast();
-  const { profile } = useShop();
+  const { profile } = useAuth();
   const [quotesData, setQuotesData] = useState<Quote[]>(quotes);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null);

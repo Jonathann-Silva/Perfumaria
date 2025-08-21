@@ -13,49 +13,22 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { CreditCard, Loader2, QrCode, Copy } from 'lucide-react';
-import { useShop } from '@/components/shop-provider';
 import { db } from '@/lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 import { parseISO, getDate, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useAuth } from '@/components/auth-provider';
 
 export default function SubscriptionPage() {
-  const { profile } = useShop();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
-  const [isProcessing, setIsProcessing] = useState(false);
 
   const currentPlan = {
     name: 'Plano Pro',
     price: 'R$ 60,00/mês',
     priceValue: 60.00,
-  };
-
-  const handlePayment = async () => {
-    setIsProcessing(true);
-
-    // Simulates a payment processing delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    try {
-      const docRef = doc(db, 'shopSettings', 'profile');
-      await setDoc(docRef, { subscriptionStatus: 'active' }, { merge: true });
-      
-      toast({
-        title: 'Pagamento Aprovado!',
-        description: 'Sua assinatura está ativa. Obrigado!',
-      });
-    } catch (error) {
-       console.error("Error updating subscription status: ", error);
-       toast({
-        title: 'Erro no Pagamento',
-        description: 'Não foi possível processar seu pagamento. Tente novamente.',
-        variant: 'destructive',
-      });
-    } finally {
-        setIsProcessing(false);
-    }
   };
   
   const handleCopyPixCode = () => {
@@ -67,10 +40,8 @@ export default function SubscriptionPage() {
     });
   }
 
-  const isSubscriptionActive = profile?.subscriptionStatus === 'active';
+  const isSubscriptionActive = profile?.subscriptionStatus === true;
   
-  // Show payment options if the subscription is not active,
-  // or if it is active and today is on or after the 1st of the month.
   let showPaymentOptions = !isSubscriptionActive;
   if (isSubscriptionActive && profile?.nextDueDate) {
     const today = new Date();
@@ -92,10 +63,10 @@ export default function SubscriptionPage() {
       <Card className="max-w-xl mx-auto">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">{currentPlan.name}</CardTitle>
-          <CardDescription>
+           <CardDescription>
             {isSubscriptionActive 
-              ? `Sua assinatura está ativa. A próxima cobrança será ${formattedDueDate}.`
-              : "Use PIX para ativar ou renovar sua assinatura."
+              ? `Sua assinatura está ATIVA. A próxima cobrança será ${formattedDueDate}.`
+              : "Sua assinatura está INATIVA. Use PIX para ativar ou renovar."
             }
           </CardDescription>
         </CardHeader>
@@ -114,7 +85,7 @@ export default function SubscriptionPage() {
               </CardHeader>
               <CardContent className="pt-2 space-y-4 text-center">
                 <p className="text-sm text-muted-foreground">
-                  Escaneie o QR Code ou use o código copia e cola no seu app do banco.
+                  Após o pagamento, a ativação da sua conta será processada.
                 </p>
                 <div className="flex justify-center">
                     <Image 
@@ -142,15 +113,6 @@ export default function SubscriptionPage() {
                     </Button>
                 </div>
               </CardContent>
-              <CardFooter>
-                  <Button className="w-full" onClick={handlePayment} disabled={isProcessing}>
-                    {isProcessing ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                        'Já Paguei, Ativar Assinatura'
-                    )}
-                </Button>
-              </CardFooter>
             </Card>
           ) : (
              <div className='text-center text-green-600 font-medium pt-4'>

@@ -18,12 +18,12 @@ import { db, storage } from '@/lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Loader2, Save, Upload } from 'lucide-react';
-import { useShop } from '@/components/shop-provider';
 import type { ShopProfile } from '@/lib/types';
+import { useAuth } from '@/components/auth-provider';
 
 export default function SettingsPage() {
   const { toast } = useToast();
-  const { profile: initialProfile, loading: isLoading, refreshProfile } = useShop();
+  const { user, profile: initialProfile, loading: isLoading, refreshProfile } = useAuth();
   const [profile, setProfile] = useState<ShopProfile | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -61,7 +61,7 @@ export default function SettingsPage() {
   };
 
   const handleSave = async () => {
-    if (!profile) {
+    if (!profile || !user) {
       toast({ title: 'Erro', description: 'Dados do perfil não carregados.', variant: 'destructive' });
       return;
     }
@@ -72,7 +72,7 @@ export default function SettingsPage() {
 
       if (logoFile) {
         const fileExtension = logoFile.name.split('.').pop();
-        const storageRef = ref(storage, `shopLogos/profile_logo.${fileExtension}`);
+        const storageRef = ref(storage, `userLogos/${user.uid}/profile_logo.${fileExtension}`);
         await uploadBytes(storageRef, logoFile);
         logoUrl = await getDownloadURL(storageRef);
       }
@@ -82,7 +82,7 @@ export default function SettingsPage() {
         logoUrl: logoUrl || '',
       };
 
-      const docRef = doc(db, 'shopSettings', 'profile');
+      const docRef = doc(db, 'users', user.uid, 'shopSettings', 'profile');
       await setDoc(docRef, profileToSave, { merge: true });
 
       setLogoFile(null);

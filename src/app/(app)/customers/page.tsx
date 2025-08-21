@@ -32,8 +32,10 @@ import { Label } from '@/components/ui/label';
 import type { Customer } from '@/lib/types';
 import { PlusCircle, User, Mail, Phone, Car, Edit, X, Save, Home, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/components/auth-provider';
 
 export default function CustomersPage() {
+  const { user } = useAuth();
   const { toast } = useToast();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,8 +55,9 @@ export default function CustomersPage() {
   });
 
   const fetchCustomers = async () => {
+    if (!user) return;
     try {
-      const customersCollection = collection(db, 'customers');
+      const customersCollection = collection(db, 'users', user.uid, 'customers');
       const customersSnapshot = await getDocs(customersCollection);
       const customersList = customersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Customer));
       setCustomers(customersList);
@@ -72,7 +75,7 @@ export default function CustomersPage() {
 
   useEffect(() => {
     fetchCustomers();
-  }, []);
+  }, [user]);
 
   const handleRowClick = (customer: Customer) => {
     setSelectedCustomer(customer);
@@ -87,11 +90,10 @@ export default function CustomersPage() {
   };
 
   const handleSave = async () => {
-    if (!editingCustomer || !editingCustomer.id) return;
+    if (!editingCustomer || !editingCustomer.id || !user) return;
 
     try {
-        const customerDoc = doc(db, 'customers', editingCustomer.id);
-        // We shouldn't update the ID, so we create a new object without it
+        const customerDoc = doc(db, 'users', user.uid, 'customers', editingCustomer.id);
         const { id, ...customerToUpdate } = editingCustomer;
         await updateDoc(customerDoc, customerToUpdate);
         
@@ -129,11 +131,12 @@ export default function CustomersPage() {
   };
 
   const handleAddNewCustomer = async () => {
+    if (!user) return;
     try {
         const newCustomer: Omit<Customer, 'id' | 'lastService'> = {
             ...newCustomerData,
         };
-        const docRef = await addDoc(collection(db, 'customers'), {
+        const docRef = await addDoc(collection(db, 'users', user.uid, 'customers'), {
             ...newCustomer,
             lastService: new Date().toISOString().split('T')[0],
         });
