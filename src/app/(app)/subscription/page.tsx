@@ -20,7 +20,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Image from 'next/image';
-import { differenceInDays, parseISO } from 'date-fns';
+import { differenceInDays, parseISO, getDate } from 'date-fns';
 
 export default function SubscriptionPage() {
   const { profile } = useShop();
@@ -69,16 +69,18 @@ export default function SubscriptionPage() {
   }
 
   const isSubscriptionActive = profile?.subscriptionStatus === 'active';
-  let daysUntilDue = 99;
-  if (profile?.nextDueDate) {
+  
+  // Show payment options if the subscription is not active,
+  // or if it is active and today is the 1st of the month or later (up to the due date).
+  let showPaymentOptions = !isSubscriptionActive;
+  if (isSubscriptionActive && profile?.nextDueDate) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const dueDate = parseISO(profile.nextDueDate);
-    daysUntilDue = differenceInDays(dueDate, today);
+    if (getDate(today) >= 1) {
+        showPaymentOptions = true;
+    }
   }
 
-  // Show payment options if the subscription is not active, or if it is active but expiring soon.
-  const showPaymentOptions = !isSubscriptionActive || (isSubscriptionActive && daysUntilDue <= 5);
 
   return (
     <div className="space-y-6">

@@ -13,7 +13,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useShop } from './shop-provider';
-import { differenceInDays, parseISO } from 'date-fns';
+import { differenceInDays, parseISO, getDate } from 'date-fns';
 import { AlertTriangle } from 'lucide-react';
 
 export function SubscriptionWarning() {
@@ -39,9 +39,9 @@ export function SubscriptionWarning() {
       
       const daysUntilDue = differenceInDays(dueDate, today);
 
-      // Show the warning only if there are 5 days or less until the due date.
-      if (daysUntilDue <= 5 && daysUntilDue >= 0) {
-        setDaysRemaining(daysUntilDue);
+      // Show the warning from the 1st of the month until the due date.
+      if (getDate(today) >= 1) {
+        setDaysRemaining(daysUntilDue >= 0 ? daysUntilDue : 0);
         setIsOpen(true);
         // Mark that the warning has been shown so it doesn't show again in the same session.
         sessionStorage.setItem(sessionKey, 'true');
