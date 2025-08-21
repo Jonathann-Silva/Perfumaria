@@ -20,6 +20,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Image from 'next/image';
+import { differenceInDays, parseISO } from 'date-fns';
 
 export default function SubscriptionPage() {
   const { profile } = useShop();
@@ -58,8 +59,6 @@ export default function SubscriptionPage() {
     }
   };
   
-  const isSubscriptionActive = profile?.subscriptionStatus === 'active';
-
   const handleCopyPixCode = () => {
     const pixCode = '00020126330014br.gov.bcb.pix0111123456789010212EngrenApp Inc.520400005303986540660.005802BR5913EngrenApp Inc.6009SAO PAULO62070503***6304E2A4';
     navigator.clipboard.writeText(pixCode);
@@ -68,6 +67,18 @@ export default function SubscriptionPage() {
       description: 'Use o código no seu app do banco para pagar.',
     });
   }
+
+  const isSubscriptionActive = profile?.subscriptionStatus === 'active';
+  let daysUntilDue = 99;
+  if (profile?.nextDueDate) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dueDate = parseISO(profile.nextDueDate);
+    daysUntilDue = differenceInDays(dueDate, today);
+  }
+
+  // Show payment options if the subscription is not active, or if it is active but expiring soon.
+  const showPaymentOptions = !isSubscriptionActive || (isSubscriptionActive && daysUntilDue <= 6);
 
   return (
     <div className="space-y-6">
@@ -90,11 +101,7 @@ export default function SubscriptionPage() {
             <p className="text-4xl font-bold">{currentPlan.price}</p>
           </div>
           
-          {isSubscriptionActive ? (
-            <div className='text-center text-green-600 font-medium pt-4'>
-              Obrigado por ser um assinante!
-            </div>
-          ) : (
+          {showPaymentOptions ? (
             <Tabs defaultValue="credit_card" className="w-full pt-4">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="credit_card">
@@ -178,6 +185,10 @@ export default function SubscriptionPage() {
                 </Card>
               </TabsContent>
             </Tabs>
+          ) : (
+             <div className='text-center text-green-600 font-medium pt-4'>
+              Obrigado por ser um assinante!
+            </div>
           )}
 
         </CardContent>
