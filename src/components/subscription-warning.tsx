@@ -40,7 +40,7 @@ export function SubscriptionWarning() {
       const daysUntilDue = differenceInDays(dueDate, today);
 
       // Show the warning from the 1st of the month until the due date.
-      if (getDate(today) >= 1) {
+      if (getDate(today) >= 1 && daysUntilDue <= 5) {
         setDaysRemaining(daysUntilDue >= 0 ? daysUntilDue : 0);
         setIsOpen(true);
         // Mark that the warning has been shown so it doesn't show again in the same session.

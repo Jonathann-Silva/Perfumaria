@@ -70,7 +70,7 @@ export default function SubscriptionPage() {
   const isSubscriptionActive = profile?.subscriptionStatus === 'active';
   
   // Show payment options if the subscription is not active,
-  // or if it is active and today is the 1st of the month or later (up to the due date).
+  // or if it is active and today is on or after the 1st of the month.
   let showPaymentOptions = !isSubscriptionActive;
   if (isSubscriptionActive && profile?.nextDueDate) {
     const today = new Date();
@@ -81,7 +81,7 @@ export default function SubscriptionPage() {
   }
   
   const nextDueDate = profile?.nextDueDate ? parseISO(profile.nextDueDate) : null;
-  const formattedDueDate = nextDueDate ? format(nextDueDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : 'todo dia 10';
+  const formattedDueDate = nextDueDate ? format(nextDueDate, "'dia' dd 'de' MMMM", { locale: ptBR }) : 'todo dia 10';
 
 
   return (
@@ -94,7 +94,7 @@ export default function SubscriptionPage() {
           <CardTitle className="text-2xl">{currentPlan.name}</CardTitle>
           <CardDescription>
             {isSubscriptionActive 
-              ? `Sua assinatura está ativa. A próxima cobrança será em ${formattedDueDate}.`
+              ? `Sua assinatura está ativa. A próxima cobrança será ${formattedDueDate}.`
               : "Use PIX para ativar ou renovar sua assinatura."
             }
           </CardDescription>
