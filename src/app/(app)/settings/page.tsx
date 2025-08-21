@@ -61,7 +61,7 @@ export default function SettingsPage() {
   };
 
   const handleSave = async () => {
-    if (!profile) return;
+    if (!profile || !initialProfile) return; // Make sure we have initialProfile for required fields
     setIsSaving(true);
 
     try {
@@ -76,6 +76,8 @@ export default function SettingsPage() {
       }
       
       const profileToSave: ShopProfile = {
+        // Ensure all required fields are present by spreading the initial profile
+        ...initialProfile,
         ...profile,
         logoUrl: logoUrl || '',
       };
