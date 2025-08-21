@@ -10,28 +10,25 @@ export function EngrenAppLogo(props: SVGProps<SVGSVGElement>) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.5"
+      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
       {...props}
     >
-      <path d="M1.5 12.5h1.75l.5-1.5h13.5l1.5-4h-9" />
-      <path d="M4.5 12.5H2.75a1 1 0 0 0-1 .75l-.5 1.5" />
-      <path d="M16.5 12.5h2.25a1 1 0 0 1 1 .75l.5 1.5" />
-      <circle cx="6" cy="17" r="1.5" />
-      <circle cx="18" cy="17" r="1.5" />
-      <path d="M13.2 3.4 12.5 4a1.04 1.04 0 0 0-.4 1.5l1.8 2.6" />
-      <path d="M10.2 3.4 10.9 4c.3.4.4.8.2 1.2l-1 1.8" />
-      <path d="M11.25 2.25a6 6 0 0 1 1.5 0" />
-      <path d="m15 5.2-1.8-1.2" />
-      <path d="M9 5.2 10.8 4" />
-      <path d="M15.5 8.1A6 6 0 0 1 16 11.25" />
-      <path d="m6.4 6.1-1.3 2.1" />
-      <path d="M8.5 8.1A6 6 0 0 1 8 11.25" />
-      <path d="m18.5 6.1 1.3 2.1" />
-      <path d="M12.75 14.25a6 6 0 0 1-1.5 0" />
-      <path d="M12 11a2.2 2.2 0 0 0-2.2 2.2v.1a2.2 2.2 0 1 0 4.4 0v-.1A2.2 2.2 0 0 0 12 11z" />
-      <path d="M12 11a1 1 0 0 0-1 1v.2a1 1 0 1 0 2 0v-.2a1 1 0 0 0-1-1z" />
+      <path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z" />
+      <path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" />
+      <path d="M12 2v2" />
+      <path d="M12 22v-2" />
+      <path d="m17 20.66-1-1.73" />
+      <path d="M11 10.27 7 3.34" />
+      <path d="m20.66 17-1.73-1" />
+      <path d="m3.34 7 1.73 1" />
+      <path d="M14 12h8" />
+      <path d="M2 12h2" />
+      <path d="m20.66 7-1.73 1" />
+      <path d="m3.34 17 1.73-1" />
+      <path d="m17 3.34-1 1.73" />
+      <path d="m11 13.73-4 6.93" />
     </svg>
   );
 }
