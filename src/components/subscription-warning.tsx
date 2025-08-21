@@ -20,6 +20,7 @@ export function SubscriptionWarning() {
   const router = useRouter();
   const { profile } = useShop();
   const [isOpen, setIsOpen] = useState(false);
+  const [daysRemaining, setDaysRemaining] = useState(0);
 
   useEffect(() => {
     if (profile && profile.subscriptionStatus === 'active' && profile.nextDueDate) {
@@ -31,10 +32,14 @@ export function SubscriptionWarning() {
       }
       
       const today = new Date();
+      // Set time to 00:00:00 to compare dates only
+      today.setHours(0, 0, 0, 0); 
       const dueDate = parseISO(profile.nextDueDate);
+      
       const daysUntilDue = differenceInDays(dueDate, today);
 
       if (daysUntilDue <= 6 && daysUntilDue >= 0) {
+        setDaysRemaining(daysUntilDue);
         setIsOpen(true);
         sessionStorage.setItem(sessionKey, 'true');
       }
@@ -45,15 +50,6 @@ export function SubscriptionWarning() {
     return null;
   }
   
-  const today = new Date();
-  const dueDate = profile?.nextDueDate ? parseISO(profile.nextDueDate) : new Date();
-  let daysRemaining = differenceInDays(dueDate, today);
-
-  // Ensure daysRemaining is not negative for display
-  if (daysRemaining < 0) {
-    daysRemaining = 0;
-  }
-
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogContent>
