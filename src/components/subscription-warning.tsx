@@ -23,29 +23,33 @@ export function SubscriptionWarning() {
   const [daysRemaining, setDaysRemaining] = useState(0);
 
   useEffect(() => {
+    // A condição principal: a assinatura DEVE estar 'ativa' para o aviso aparecer.
     if (profile && profile.subscriptionStatus === 'active' && profile.nextDueDate) {
       const sessionKey = 'subscription_warning_shown';
       const hasBeenShown = sessionStorage.getItem(sessionKey);
 
+      // Não mostra o aviso se ele já foi exibido nesta sessão do navegador.
       if (hasBeenShown) {
         return;
       }
       
       const today = new Date();
-      // Set time to 00:00:00 to compare dates only
-      today.setHours(0, 0, 0, 0); 
+      today.setHours(0, 0, 0, 0); // Zera o tempo para comparar apenas as datas.
       const dueDate = parseISO(profile.nextDueDate);
       
       const daysUntilDue = differenceInDays(dueDate, today);
 
+      // Mostra o aviso apenas se faltarem 6 dias ou menos para o vencimento.
       if (daysUntilDue <= 6 && daysUntilDue >= 0) {
         setDaysRemaining(daysUntilDue);
         setIsOpen(true);
+        // Marca que o aviso foi exibido para não mostrar novamente na mesma sessão.
         sessionStorage.setItem(sessionKey, 'true');
       }
     }
   }, [profile]);
 
+  // Se o pop-up não deve ser aberto, não renderiza nada.
   if (!isOpen) {
     return null;
   }
