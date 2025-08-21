@@ -78,7 +78,7 @@ export default function SubscriptionPage() {
   }
 
   // Show payment options if the subscription is not active, or if it is active but expiring soon.
-  const showPaymentOptions = !isSubscriptionActive || (isSubscriptionActive && daysUntilDue <= 6);
+  const showPaymentOptions = !isSubscriptionActive || (isSubscriptionActive && daysUntilDue <= 5);
 
   return (
     <div className="space-y-6">
@@ -90,7 +90,7 @@ export default function SubscriptionPage() {
           <CardTitle className="text-2xl">{currentPlan.name}</CardTitle>
           <CardDescription>
             {isSubscriptionActive 
-              ? "Sua assinatura está ativa. A próxima cobrança será todo dia 25."
+              ? "Sua assinatura está ativa. A próxima cobrança será todo dia 10."
               : "Escolha um método de pagamento para ativar sua assinatura."
             }
           </CardDescription>

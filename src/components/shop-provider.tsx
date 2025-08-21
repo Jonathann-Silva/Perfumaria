@@ -29,8 +29,8 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
         // To test the warning, we set a due date that is X days from now.
         // For a real app, this date would come from the payment gateway.
         const today = new Date();
-        // For this test, let's set a due date 5 days from today
-        const simulatedDueDate = addDays(today, 5);
+        // For this test, let's set a due date 4 days from today
+        const simulatedDueDate = addDays(today, 4);
         // --- END SIMULATION LOGIC ---
 
         const profileData: ShopProfile = {
@@ -47,7 +47,7 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
       } else {
         // Set default values to simulate a nearly expired plan
          const today = new Date();
-         const simulatedDueDate = addDays(today, 5);
+         const simulatedDueDate = addDays(today, 4);
         setProfile({
           name: 'EngrenApp',
           phone: '(11) 98765-4321',
