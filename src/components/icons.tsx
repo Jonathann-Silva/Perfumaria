@@ -1,12 +1,18 @@
 
 import type { SVGProps } from 'react';
-import { Car, Wrench } from 'lucide-react';
+import Image from 'next/image';
 
-export function EngrenAppLogo(props: SVGProps<SVGSVGElement>) {
+export function EngrenAppLogo(props: {className?: string}) {
   return (
-    <div className="flex items-center justify-center gap-1">
-      <Car className="h-[0.9em] w-[0.9em]" />
-      <Wrench className="h-[0.7em] w-[0.7em]" />
+    <div className="relative" style={{ width: '1em', height: '1em' }}>
+       <Image 
+          src="/logo.png" 
+          alt="EngrenApp Logo" 
+          className={props.className}
+          width={48}
+          height={48}
+          style={{ objectFit: 'contain' }}
+        />
     </div>
   );
 }
