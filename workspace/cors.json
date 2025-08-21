@@ -1,0 +1,9 @@
+
+[
+  {
+    "origin": ["https://6000-firebase-studio-1754684365335.cluster-etsqrqvqyvd4erxx7qq32imrjk.cloudworkstations.dev", "http://localhost:9002"],
+    "method": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    "responseHeader": ["Content-Type", "Authorization"],
+    "maxAgeSeconds": 3600
+  }
+]
