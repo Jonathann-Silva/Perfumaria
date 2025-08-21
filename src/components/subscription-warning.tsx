@@ -59,7 +59,7 @@ export function SubscriptionWarning() {
           </div>
           <AlertDialogTitle className="text-center">Aviso de Vencimento</AlertDialogTitle>
           <AlertDialogDescription className="text-center">
-            Sua assinatura está prestes a vencer! Restam apenas {daysRemaining} dia{daysRemaining !== 1 ? 's'}. 
+            Sua assinatura está prestes a vencer! Restam apenas {daysRemaining} dia{daysRemaining !== 1 ? 's' : ''}. 
             Renove agora para evitar a interrupção dos serviços.
           </AlertDialogDescription>
         </AlertDialogHeader>
