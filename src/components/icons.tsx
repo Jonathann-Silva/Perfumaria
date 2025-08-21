@@ -4,7 +4,7 @@ import Image from 'next/image';
 
 export function EngrenAppLogo(props: {className?: string}) {
   return (
-    <div className="relative" style={{ width: '1em', height: '1em' }}>
+    <div className="relative" style={{ width: '1.5em', height: '1.5em' }}>
        <Image 
           src="/logo.png" 
           alt="EngrenApp Logo" 
