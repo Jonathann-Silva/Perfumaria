@@ -51,6 +51,7 @@ export default function ProductsPage() {
     name: '',
     type: 'Peça' as 'Peça' | 'Serviço',
     price: '',
+    purchasePrice: '',
     stock: '',
   });
 
@@ -74,7 +75,9 @@ export default function ProductsPage() {
   };
 
   useEffect(() => {
-    fetchProducts();
+    if(user) {
+      fetchProducts();
+    }
   }, [user]);
 
   const handleOpenDialog = (product: Product | null = null) => {
@@ -84,6 +87,7 @@ export default function ProductsPage() {
         name: product.name,
         type: product.type,
         price: String(product.price),
+        purchasePrice: String(product.purchasePrice || ''),
         stock: String(product.stock),
       });
     } else {
@@ -91,6 +95,7 @@ export default function ProductsPage() {
         name: '',
         type: 'Peça',
         price: '',
+        purchasePrice: '',
         stock: '',
       });
     }
@@ -108,16 +113,17 @@ export default function ProductsPage() {
   };
   
   const handleTypeChange = (value: 'Peça' | 'Serviço') => {
-      setProductData(prev => ({ ...prev, type: value }));
+      setProductData(prev => ({ ...prev, type: value, purchasePrice: value === 'Serviço' ? '' : prev.purchasePrice, stock: value === 'Serviço' ? '' : prev.stock }));
   }
 
   const handleSave = async () => {
     if (!user) return;
     
     const price = parseFloat(productData.price);
+    const purchasePrice = parseFloat(productData.purchasePrice);
     const stock = productData.type === 'Peça' ? parseInt(productData.stock, 10) : 0;
 
-    if (!productData.name || isNaN(price) || (productData.type === 'Peça' && isNaN(stock))) {
+    if (!productData.name || isNaN(price) || (productData.type === 'Peça' && (isNaN(stock) || isNaN(purchasePrice)))) {
         toast({ title: 'Dados inválidos', description: 'Por favor, preencha todos os campos corretamente.', variant: 'destructive' });
         return;
     }
@@ -126,16 +132,24 @@ export default function ProductsPage() {
         if (editingProduct) {
             // Update existing product
             const productDoc = doc(db, 'users', user.uid, 'products', editingProduct.id);
-            const updatedData = { ...editingProduct, ...productData, price, stock: productData.type === 'Peça' ? stock : 999 };
+            const updatedData: Product = { 
+                ...editingProduct, 
+                name: productData.name,
+                type: productData.type,
+                price, 
+                purchasePrice: productData.type === 'Peça' ? purchasePrice : 0,
+                stock: productData.type === 'Peça' ? stock : 999 
+            };
             await updateDoc(productDoc, updatedData);
             setProducts(products.map(p => p.id === editingProduct.id ? updatedData : p));
             toast({ title: 'Produto atualizado!', description: 'O item foi salvo com sucesso.' });
         } else {
             // Add new product
-            const newProduct = {
+            const newProduct: Omit<Product, 'id'> = {
                 name: productData.name,
                 type: productData.type,
                 price,
+                purchasePrice: productData.type === 'Peça' ? purchasePrice : 0,
                 stock: productData.type === 'Peça' ? stock : 999
             };
             const docRef = await addDoc(collection(db, 'users', user.uid, 'products'), newProduct);
@@ -186,7 +200,8 @@ export default function ProductsPage() {
                     <TableRow>
                         <TableHead>Nome</TableHead>
                         <TableHead>Tipo</TableHead>
-                        <TableHead className="text-right">Preço</TableHead>
+                        <TableHead className="text-right">Preço de Compra</TableHead>
+                        <TableHead className="text-right">Preço de Venda</TableHead>
                         <TableHead className="text-right">Estoque</TableHead>
                         <TableHead className="w-[100px]"></TableHead>
                     </TableRow>
@@ -196,6 +211,7 @@ export default function ProductsPage() {
                         <TableRow key={product.id}>
                         <TableCell className="font-medium">{product.name}</TableCell>
                         <TableCell>{product.type}</TableCell>
+                        <TableCell className="text-right">{product.type === 'Peça' ? `R$ ${product.purchasePrice?.toFixed(2)}` : 'N/A'}</TableCell>
                         <TableCell className="text-right">R$ {product.price.toFixed(2)}</TableCell>
                         <TableCell className="text-right">{product.type === 'Peça' ? product.stock : 'N/A'}</TableCell>
                         <TableCell className="text-right">
@@ -239,16 +255,22 @@ export default function ProductsPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
                  <div className="space-y-2">
-                    <Label htmlFor="price">Preço</Label>
+                    <Label htmlFor="price">Preço de Venda</Label>
                     <Input id="price" type="number" value={productData.price} onChange={handleInputChange} />
                 </div>
                 {productData.type === 'Peça' && (
                     <div className="space-y-2">
-                        <Label htmlFor="stock">Estoque</Label>
-                        <Input id="stock" type="number" value={productData.stock} onChange={handleInputChange} />
+                        <Label htmlFor="purchasePrice">Preço de Compra</Label>
+                        <Input id="purchasePrice" type="number" value={productData.purchasePrice} onChange={handleInputChange} />
                     </div>
                 )}
             </div>
+             {productData.type === 'Peça' && (
+                <div className="space-y-2">
+                    <Label htmlFor="stock">Estoque</Label>
+                    <Input id="stock" type="number" value={productData.stock} onChange={handleInputChange} />
+                </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleCloseDialog}>

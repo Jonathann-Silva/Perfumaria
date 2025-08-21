@@ -18,6 +18,7 @@ export type Product = {
   name: string;
   type: 'Peça' | 'Serviço';
   price: number;
+  purchasePrice?: number;
   stock: number;
 };
 
