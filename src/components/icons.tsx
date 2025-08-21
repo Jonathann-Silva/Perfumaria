@@ -1,18 +1,13 @@
 
 import type { SVGProps } from 'react';
+import { Car, Wrench } from 'lucide-react';
 
 export function EngrenAppLogo(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="1em"
-      height="1em"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      {...props}
-    >
-      <path d="M21.93 7.21a.75.75 0 0 0-.57-.96l-3.3-.73a.75.75 0 0 0-.68.16l-1.15.8a12.9 12.9 0 0 0-4.04-1.23l.3-1.63a.75.75 0 0 0-.5-.8L8.7 1.1a.75.75 0 0 0-.8.5l-.3 1.64a13.33 13.33 0 0 0-4.4 2.05l-1.31-.3a.75.75 0 0 0-.75.33L.2 7.5a.75.75 0 0 0 .15.86l1.24.9a12.1 12.1 0 0 0-.2 1.4L.2 11.9a.75.75 0 0 0 .34.82l1.62.93c.04.1.08.2.12.3H2c-1.1 0-2 .9-2 2v2c0 .55.45 1 1 1h1v1c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-1h1c.55 0 1-.45 1-1v-2c0-1.1-.9-2-2-2h-.3a12.8 12.8 0 0 0 .12-.3l1.62-.93a.75.75 0 0 0 .34-.82l-1.18-1.24a12.1 12.1 0 0 0-.2-1.4l1.24-.9a.75.75 0 0 0 .15-.86Zm-11.8 4.29c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5Zm8.5 0c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5Z" />
-    </svg>
+    <div className="flex items-center justify-center gap-1">
+      <Car className="h-[0.9em] w-[0.9em]" />
+      <Wrench className="h-[0.7em] w-[0.7em]" />
+    </div>
   );
 }
 
