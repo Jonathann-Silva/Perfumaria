@@ -5,7 +5,7 @@ import React, { createContext, useContext, useEffect, useState, ReactNode, useCa
 import { db } from '@/lib/firebase';
 import { doc, onSnapshot, getDoc } from 'firebase/firestore';
 import type { ShopProfile } from '@/lib/types';
-import { addDays, formatISO } from 'date-fns';
+import { formatISO } from 'date-fns';
 
 interface ShopContextType {
   profile: ShopProfile | null;
@@ -14,6 +14,21 @@ interface ShopContextType {
 }
 
 const ShopContext = createContext<ShopContextType>({ profile: null, loading: true });
+
+function getNextDueDate(): Date {
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    
+    let dueDate = new Date(currentYear, currentMonth, 10);
+
+    // If the 10th of the current month has already passed, set it to the 10th of the next month.
+    if (today.getDate() > 10) {
+        dueDate.setMonth(currentMonth + 1);
+    }
+    
+    return dueDate;
+}
 
 export const ShopProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<ShopProfile | null>(null);
@@ -26,8 +41,7 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
        if (docSnap.exists()) {
         const data = docSnap.data() as Partial<ShopProfile>;
         
-        const today = new Date();
-        const simulatedDueDate = addDays(today, 4);
+        const nextDueDate = getNextDueDate();
 
         const profileData: ShopProfile = {
           name: data.name || 'EngrenApp',
@@ -36,12 +50,11 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
           cnpj: data.cnpj || '00.000.000/0001-00',
           logoUrl: data.logoUrl || '',
           subscriptionStatus: data.subscriptionStatus || 'active', 
-          nextDueDate: formatISO(simulatedDueDate, { representation: 'date' }),
+          nextDueDate: formatISO(nextDueDate, { representation: 'date' }),
         };
         setProfile(profileData);
       } else {
-        const today = new Date();
-        const simulatedDueDate = addDays(today, 4);
+        const nextDueDate = getNextDueDate();
         setProfile({
           name: 'EngrenApp',
           phone: '(11) 98765-4321',
@@ -49,7 +62,7 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
           cnpj: '00.000.000/0001-00',
           logoUrl: '',
           subscriptionStatus: 'active', 
-          nextDueDate: formatISO(simulatedDueDate, { representation: 'date' })
+          nextDueDate: formatISO(nextDueDate, { representation: 'date' })
         });
       }
     } catch (error) {
@@ -67,8 +80,7 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
       if (docSnap.exists()) {
         const data = docSnap.data() as Partial<ShopProfile>;
         
-        const today = new Date();
-        const simulatedDueDate = addDays(today, 4);
+        const nextDueDate = getNextDueDate();
 
         const profileData: ShopProfile = {
           name: data.name || 'EngrenApp',
@@ -77,12 +89,11 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
           cnpj: data.cnpj || '00.000.000/0001-00',
           logoUrl: data.logoUrl || '',
           subscriptionStatus: data.subscriptionStatus || 'active', 
-          nextDueDate: formatISO(simulatedDueDate, { representation: 'date' }),
+          nextDueDate: formatISO(nextDueDate, { representation: 'date' }),
         };
         setProfile(profileData);
       } else {
-         const today = new Date();
-         const simulatedDueDate = addDays(today, 4);
+         const nextDueDate = getNextDueDate();
         setProfile({
           name: 'EngrenApp',
           phone: '(11) 98765-4321',
@@ -90,7 +101,7 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
           cnpj: '00.000.000/0001-00',
           logoUrl: '',
           subscriptionStatus: 'active', 
-          nextDueDate: formatISO(simulatedDueDate, { representation: 'date' })
+          nextDueDate: formatISO(nextDueDate, { representation: 'date' })
         });
       }
       setLoading(false);
