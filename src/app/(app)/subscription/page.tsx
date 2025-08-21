@@ -12,13 +12,11 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { CreditCard, Loader2, QrCode, Copy } from 'lucide-react';
 import { useShop } from '@/components/shop-provider';
 import { db } from '@/lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Image from 'next/image';
 import { parseISO, getDate, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -97,7 +95,7 @@ export default function SubscriptionPage() {
           <CardDescription>
             {isSubscriptionActive 
               ? `Sua assinatura está ativa. A próxima cobrança será em ${formattedDueDate}.`
-              : "Escolha um método de pagamento para ativar sua assinatura."
+              : "Use PIX para ativar ou renovar sua assinatura."
             }
           </CardDescription>
         </CardHeader>
@@ -108,89 +106,52 @@ export default function SubscriptionPage() {
           </div>
           
           {showPaymentOptions ? (
-            <Tabs defaultValue="credit_card" className="w-full pt-4">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="credit_card">
-                  <CreditCard className="mr-2 h-4 w-4" /> Cartão de Crédito
-                </TabsTrigger>
-                <TabsTrigger value="pix">
-                   <QrCode className="mr-2 h-4 w-4" /> PIX
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="credit_card">
-                <Card>
-                  <CardContent className="pt-6 space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="card-number">Número do Cartão</Label>
-                        <Input id="card-number" placeholder="0000 0000 0000 0000" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="expiry-date">Validade</Label>
-                            <Input id="expiry-date" placeholder="MM/AA" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="cvv">CVV</Label>
-                            <Input id="cvv" placeholder="123" />
-                        </div>
-                    </div>
-                  </CardContent>
-                   <CardFooter>
-                    <Button className="w-full" onClick={handlePayment} disabled={isProcessing}>
-                        {isProcessing ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                            <CreditCard className="mr-2 h-4 w-4" />
-                        )}
-                        {isProcessing ? 'Processando...' : `Pagar ${currentPlan.price}`}
+             <Card className="mt-4">
+              <CardHeader className='pb-2'>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                     <QrCode className="h-5 w-5" /> Pagamento via PIX
+                  </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-2 space-y-4 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Escaneie o QR Code ou use o código copia e cola no seu app do banco.
+                </p>
+                <div className="flex justify-center">
+                    <Image 
+                      src="https://placehold.co/200x200.png" 
+                      alt="QR Code PIX" 
+                      width={200} 
+                      height={200}
+                      data-ai-hint="qr code"
+                      className="rounded-md"
+                    />
+                </div>
+                <div className="relative">
+                  <Input 
+                    readOnly 
+                    value="00020126...E2A4" 
+                    className="pr-10 text-center text-xs"
+                  />
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                      onClick={handleCopyPixCode}
+                    >
+                      <Copy className="h-4 w-4" />
                     </Button>
-                  </CardFooter>
-                </Card>
-              </TabsContent>
-              <TabsContent value="pix">
-                 <Card>
-                  <CardContent className="pt-6 space-y-4 text-center">
-                    <p className="text-sm text-muted-foreground">
-                      Escaneie o QR Code ou use o código copia e cola no seu app do banco.
-                    </p>
-                    <div className="flex justify-center">
-                       <Image 
-                          src="https://placehold.co/200x200.png" 
-                          alt="QR Code PIX" 
-                          width={200} 
-                          height={200}
-                          data-ai-hint="qr code"
-                          className="rounded-md"
-                        />
-                    </div>
-                    <div className="relative">
-                      <Input 
-                        readOnly 
-                        value="00020126...E2A4" 
-                        className="pr-10 text-center text-xs"
-                      />
-                       <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
-                          onClick={handleCopyPixCode}
-                        >
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                     <Button className="w-full" onClick={handlePayment} disabled={isProcessing}>
-                        {isProcessing ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                            'Já Paguei, Ativar Assinatura'
-                        )}
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </TabsContent>
-            </Tabs>
+                </div>
+              </CardContent>
+              <CardFooter>
+                  <Button className="w-full" onClick={handlePayment} disabled={isProcessing}>
+                    {isProcessing ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                        'Já Paguei, Ativar Assinatura'
+                    )}
+                </Button>
+              </CardFooter>
+            </Card>
           ) : (
              <div className='text-center text-green-600 font-medium pt-4'>
               Obrigado por ser um assinante!
