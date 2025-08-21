@@ -20,7 +20,8 @@ import { doc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Image from 'next/image';
-import { differenceInDays, parseISO, getDate } from 'date-fns';
+import { parseISO, getDate, format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 export default function SubscriptionPage() {
   const { profile } = useShop();
@@ -80,6 +81,9 @@ export default function SubscriptionPage() {
         showPaymentOptions = true;
     }
   }
+  
+  const nextDueDate = profile?.nextDueDate ? parseISO(profile.nextDueDate) : null;
+  const formattedDueDate = nextDueDate ? format(nextDueDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : 'todo dia 10';
 
 
   return (
@@ -92,7 +96,7 @@ export default function SubscriptionPage() {
           <CardTitle className="text-2xl">{currentPlan.name}</CardTitle>
           <CardDescription>
             {isSubscriptionActive 
-              ? "Sua assinatura está ativa. A próxima cobrança será todo dia 10."
+              ? `Sua assinatura está ativa. A próxima cobrança será em ${formattedDueDate}.`
               : "Escolha um método de pagamento para ativar sua assinatura."
             }
           </CardDescription>
