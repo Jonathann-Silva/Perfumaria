@@ -33,7 +33,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (initialProfile) {
-      setProfile(initialProfile);
+      setProfile({ ...initialProfile });
       if (initialProfile.logoUrl) {
         setLogoPreview(initialProfile.logoUrl);
       }
@@ -61,14 +61,16 @@ export default function SettingsPage() {
   };
 
   const handleSave = async () => {
-    if (!profile || !initialProfile) return; // Make sure we have initialProfile for required fields
+    if (!profile) {
+      toast({ title: 'Erro', description: 'Dados do perfil não carregados.', variant: 'destructive' });
+      return;
+    }
     setIsSaving(true);
 
     try {
-      let logoUrl = profile.logoUrl; // Keep existing logo if not changed
+      let logoUrl = profile.logoUrl; 
 
       if (logoFile) {
-        // Path in storage: shopLogos/profile_logo.<extension>
         const fileExtension = logoFile.name.split('.').pop();
         const storageRef = ref(storage, `shopLogos/profile_logo.${fileExtension}`);
         await uploadBytes(storageRef, logoFile);
@@ -76,8 +78,6 @@ export default function SettingsPage() {
       }
       
       const profileToSave: ShopProfile = {
-        // Ensure all required fields are present by spreading the initial profile
-        ...initialProfile,
         ...profile,
         logoUrl: logoUrl || '',
       };
@@ -85,7 +85,6 @@ export default function SettingsPage() {
       const docRef = doc(db, 'shopSettings', 'profile');
       await setDoc(docRef, profileToSave, { merge: true });
 
-      // After saving, we clear the temporary file and refresh the context
       setLogoFile(null);
       if (refreshProfile) refreshProfile();
 
