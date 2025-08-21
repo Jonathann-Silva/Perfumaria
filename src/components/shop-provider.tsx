@@ -38,21 +38,23 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
           phone: data.phone || '(11) 98765-4321',
           address: data.address || 'Avenida Paulista, 1000, São Paulo - SP, 01310-100',
           cnpj: data.cnpj || '00.000.000/0001-00',
-          // If a status exists, use it. Otherwise, default to 'active' for testing the warning.
+          // We set the status to 'active' to test the warning pop-up.
           subscriptionStatus: data.subscriptionStatus || 'active', 
-          // Use a real due date if available, otherwise use our simulation
-          nextDueDate: data.nextDueDate || formatISO(simulatedDueDate, { representation: 'date' }),
+          // Use our simulated due date.
+          nextDueDate: formatISO(simulatedDueDate, { representation: 'date' }),
         };
         setProfile(profileData);
       } else {
-        // Set default values if no profile exists yet
+        // Set default values to simulate a nearly expired plan
+         const today = new Date();
+         const simulatedDueDate = addDays(today, 5);
         setProfile({
           name: 'EngrenApp',
           phone: '(11) 98765-4321',
           address: 'Avenida Paulista, 1000, São Paulo - SP, 01310-100',
           cnpj: '00.000.000/0001-00',
-          subscriptionStatus: 'overdue', 
-          nextDueDate: formatISO(new Date(), { representation: 'date' })
+          subscriptionStatus: 'active', 
+          nextDueDate: formatISO(simulatedDueDate, { representation: 'date' })
         });
       }
       setLoading(false);
