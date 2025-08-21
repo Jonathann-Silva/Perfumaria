@@ -9,8 +9,8 @@ export function EngrenAppLogo(props: {className?: string}) {
           src="/logo.png" 
           alt="EngrenApp Logo" 
           className={props.className}
-          width={48}
-          height={48}
+          width={125}
+          height={125}
           style={{ objectFit: 'contain' }}
         />
     </div>
