@@ -5,7 +5,6 @@ import * as React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   Calendar,
-  CreditCard,
   FileText,
   History,
   LayoutDashboard,
@@ -35,8 +34,6 @@ import { getAuth, signOut } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PaymentWall } from '@/components/payment-wall';
-import { SubscriptionWarning } from '@/components/subscription-warning';
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -71,9 +68,6 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
-
-  const isSubscriptionActive = profile?.subscriptionStatus === true;
-  const isSubscriptionPage = pathname === '/subscription';
 
   return (
     <SidebarProvider>
@@ -203,19 +197,6 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 </a>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            <SidebarMenuItem>
-                <SidebarMenuButton
-                    href="/subscription"
-                    asChild
-                    isActive={isActive('/subscription')}
-                    tooltip="Assinatura"
-                >
-                    <a href="/subscription">
-                        <CreditCard />
-                        <span>Assinatura</span>
-                    </a>
-                </SidebarMenuButton>
-             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter>
@@ -234,9 +215,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
             <SidebarTrigger className="lg:hidden"/>
         </header>
         <main className="relative flex-1 overflow-y-auto p-4 md:p-6">
-            <SubscriptionWarning />
             {children}
-            {!isSubscriptionActive && !isSubscriptionPage && <PaymentWall />}
         </main>
       </SidebarInset>
     </SidebarProvider>

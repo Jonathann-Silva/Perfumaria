@@ -8,7 +8,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import type { ShopProfile } from '@/lib/types';
-import { formatISO, getDate } from 'date-fns';
 
 interface AuthContextType {
   user: User | null;
@@ -18,21 +17,6 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType>({ user: null, loading: true, profile: null });
-
-function getDefaultNextDueDate(): string {
-    const today = new Date();
-    const currentMonth = today.getMonth();
-    const currentYear = today.getFullYear();
-    
-    let dueDate = new Date(currentYear, currentMonth, 10);
-
-    // If the 10th of the current month has already passed, set it to the 10th of the next month.
-    if (getDate(today) > 10) {
-        dueDate.setMonth(currentMonth + 1);
-    }
-    
-    return formatISO(dueDate, { representation: 'date' });
-}
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -54,8 +38,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           address: data.address || '',
           cnpj: data.cnpj || '',
           logoUrl: data.logoUrl || '',
-          subscriptionStatus: data.subscriptionStatus === true || String(data.subscriptionStatus).toLowerCase() === 'true',
-          nextDueDate: data.nextDueDate || getDefaultNextDueDate(),
         };
         setProfile(profileData);
       } else {
@@ -66,8 +48,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           address: '',
           cnpj: '',
           logoUrl: '',
-          subscriptionStatus: false, // Default to inactive for new users
-          nextDueDate: getDefaultNextDueDate()
         };
         setDoc(docRef, defaultProfile).then(() => {
           setProfile(defaultProfile);
