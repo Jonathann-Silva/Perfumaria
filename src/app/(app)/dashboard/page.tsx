@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -16,9 +16,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { customers, products, quotes, sales } from '@/lib/data';
-import type { Sale } from '@/lib/types';
-import { DollarSign, Users, Package, FileText } from 'lucide-react';
+import { quotes } from '@/lib/data';
+import type { Sale, Customer, Product } from '@/lib/types';
+import { DollarSign, Users, Package, FileText, Loader2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -27,7 +27,10 @@ import {
   DialogTrigger,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/components/auth-provider';
+import { collection, getDocs, limit, orderBy, query } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
 
 
 function StatCard({ title, value, icon: Icon }: { title: string, value: string, icon: React.ElementType }) {
@@ -68,7 +71,7 @@ function RecentSales({ recentSales }: { recentSales: Sale[] }) {
                                      <TableRow className="cursor-pointer" onClick={() => setSelectedSale(sale)}>
                                          <TableCell>{sale.customerName}</TableCell>
                                          <TableCell className="text-right">R$ {sale.total.toFixed(2)}</TableCell>
-                                         <TableCell className="text-right">{sale.date}</TableCell>
+                                         <TableCell className="text-right">{new Date(sale.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</TableCell>
                                      </TableRow>
                                  </DialogTrigger>
                             ))}
@@ -79,11 +82,11 @@ function RecentSales({ recentSales }: { recentSales: Sale[] }) {
             {selectedSale && (
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Detalhes da Venda - {selectedSale.id}</DialogTitle>
+                        <DialogTitle>Detalhes da Venda - {selectedSale.id.substring(0,8)}</DialogTitle>
                         <DialogDescription asChild>
                           <div>
                             <div><b>Cliente:</b> {selectedSale.customerName}</div>
-                            <div><b>Data:</b> {selectedSale.date}</div>
+                            <div><b>Data:</b> {new Date(selectedSale.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</div>
                           </div>
                         </DialogDescription>
                     </DialogHeader>
@@ -122,22 +125,80 @@ function RecentSales({ recentSales }: { recentSales: Sale[] }) {
 }
 
 export default function DashboardPage() {
-  const totalRevenue = sales.reduce((acc, sale) => acc + sale.total, 0);
-  const totalCustomers = customers.length;
-  const totalProducts = products.length;
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [stats, setStats] = useState({
+    totalRevenue: 0,
+    totalCustomers: 0,
+    totalProducts: 0,
+  });
+  const [recentSales, setRecentSales] = useState<Sale[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   const pendingQuotes = quotes.filter(q => q.status === 'Pendente').length;
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        // Fetch sales for revenue and recent sales
+        const salesCollection = collection(db, 'users', user.uid, 'sales');
+        const salesQuery = query(salesCollection, orderBy('date', 'desc'));
+        const salesSnapshot = await getDocs(salesQuery);
+        const salesList = salesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Sale));
+        const totalRevenue = salesList.reduce((acc, sale) => acc + sale.total, 0);
+        setRecentSales(salesList.slice(0, 5));
+        
+        // Fetch customers
+        const customersCollection = collection(db, 'users', user.uid, 'customers');
+        const customersSnapshot = await getDocs(customersCollection);
+        
+        // Fetch products
+        const productsCollection = collection(db, 'users', user.uid, 'products');
+        const productsSnapshot = await getDocs(productsCollection);
+
+        setStats({
+          totalRevenue,
+          totalCustomers: customersSnapshot.size,
+          totalProducts: productsSnapshot.size,
+        });
+
+      } catch (error) {
+        console.error("Error fetching dashboard data: ", error);
+        toast({
+          title: 'Erro ao carregar dashboard',
+          description: 'Não foi possível buscar os dados para o painel.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [user, toast]);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Receita Total" value={`R$ ${totalRevenue.toFixed(2)}`} icon={DollarSign} />
-        <StatCard title="Clientes" value={`${totalCustomers}`} icon={Users} />
-        <StatCard title="Produtos e Serviços" value={`${totalProducts}`} icon={Package} />
+        <StatCard title="Receita Total" value={`R$ ${stats.totalRevenue.toFixed(2)}`} icon={DollarSign} />
+        <StatCard title="Clientes" value={`${stats.totalCustomers}`} icon={Users} />
+        <StatCard title="Produtos e Serviços" value={`${stats.totalProducts}`} icon={Package} />
         <StatCard title="Orçamentos Pendentes" value={`${pendingQuotes}`} icon={FileText} />
       </div>
       <div>
-        <RecentSales recentSales={sales.slice(0, 5)} />
+        <RecentSales recentSales={recentSales} />
       </div>
     </div>
   );

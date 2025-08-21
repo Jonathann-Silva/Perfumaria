@@ -14,7 +14,7 @@ export type Customer = {
 };
 
 export type Product = {
-  id:string;
+  id: string;
   name: string;
   type: 'Peça' | 'Serviço';
   price: number;
@@ -51,7 +51,7 @@ export type Sale = {
     id: string;
     customerName: string;
     date: string;
-    items: { name: string; quantity: number; price: number }[];
+    items: SaleItem[];
     total: number;
 }
 

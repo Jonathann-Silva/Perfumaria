@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -13,8 +13,8 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import type { SaleItem } from '@/lib/types';
-import { Plus, Trash2, Search } from 'lucide-react';
+import type { Sale, SaleItem, Product } from '@/lib/types';
+import { Plus, Trash2, Search, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   Table,
@@ -36,13 +36,16 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { products } from '@/lib/data';
-import type { Product } from '@/lib/types';
+import { useAuth } from './auth-provider';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, doc, writeBatch, serverTimestamp, addDoc, updateDoc } from 'firebase/firestore';
+
 
 type PaymentMethod = 'credit_card_on_time' | 'debit_card' | 'pix' | 'credit_card_installments' | '';
 
 
 export function SalesForm() {
+  const { user } = useAuth();
   const { toast } = useToast();
   
   const [customerName, setCustomerName] = useState('');
@@ -55,12 +58,40 @@ export function SalesForm() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('');
   const [installments, setInstallments] = useState(2);
 
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
   const [isSearchPopoverOpen, setIsSearchPopoverOpen] = useState(false);
+
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      if (!user) return;
+      setIsLoadingProducts(true);
+      try {
+        const productsCollection = collection(db, 'users', user.uid, 'products');
+        const productsSnapshot = await getDocs(productsCollection);
+        const productsList = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+        setProducts(productsList);
+      } catch (error) {
+        console.error("Error fetching products: ", error);
+        toast({
+          title: 'Erro ao carregar produtos',
+          description: 'Não foi possível buscar seu inventário.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoadingProducts(false);
+      }
+    };
+    fetchProducts();
+  }, [user, toast]);
 
   const filteredProducts = useMemo(() => {
     if (!itemName) return products;
     return products.filter(p => p.name.toLowerCase().includes(itemName.toLowerCase()));
-  }, [itemName]);
+  }, [itemName, products]);
 
   const handleProductSelect = (product: Product) => {
     const newItem: SaleItem = {
@@ -125,7 +156,8 @@ export function SalesForm() {
     setSaleItems(saleItems.map(item => item.id === itemId ? {...item, quantity: Math.max(1, quantity) } : item));
   }
 
-  const handleFinalizeSale = () => {
+  const handleFinalizeSale = async () => {
+    if (!user) return;
     if (saleItems.length === 0) {
         toast({ title: 'Nenhum item na venda', description: 'Adicione pelo menos um item para registrar a venda.', variant: 'destructive'});
         return;
@@ -138,29 +170,60 @@ export function SalesForm() {
         toast({ title: 'Forma de pagamento não selecionada', description: 'Por favor, selecione uma forma de pagamento.', variant: 'destructive'});
         return;
     }
-
-
-    // Here you would typically save the sale to a database
-    console.log({
-        customerName,
-        items: saleItems,
-        total,
-        payment: {
-            method: paymentMethod,
-            installments: paymentMethod === 'credit_card_installments' ? installments : 1
-        }
-    });
     
-    toast({
-        title: 'Venda Finalizada!',
-        description: 'A venda foi registrada com sucesso.'
-    });
+    setIsSaving(true);
+    
+    try {
+        const batch = writeBatch(db);
 
-    // Reset form
-    setCustomerName('');
-    setSaleItems([]);
-    setPaymentMethod('');
-    setInstallments(2);
+        // 1. Update stock for products
+        for (const item of saleItems) {
+            if (item.type === 'Peça') {
+                const productRef = doc(db, 'users', user.uid, 'products', item.id);
+                const productInState = products.find(p => p.id === item.id);
+                if (productInState) {
+                    const newStock = productInState.stock - item.quantity;
+                    batch.update(productRef, { stock: newStock });
+                }
+            }
+        }
+        
+        // 2. Create sale record
+        const saleData: Omit<Sale, 'id'> = {
+            customerName,
+            items: saleItems,
+            total,
+            date: new Date().toISOString().split('T')[0],
+        };
+
+        const salesCollection = collection(db, 'users', user.uid, 'sales');
+        await addDoc(salesCollection, saleData); // addDoc is outside the batch to get the ID, though not used here
+
+        // Commit all changes
+        await batch.commit();
+
+        toast({
+            title: 'Venda Finalizada!',
+            description: 'A venda foi registrada e o estoque atualizado com sucesso.'
+        });
+
+        // Reset form
+        setCustomerName('');
+        setSaleItems([]);
+        setPaymentMethod('');
+        setInstallments(2);
+
+    } catch (error) {
+        console.error("Error finalizing sale: ", error);
+        toast({
+            title: 'Erro ao finalizar venda',
+            description: 'Não foi possível registrar a venda ou atualizar o estoque.',
+            variant: 'destructive',
+        });
+    } finally {
+        setIsSaving(false);
+    }
+
   }
 
   const total = saleItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -194,19 +257,25 @@ export function SalesForm() {
                                             placeholder="Digite para buscar ou adicionar novo item..."
                                             className="pl-8"
                                             autoComplete="off"
+                                            disabled={isLoadingProducts}
                                         />
                                     </div>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-[--radix-popover-trigger-width] max-h-60 overflow-y-auto p-0">
-                                    {filteredProducts.length > 0 ? (
+                                    {isLoadingProducts ? (
+                                         <div className="flex justify-center items-center p-4">
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                         </div>
+                                    ) : filteredProducts.length > 0 ? (
                                         <div className="divide-y">
                                         {filteredProducts.map(product => (
                                             <button 
                                                 key={product.id}
                                                 onClick={() => handleProductSelect(product)}
-                                                className="flex justify-between w-full text-left px-3 py-2 text-sm hover:bg-accent"
+                                                className="flex justify-between w-full text-left px-3 py-2 text-sm hover:bg-accent disabled:opacity-50"
+                                                disabled={product.type === 'Peça' && product.stock <= 0}
                                             >
-                                                <span>{product.name}</span>
+                                                <span>{product.name} ({product.type === 'Peça' ? `${product.stock} em estoque` : 'Serviço'})</span>
                                                 <span className="text-muted-foreground">R$ {product.price.toFixed(2)}</span>
                                             </button>
                                         ))}
@@ -306,7 +375,8 @@ export function SalesForm() {
             <CardFooter className="flex justify-between items-center bg-muted/50 p-6 rounded-b-lg">
                 <div className="text-2xl font-bold">Total: R$ {total.toFixed(2)}</div>
                 <div className='flex gap-2'>
-                  <Button size="lg" onClick={handleFinalizeSale}>
+                  <Button size="lg" onClick={handleFinalizeSale} disabled={isSaving}>
+                      {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                       Finalizar Venda
                   </Button>
                 </div>
