@@ -58,9 +58,9 @@ export default function LoginPage() {
   return (
     <Card className="w-full max-w-sm">
       <CardHeader className="text-center">
-         <div className="flex items-center justify-center gap-3 mb-4">
+         <div className="flex items-center justify-center gap-3 mb-4 text-3xl">
             <EngrenAppLogo />
-            <h1 className="text-3xl font-bold">EngrenApp</h1>
+            <h1 className="font-bold">EngrenApp</h1>
         </div>
         <CardTitle className="text-2xl">Login</CardTitle>
         <CardDescription>

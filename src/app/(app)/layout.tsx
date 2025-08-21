@@ -80,9 +80,9 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
       <Sidebar side="left" variant="sidebar" collapsible="icon">
-        <SidebarHeader className="items-center justify-start gap-3 p-3">
+        <SidebarHeader className="items-center justify-start gap-3 p-3 text-2xl">
           <EngrenAppLogo />
-          <span className="text-xl font-semibold text-sidebar-foreground">
+          <span className="font-semibold text-sidebar-foreground">
             {shopLoading ? <Skeleton className="h-6 w-24" /> : profile?.name || 'EngrenApp'}
           </span>
         </SidebarHeader>
