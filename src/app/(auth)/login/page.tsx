@@ -59,7 +59,7 @@ export default function LoginPage() {
     <Card className="w-full max-w-sm">
       <CardHeader className="text-center">
          <div className="flex items-center justify-center gap-3 mb-4">
-            <EngrenAppLogo className="size-10 text-primary" />
+            <EngrenAppLogo className="size-12 text-primary" />
             <h1 className="text-3xl font-bold">EngrenApp</h1>
         </div>
         <CardTitle className="text-2xl">Login</CardTitle>
