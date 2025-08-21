@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -39,10 +40,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { EngrenAppLogo, WhatsAppIcon } from '@/components/icons';
+import { WhatsAppIcon } from '@/components/icons';
+import { useShop } from '@/components/shop-provider';
+
 
 export default function QuotesPage() {
   const { toast } = useToast();
+  const { profile } = useShop();
   const [quotesData, setQuotesData] = useState<Quote[]>(quotes);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null);
@@ -98,7 +102,7 @@ export default function QuotesPage() {
       return;
     }
 
-    let message = `*Orçamento EngrenApp Oficina*\n\n`;
+    let message = `*Orçamento ${profile?.name || 'Oficina'}*\n\n`;
     message += `Olá ${selectedQuote.customerName},\n`;
     message += `Segue o orçamento para o veículo ${selectedQuote.vehicle} (${selectedQuote.vehiclePlate || ''}):\n\n`;
     message += `*Itens:*\n`;
@@ -272,17 +276,18 @@ export default function QuotesPage() {
         </Dialog>
       )}
 
-      {selectedQuote && (
+      {selectedQuote && profile && (
         <div id="printable-quote" className="hidden print-only">
           <div className="flex justify-between items-start mb-8">
               <div>
-                  <div className="flex items-center gap-3 mb-4">
-                      <EngrenAppLogo className="size-10 text-primary" />
-                      <h1 className="text-3xl font-bold">EngrenApp Oficina</h1>
+                  <div className="flex items-center gap-4 mb-4">
+                      {profile.logoUrl ? (
+                         <Image src={profile.logoUrl} alt={`Logo de ${profile.name}`} width={80} height={80} className="object-contain" />
+                      ) : null}
+                      <h1 className="text-3xl font-bold">{profile.name}</h1>
                   </div>
-                  <p>Avenida Paulista, 1000</p>
-                  <p>São Paulo - SP, 01310-100</p>
-                  <p>contato@autoflow.com</p>
+                  <p>{profile.address}</p>
+                  <p>{profile.phone} | CNPJ: {profile.cnpj}</p>
               </div>
               <div className="text-right">
                   <h2 className="text-2xl font-bold mb-2">Orçamento #{selectedQuote.id}</h2>

@@ -2,6 +2,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -24,7 +25,8 @@ import {
     TableHeader,
     TableRow,
   } from '@/components/ui/table';
-import { EngrenAppLogo, WhatsAppIcon } from './icons';
+import { WhatsAppIcon } from './icons';
+import { useShop } from './shop-provider';
 
 type QuoteItem = {
     product: Product;
@@ -33,6 +35,7 @@ type QuoteItem = {
 
 export function QuoteForm() {
   const { toast } = useToast();
+  const { profile } = useShop();
   
   const [customerName, setCustomerName] = useState('');
   const [customerVehicle, setCustomerVehicle] = useState('');
@@ -112,7 +115,7 @@ export function QuoteForm() {
       return;
     }
 
-    let message = `*Orçamento EngrenApp Oficina*\n\n`;
+    let message = `*Orçamento ${profile?.name || 'Oficina'}*\n\n`;
     message += `Olá ${customerName},\n`;
     message += `Segue o orçamento para o veículo ${customerVehicle} (${customerVehiclePlate}):\n\n`;
     message += `*Itens:*\n`;
@@ -244,73 +247,76 @@ export function QuoteForm() {
         </Card>
       </div>
 
-      <div id="printable-quote" className="hidden print-only">
-        <div className="flex justify-between items-start mb-8">
-            <div>
-                <div className="flex items-center gap-3 mb-4">
-                    <EngrenAppLogo className="size-10 text-primary" />
-                    <h1 className="text-3xl font-bold">EngrenApp Oficina</h1>
-                </div>
-                <p>Avenida Paulista, 1000</p>
-                <p>São Paulo - SP, 01310-100</p>
-                <p>contato@autoflow.com</p>
-            </div>
-            <div className="text-right">
-                <h2 className="text-2xl font-bold mb-2">Orçamento</h2>
-                <p>Data: {today}</p>
-            </div>
+      {profile && (
+        <div id="printable-quote" className="hidden print-only">
+          <div className="flex justify-between items-start mb-8">
+              <div>
+                  <div className="flex items-center gap-4 mb-4">
+                      {profile.logoUrl ? (
+                         <Image src={profile.logoUrl} alt={`Logo de ${profile.name}`} width={80} height={80} className="object-contain" />
+                      ) : null}
+                      <h1 className="text-3xl font-bold">{profile.name}</h1>
+                  </div>
+                  <p>{profile.address}</p>
+                  <p>{profile.phone} | CNPJ: {profile.cnpj}</p>
+              </div>
+              <div className="text-right">
+                  <h2 className="text-2xl font-bold mb-2">Orçamento</h2>
+                  <p>Data: {today}</p>
+              </div>
+          </div>
+
+          {customerName && (
+              <Card className="mb-8">
+                  <CardHeader>
+                      <CardTitle>Informações do Cliente</CardTitle>
+                  </CardHeader>
+                  <CardContent className='grid grid-cols-2 gap-4'>
+                      <div><span className="font-semibold">Nome:</span> {customerName}</div>
+                      {customerEmail && <div><span className="font-semibold">Email:</span> {customerEmail}</div>}
+                      {customerPhone && <div><span className="font-semibold">Telefone:</span> {customerPhone}</div>}
+                      {customerVehicle && <div><span className="font-semibold">Veículo:</span> {customerVehicle} {customerVehiclePlate && `(${customerVehiclePlate})`}</div>}
+                  </CardContent>
+              </Card>
+          )}
+
+          <h3 className="text-xl font-bold mb-4">Itens do Orçamento</h3>
+          <Table>
+              <TableHeader>
+                  <TableRow>
+                      <TableHead>Item</TableHead>
+                      <TableHead>Qtd.</TableHead>
+                      <TableHead className="text-right">Preço Unit.</TableHead>
+                      <TableHead className="text-right">Subtotal</TableHead>
+                  </TableRow>
+              </TableHeader>
+              <TableBody>
+                  {quoteItems.map(item => (
+                      <TableRow key={item.product.id}>
+                          <TableCell className="font-medium">{item.product.name}</TableCell>
+                          <TableCell>{item.quantity}</TableCell>
+                          <TableCell className="text-right">R$ {item.product.price.toFixed(2)}</TableCell>
+                          <TableCell className="text-right">R$ {(item.product.price * item.quantity).toFixed(2)}</TableCell>
+                      </TableRow>
+                  ))}
+              </TableBody>
+          </Table>
+
+          <div className="flex justify-end mt-8">
+              <div className="w-1/3">
+                  <div className="flex justify-between text-lg">
+                      <span>Total</span>
+                      <span className="font-bold">R$ {total.toFixed(2)}</span>
+                  </div>
+              </div>
+          </div>
+
+          <div className="mt-24 text-center text-sm text-muted-foreground">
+              <p>Este orçamento é válido por 15 dias.</p>
+              <p>Obrigado pela sua preferência!</p>
+          </div>
         </div>
-
-        {customerName && (
-            <Card className="mb-8">
-                <CardHeader>
-                    <CardTitle>Informações do Cliente</CardTitle>
-                </CardHeader>
-                <CardContent className='grid grid-cols-2 gap-4'>
-                    <div><span className="font-semibold">Nome:</span> {customerName}</div>
-                    {customerEmail && <div><span className="font-semibold">Email:</span> {customerEmail}</div>}
-                    {customerPhone && <div><span className="font-semibold">Telefone:</span> {customerPhone}</div>}
-                    {customerVehicle && <div><span className="font-semibold">Veículo:</span> {customerVehicle} {customerVehiclePlate && `(${customerVehiclePlate})`}</div>}
-                </CardContent>
-            </Card>
-        )}
-
-        <h3 className="text-xl font-bold mb-4">Itens do Orçamento</h3>
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>Item</TableHead>
-                    <TableHead>Qtd.</TableHead>
-                    <TableHead className="text-right">Preço Unit.</TableHead>
-                    <TableHead className="text-right">Subtotal</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {quoteItems.map(item => (
-                    <TableRow key={item.product.id}>
-                        <TableCell className="font-medium">{item.product.name}</TableCell>
-                        <TableCell>{item.quantity}</TableCell>
-                        <TableCell className="text-right">R$ {item.product.price.toFixed(2)}</TableCell>
-                        <TableCell className="text-right">R$ {(item.product.price * item.quantity).toFixed(2)}</TableCell>
-                    </TableRow>
-                ))}
-            </TableBody>
-        </Table>
-
-        <div className="flex justify-end mt-8">
-            <div className="w-1/3">
-                <div className="flex justify-between text-lg">
-                    <span>Total</span>
-                    <span className="font-bold">R$ {total.toFixed(2)}</span>
-                </div>
-            </div>
-        </div>
-
-        <div className="mt-24 text-center text-sm text-muted-foreground">
-            <p>Este orçamento é válido por 15 dias.</p>
-            <p>Obrigado pela sua preferência!</p>
-        </div>
-      </div>
+      )}
     </>
   );
 }

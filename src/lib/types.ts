@@ -70,6 +70,7 @@ export type ShopProfile = {
   phone: string;
   address: string;
   cnpj: string;
+  logoUrl?: string;
   subscriptionStatus: 'active' | 'overdue' | 'inactive';
   nextDueDate?: string; // ISO date string e.g., "2024-07-25"
 };
