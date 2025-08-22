@@ -204,7 +204,8 @@ export function SalesForm() {
 
         toast({
             title: 'Venda Finalizada!',
-            description: 'A venda foi registrada e o estoque atualizado com sucesso.'
+            description: 'A venda foi registrada e o estoque atualizado com sucesso.',
+            duration: 2000,
         });
 
         // Reset form
