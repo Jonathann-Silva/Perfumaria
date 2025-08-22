@@ -5,48 +5,8 @@ export const customers: Customer[] = [];
 
 export const products: Product[] = [];
 
-export const quotes: Quote[] = [
-    { 
-        id: 'Q-001', 
-        customerName: 'João da Silva', 
-        customerPhone: '11987654321',
-        vehicle: 'Toyota Corolla 2021',
-        vehiclePlate: 'ABC-1234', 
-        date: '2024-03-01', 
-        items: [
-            { name: 'Troca de Óleo do Motor', quantity: 1, price: 150.00 },
-            { name: 'Filtro de Óleo', quantity: 1, price: 45.00 }
-        ],
-        total: 195.00, 
-        status: 'Pendente' 
-    },
-    { 
-        id: 'Q-002', 
-        customerName: 'Maria Oliveira', 
-        customerPhone: '21912345678',
-        vehicle: 'Honda Civic 2019', 
-        vehiclePlate: 'DEF-5678',
-        date: '2024-03-05', 
-        items: [
-            { name: 'Alinhamento e Balanceamento', quantity: 1, price: 120.00 }
-        ],
-        total: 120.00, 
-        status: 'Pendente' 
-    },
-    { 
-        id: 'Q-003', 
-        customerName: 'Carlos Pereira', 
-        customerPhone: '31955551234',
-        vehicle: 'Ford Ka 2022',
-        vehiclePlate: 'GHI-9012',
-        date: '2024-03-10', 
-        items: [
-            { name: 'Pastilha de Freio (par)', quantity: 1, price: 95.00 }
-        ],
-        total: 95.00, 
-        status: 'Pendente' 
-    },
-];
+// This data is now managed in Firestore and will be removed.
+export const quotes: Quote[] = [];
 
 export const sales: Sale[] = [];
 
@@ -56,3 +16,5 @@ export const schedules: Schedule[] = [
     { id: 'A-003', customerName: 'Paulo Santos', vehicle: 'Volkswagen Gol 2018', service: 'Alinhamento e Balanceamento', date: '2024-05-29', time: '09:00', status: 'Concluído' },
     { id: 'A-004', customerName: 'João da Silva', vehicle: 'Toyota Corolla 2021', service: 'Troca de Pastilha de Freio', date: '2024-05-30', time: '11:00', status: 'Cancelado' },
 ];
+
+    

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,9 +21,8 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { quotes } from '@/lib/data';
 import type { Quote } from '@/lib/types';
-import { PlusCircle, Search, Printer, Trash2 } from 'lucide-react';
+import { PlusCircle, Search, Printer, Trash2, Loader2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -53,36 +52,93 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { WhatsAppIcon } from '@/components/icons';
 import { useAuth } from '@/components/auth-provider';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 
 
 export default function QuotesPage() {
   const { toast } = useToast();
-  const { profile } = useAuth();
-  const [quotesData, setQuotesData] = useState<Quote[]>(quotes);
+  const { profile, user } = useAuth();
+  const [quotesData, setQuotesData] = useState<Quote[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null);
 
-  const handleStatusChange = (quoteId: string, newStatus: 'Pendente' | 'Aprovado' | 'Rejeitado') => {
-    const updatedQuotes = quotesData.map((quote) => {
-      if (quote.id === quoteId) {
-        return { ...quote, status: newStatus };
+  useEffect(() => {
+    const fetchQuotes = async () => {
+      if (!user) return;
+      setIsLoading(true);
+      try {
+        const quotesCollection = collection(db, 'users', user.uid, 'quotes');
+        const q = query(quotesCollection, orderBy('date', 'desc'));
+        const quotesSnapshot = await getDocs(q);
+        const quotesList = quotesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Quote));
+        setQuotesData(quotesList);
+      } catch (error) {
+        console.error("Error fetching quotes: ", error);
+        toast({
+          title: 'Erro ao buscar orçamentos',
+          description: 'Não foi possível carregar a lista de orçamentos.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
       }
-      return quote;
-    });
-    setQuotesData(updatedQuotes);
-    if(selectedQuote) {
-        setSelectedQuote({...selectedQuote, status: newStatus})
+    };
+
+    fetchQuotes();
+  }, [user, toast]);
+
+  const handleStatusChange = async (quoteId: string, newStatus: 'Pendente' | 'Aprovado' | 'Rejeitado') => {
+    if (!user) return;
+
+    try {
+      const quoteDoc = doc(db, 'users', user.uid, 'quotes', quoteId);
+      await updateDoc(quoteDoc, { status: newStatus });
+      
+      const updatedQuotes = quotesData.map((quote) => {
+        if (quote.id === quoteId) {
+          return { ...quote, status: newStatus };
+        }
+        return quote;
+      });
+      setQuotesData(updatedQuotes);
+      if(selectedQuote) {
+          setSelectedQuote({...selectedQuote, status: newStatus})
+      }
+       toast({
+          title: 'Status atualizado!',
+          description: 'O status do orçamento foi alterado com sucesso.',
+      });
+    } catch (error) {
+        console.error("Error updating status: ", error);
+        toast({
+            title: 'Erro ao atualizar status',
+            description: 'Não foi possível alterar o status do orçamento.',
+            variant: 'destructive',
+        });
     }
   };
 
-  const handleDeleteQuote = (quoteId: string) => {
-    const updatedQuotes = quotesData.filter((quote) => quote.id !== quoteId);
-    setQuotesData(updatedQuotes);
-    setSelectedQuote(null);
-    toast({
-        title: 'Orçamento excluído',
-        description: 'O orçamento foi removido com sucesso.',
-    });
+  const handleDeleteQuote = async (quoteId: string) => {
+    if (!user) return;
+    try {
+      await deleteDoc(doc(db, 'users', user.uid, 'quotes', quoteId));
+      const updatedQuotes = quotesData.filter((quote) => quote.id !== quoteId);
+      setQuotesData(updatedQuotes);
+      setSelectedQuote(null);
+      toast({
+          title: 'Orçamento excluído',
+          description: 'O orçamento foi removido com sucesso.',
+      });
+    } catch(error) {
+       console.error("Error deleting quote: ", error);
+       toast({
+          title: 'Erro ao excluir',
+          description: 'Não foi possível remover o orçamento.',
+          variant: 'destructive',
+      });
+    }
   };
 
   const getStatusVariant = (status: 'Pendente' | 'Aprovado' | 'Rejeitado') => {
@@ -105,7 +161,7 @@ export default function QuotesPage() {
     return quotesData.filter(
       (quote) =>
         quote.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        quote.vehicle.toLowerCase().includes(searchTerm.toLowerCase())
+        (quote.vehicle && quote.vehicle.toLowerCase().includes(searchTerm.toLowerCase()))
     );
   }, [searchTerm, quotesData]);
 
@@ -117,7 +173,7 @@ export default function QuotesPage() {
     if (!selectedQuote || !selectedQuote.customerPhone) {
       toast({
         title: 'Telefone do cliente não encontrado',
-        description: 'Por favor, edite o orçamento para adicionar o número de telefone do cliente.',
+        description: 'Por favor, adicione o número de telefone do cliente para enviar.',
         variant: 'destructive',
       });
       return;
@@ -167,50 +223,56 @@ export default function QuotesPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Cliente</TableHead>
-                  <TableHead>Veículo</TableHead>
-                  <TableHead>Data</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                  <TableHead className="text-center">Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredQuotes.map((quote) => (
-                  <TableRow
-                    key={quote.id}
-                    className="cursor-pointer"
-                    onClick={() => setSelectedQuote(quote)}
-                  >
-                    <TableCell className="font-medium">{quote.id}</TableCell>
-                    <TableCell>{quote.customerName}</TableCell>
-                    <TableCell>{quote.vehicle}</TableCell>
-                    <TableCell>{quote.date}</TableCell>
-                    <TableCell className="text-right">
-                      R$ {quote.total.toFixed(2)}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant={getStatusVariant(quote.status)}>
-                        {quote.status}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {filteredQuotes.length === 0 && (
-                  <TableRow>
-                    <TableCell
-                      colSpan={6}
-                      className="py-10 text-center text-muted-foreground"
+             {isLoading ? (
+                <div className="flex justify-center items-center h-40">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+             ) : (
+                <Table>
+                <TableHeader>
+                    <TableRow>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead>Veículo</TableHead>
+                    <TableHead>Data</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
+                    <TableHead className="text-center">Status</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {filteredQuotes.map((quote) => (
+                    <TableRow
+                        key={quote.id}
+                        className="cursor-pointer"
+                        onClick={() => setSelectedQuote(quote)}
                     >
-                      Nenhum orçamento encontrado.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                        <TableCell className="font-medium">{quote.id.substring(0, 8)}...</TableCell>
+                        <TableCell>{quote.customerName}</TableCell>
+                        <TableCell>{quote.vehicle}</TableCell>
+                        <TableCell>{new Date(quote.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</TableCell>
+                        <TableCell className="text-right">
+                        R$ {quote.total.toFixed(2)}
+                        </TableCell>
+                        <TableCell className="text-center">
+                        <Badge variant={getStatusVariant(quote.status)}>
+                            {quote.status}
+                        </Badge>
+                        </TableCell>
+                    </TableRow>
+                    ))}
+                    {filteredQuotes.length === 0 && (
+                    <TableRow>
+                        <TableCell
+                        colSpan={6}
+                        className="py-10 text-center text-muted-foreground"
+                        >
+                        Nenhum orçamento encontrado.
+                        </TableCell>
+                    </TableRow>
+                    )}
+                </TableBody>
+                </Table>
+             )}
           </CardContent>
         </Card>
       </div>
@@ -222,12 +284,12 @@ export default function QuotesPage() {
         >
           <DialogContent className="max-w-3xl no-print">
             <DialogHeader>
-              <DialogTitle>Detalhes do Orçamento - {selectedQuote.id}</DialogTitle>
+              <DialogTitle>Detalhes do Orçamento - {selectedQuote.id.substring(0,8)}</DialogTitle>
               <DialogDescription asChild>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1 pt-2">
                     <div><b>Cliente:</b> {selectedQuote.customerName}</div>
                     <div><b>Veículo:</b> {selectedQuote.vehicle} {selectedQuote.vehiclePlate && `(${selectedQuote.vehiclePlate})`}</div>
-                    <div><b>Data:</b> {selectedQuote.date}</div>
+                    <div><b>Data:</b> {new Date(selectedQuote.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</div>
                      <div className='flex items-center gap-2'>
                       <b>Status:</b>
                       <Select 
@@ -295,7 +357,7 @@ export default function QuotesPage() {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Esta ação não pode ser desfeita. Isso irá excluir permanentemente o orçamento <span className="font-medium">{selectedQuote.id}</span>.
+                        Esta ação não pode ser desfeita. Isso irá excluir permanentemente o orçamento <span className="font-medium">{selectedQuote.id.substring(0,8)}</span>.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -336,8 +398,8 @@ export default function QuotesPage() {
                   <p>{profile.phone} | CNPJ: {profile.cnpj}</p>
               </div>
               <div className="text-right">
-                  <h2 className="text-2xl font-bold mb-2">Orçamento #{selectedQuote.id}</h2>
-                  <p>Data: {selectedQuote.date}</p>
+                  <h2 className="text-2xl font-bold mb-2">Orçamento #{selectedQuote.id.substring(0,8)}</h2>
+                  <p>Data: {new Date(selectedQuote.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</p>
               </div>
           </div>
 

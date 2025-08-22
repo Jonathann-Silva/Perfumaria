@@ -1,5 +1,4 @@
 
-
 export type Customer = {
   id: string;
   name: string;
@@ -31,10 +30,11 @@ export type QuoteItem = {
 export type Quote = {
   id: string;
   customerName: string;
+  customerEmail?: string;
   customerPhone?: string;
   vehicle: string;
   vehiclePlate?: string;
-  date: string;
+  date: string; // Storing as ISO string
   items: QuoteItem[];
   total: number;
   status: 'Pendente' | 'Aprovado' | 'Rejeitado';
@@ -73,3 +73,5 @@ export type ShopProfile = {
   cnpj: string;
   logoUrl?: string;
 };
+
+    

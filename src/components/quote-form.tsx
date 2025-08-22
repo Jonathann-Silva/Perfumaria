@@ -2,6 +2,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,8 +15,8 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import type { Product } from '@/lib/types';
-import { Plus, Trash2, Printer } from 'lucide-react';
+import type { Product, Quote, QuoteItem } from '@/lib/types';
+import { Plus, Trash2, Printer, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
     Table,
@@ -27,15 +28,14 @@ import {
   } from '@/components/ui/table';
 import { WhatsAppIcon } from './icons';
 import { useAuth } from './auth-provider';
+import { addDoc, collection } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
-type QuoteItem = {
-    product: Product;
-    quantity: number;
-}
 
 export function QuoteForm() {
   const { toast } = useToast();
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
+  const router = useRouter();
   
   const [customerName, setCustomerName] = useState('');
   const [customerVehicle, setCustomerVehicle] = useState('');
@@ -46,6 +46,7 @@ export function QuoteForm() {
   const [quoteItems, setQuoteItems] = useState<QuoteItem[]>([]);
   const [customItemName, setCustomItemName] = useState('');
   const [customItemPrice, setCustomItemPrice] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
   const [isQuoteGenerated, setIsQuoteGenerated] = useState(false);
 
   const addCustomItemToQuote = () => {
@@ -59,15 +60,13 @@ export function QuoteForm() {
         return;
     }
 
-    const newItem: Product = {
-        id: `custom-${customItemName}-${Date.now()}`,
+    const newItem: QuoteItem = {
         name: customItemName,
-        type: 'Serviço', // Defaulting to service, can be changed if needed
         price: price,
-        stock: 0, // Not applicable for custom items
+        quantity: 1
     };
 
-    setQuoteItems([...quoteItems, { product: newItem, quantity: 1}]);
+    setQuoteItems([...quoteItems, newItem]);
     setCustomItemName('');
     setCustomItemPrice('');
   };
@@ -79,31 +78,76 @@ export function QuoteForm() {
     }
   }
 
-  const removeProductFromQuote = (productId: string) => {
-    setQuoteItems(quoteItems.filter(item => item.product.id !== productId));
+  const removeProductFromQuote = (itemName: string) => {
+    setQuoteItems(quoteItems.filter(item => item.name !== itemName));
   }
 
-  const updateQuantity = (productId: string, quantity: number) => {
-    setQuoteItems(quoteItems.map(item => item.product.id === productId ? {...item, quantity: Math.max(1, quantity) } : item));
+  const updateQuantity = (itemName: string, quantity: number) => {
+    setQuoteItems(quoteItems.map(item => item.name === itemName ? {...item, quantity: Math.max(1, quantity) } : item));
   }
 
-  const handleGenerateQuote = () => {
-    // Here you would typically save the quote to a database
-    // For now, we'll just simulate it
-    setIsQuoteGenerated(true);
-    toast({
-        title: 'Orçamento Gerado!',
-        description: 'O orçamento foi salvo com sucesso e pode ser impresso ou enviado.',
-        duration: 2000,
-    });
+  const handleGenerateQuote = async () => {
+    if (!user) {
+        toast({ title: "Erro de autenticação", variant: "destructive" });
+        return;
+    }
+    if (!customerName || !customerVehicle) {
+        toast({ title: "Dados incompletos", description: "Nome do cliente e veículo são obrigatórios.", variant: "destructive" });
+        return;
+    }
+     if (quoteItems.length === 0) {
+        toast({ title: "Nenhum item", description: "Adicione pelo menos um item ao orçamento.", variant: "destructive" });
+        return;
+    }
+
+    setIsSaving(true);
+    try {
+        const quoteData: Omit<Quote, 'id'> = {
+            customerName,
+            customerEmail,
+            customerPhone,
+            vehicle: customerVehicle,
+            vehiclePlate: customerVehiclePlate,
+            items: quoteItems,
+            total,
+            date: new Date().toISOString(),
+            status: 'Pendente'
+        };
+
+        const quotesCollection = collection(db, 'users', user.uid, 'quotes');
+        await addDoc(quotesCollection, quoteData);
+
+        setIsQuoteGenerated(true);
+        toast({
+            title: 'Orçamento Gerado!',
+            description: 'O orçamento foi salvo com sucesso.',
+        });
+        
+        // Option 1: Stay on page
+        // setIsSaving(false);
+        
+        // Option 2: Redirect after a delay
+        setTimeout(() => {
+            router.push('/quotes');
+        }, 1500);
+
+    } catch (error) {
+        console.error("Error creating quote: ", error);
+        toast({
+            title: "Erro ao salvar orçamento",
+            description: "Não foi possível salvar o orçamento no banco de dados.",
+            variant: "destructive"
+        });
+        setIsSaving(false);
+    }
   }
 
   const handlePrint = () => {
     window.print();
   }
 
-  const total = quoteItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
-  const today = new Date().toLocaleDateString('pt-BR');
+  const total = quoteItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const today = new Date().toLocaleDateString('pt-BR', { timeZone: 'UTC'});
 
   const handleSendWhatsApp = () => {
     if (!customerPhone) {
@@ -120,7 +164,7 @@ export function QuoteForm() {
     message += `Segue o orçamento para o veículo ${customerVehicle} (${customerVehiclePlate}):\n\n`;
     message += `*Itens:*\n`;
     quoteItems.forEach(item => {
-      message += `- ${item.product.name} (Qtd: ${item.quantity}) - R$ ${(item.product.price * item.quantity).toFixed(2)}\n`;
+      message += `- ${item.name} (Qtd: ${item.quantity}) - R$ ${(item.price * item.quantity).toFixed(2)}\n`;
     });
     message += `\n*Total: R$ ${total.toFixed(2)}*\n\n`;
     message += `Este orçamento é válido por 15 dias.\n`;
@@ -209,15 +253,15 @@ export function QuoteForm() {
                                   </TableRow>
                               )}
                               {quoteItems.map(item => (
-                                  <TableRow key={item.product.id}>
-                                      <TableCell className="font-medium">{item.product.name} <span className='text-muted-foreground text-xs'>({item.product.type})</span></TableCell>
+                                  <TableRow key={item.name}>
+                                      <TableCell className="font-medium">{item.name}</TableCell>
                                       <TableCell>
-                                          <Input type="number" value={item.quantity} onChange={(e) => updateQuantity(item.product.id, parseInt(e.target.value))} className="w-20" min="1"/>
+                                          <Input type="number" value={item.quantity} onChange={(e) => updateQuantity(item.name, parseInt(e.target.value))} className="w-20" min="1"/>
                                       </TableCell>
-                                      <TableCell className="text-right">R$ {item.product.price.toFixed(2)}</TableCell>
-                                      <TableCell className="text-right">R$ {(item.product.price * item.quantity).toFixed(2)}</TableCell>
+                                      <TableCell className="text-right">R$ {item.price.toFixed(2)}</TableCell>
+                                      <TableCell className="text-right">R$ {(item.price * item.quantity).toFixed(2)}</TableCell>
                                       <TableCell className="no-print">
-                                          <Button variant="ghost" size="icon" onClick={() => removeProductFromQuote(item.product.id)}>
+                                          <Button variant="ghost" size="icon" onClick={() => removeProductFromQuote(item.name)}>
                                               <Trash2 className="h-4 w-4 text-destructive"/>
                                           </Button>
                                       </TableCell>
@@ -239,8 +283,8 @@ export function QuoteForm() {
                       <Printer className="mr-2 h-4 w-4" />
                       Imprimir
                   </Button>
-                  <Button size="lg" onClick={handleGenerateQuote} disabled={isQuoteGenerated || quoteItems.length === 0} className="no-print">
-                      {isQuoteGenerated ? 'Orçamento Gerado' : 'Gerar Orçamento'}
+                  <Button size="lg" onClick={handleGenerateQuote} disabled={isSaving || isQuoteGenerated} className="no-print">
+                      {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : isQuoteGenerated ? 'Salvo!' : 'Gerar Orçamento'}
                   </Button>
                 </div>
             </CardFooter>
@@ -292,11 +336,11 @@ export function QuoteForm() {
               </TableHeader>
               <TableBody>
                   {quoteItems.map(item => (
-                      <TableRow key={item.product.id}>
-                          <TableCell className="font-medium">{item.product.name}</TableCell>
+                      <TableRow key={item.name}>
+                          <TableCell className="font-medium">{item.name}</TableCell>
                           <TableCell>{item.quantity}</TableCell>
-                          <TableCell className="text-right">R$ {item.product.price.toFixed(2)}</TableCell>
-                          <TableCell className="text-right">R$ {(item.product.price * item.quantity).toFixed(2)}</TableCell>
+                          <TableCell className="text-right">R$ {item.price.toFixed(2)}</TableCell>
+                          <TableCell className="text-right">R$ {(item.price * item.quantity).toFixed(2)}</TableCell>
                       </TableRow>
                   ))}
               </TableBody>
@@ -320,3 +364,5 @@ export function QuoteForm() {
     </>
   );
 }
+
+    
