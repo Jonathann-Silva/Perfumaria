@@ -35,6 +35,7 @@ export default function HistoryPage() {
   const [sales, setSales] = useState<Sale[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
   useEffect(() => {
     const fetchSales = async () => {
@@ -69,17 +70,34 @@ export default function HistoryPage() {
       const to = dateRange?.to;
 
       if (from && to) {
-        return saleDate >= from && saleDate <= to;
+        // Set hours to the beginning and end of the day for accurate comparison
+        const fromDate = new Date(from);
+        fromDate.setHours(0, 0, 0, 0);
+        const toDate = new Date(to);
+        toDate.setHours(23, 59, 59, 999);
+        return saleDate >= fromDate && saleDate <= toDate;
       }
       if (from) {
-        return saleDate >= from;
+        const fromDate = new Date(from);
+        fromDate.setHours(0, 0, 0, 0);
+        return saleDate >= fromDate;
       }
       if (to) {
-        return saleDate <= to;
+        const toDate = new Date(to);
+        toDate.setHours(23, 59, 59, 999);
+        return saleDate <= toDate;
       }
       return true;
     });
   }, [sales, dateRange]);
+  
+  const handleDateSelect = (selectedRange: DateRange | undefined) => {
+    setDateRange(selectedRange);
+    if (selectedRange?.from && selectedRange?.to) {
+      setIsDatePickerOpen(false);
+    }
+  }
+
 
   return (
     <div className="space-y-6">
@@ -92,7 +110,7 @@ export default function HistoryPage() {
           <div className="flex items-center gap-4 pt-4">
             <div className="grid gap-2">
               <Label>Período</Label>
-              <Popover>
+              <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     id="date"
@@ -120,7 +138,7 @@ export default function HistoryPage() {
                     mode="range"
                     defaultMonth={dateRange?.from}
                     selected={dateRange}
-                    onSelect={setDateRange}
+                    onSelect={handleDateSelect}
                     numberOfMonths={2}
                   />
                 </PopoverContent>
