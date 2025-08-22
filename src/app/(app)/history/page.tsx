@@ -139,7 +139,6 @@ export default function HistoryPage() {
                     defaultMonth={dateRange?.from}
                     selected={dateRange}
                     onSelect={handleDateSelect}
-                    numberOfMonths={2}
                   />
                 </PopoverContent>
               </Popover>
