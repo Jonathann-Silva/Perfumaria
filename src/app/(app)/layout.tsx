@@ -49,6 +49,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
       toast({
         title: 'Você saiu!',
         description: 'Você foi desconectado com sucesso.',
+        duration: 2000,
       });
       router.push('/login');
     } catch (error) {

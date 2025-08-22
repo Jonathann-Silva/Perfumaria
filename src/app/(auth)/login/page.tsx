@@ -35,6 +35,7 @@ export default function LoginPage() {
       toast({
         title: 'Login bem-sucedido!',
         description: 'Bem-vindo de volta.',
+        duration: 2000,
       });
       router.push('/dashboard');
     } catch (error: any) {

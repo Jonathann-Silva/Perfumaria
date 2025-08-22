@@ -186,15 +186,21 @@ function useToast() {
   }, [state])
 
   React.useEffect(() => {
-    state.toasts.forEach((toast) => {
-      if (toast.duration) {
-        const timeout = setTimeout(() => {
-          dispatch({ type: 'DISMISS_TOAST', toastId: toast.id });
-        }, toast.duration);
+    const timers = new Map<string, ReturnType<typeof setTimeout>>();
 
-        return () => clearTimeout(timeout);
+    state.toasts.forEach((t) => {
+      if (t.duration && !timers.has(t.id)) {
+        const timer = setTimeout(() => {
+          dispatch({ type: "DISMISS_TOAST", toastId: t.id });
+          timers.delete(t.id);
+        }, t.duration);
+        timers.set(t.id, timer);
       }
     });
+
+    return () => {
+      timers.forEach((timer) => clearTimeout(timer));
+    };
   }, [state.toasts]);
 
 
