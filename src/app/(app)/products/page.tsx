@@ -53,6 +53,8 @@ export default function ProductsPage() {
     price: '',
     purchasePrice: '',
     stock: '',
+    partCode: '',
+    brand: '',
   });
 
   const fetchProducts = async () => {
@@ -89,6 +91,8 @@ export default function ProductsPage() {
         price: String(product.price),
         purchasePrice: String(product.purchasePrice || ''),
         stock: String(product.stock),
+        partCode: product.partCode || '',
+        brand: product.brand || '',
       });
     } else {
       setProductData({
@@ -97,6 +101,8 @@ export default function ProductsPage() {
         price: '',
         purchasePrice: '',
         stock: '',
+        partCode: '',
+        brand: '',
       });
     }
     setIsDialogOpen(true);
@@ -138,7 +144,9 @@ export default function ProductsPage() {
                 type: productData.type,
                 price, 
                 purchasePrice: productData.type === 'Peça' ? purchasePrice : 0,
-                stock: productData.type === 'Peça' ? stock : 999 
+                stock: productData.type === 'Peça' ? stock : 999,
+                partCode: productData.partCode,
+                brand: productData.brand,
             };
             await updateDoc(productDoc, updatedData);
             setProducts(products.map(p => p.id === editingProduct.id ? updatedData : p));
@@ -150,7 +158,9 @@ export default function ProductsPage() {
                 type: productData.type,
                 price,
                 purchasePrice: productData.type === 'Peça' ? purchasePrice : 0,
-                stock: productData.type === 'Peça' ? stock : 999
+                stock: productData.type === 'Peça' ? stock : 999,
+                partCode: productData.partCode,
+                brand: productData.brand,
             };
             const docRef = await addDoc(collection(db, 'users', user.uid, 'products'), newProduct);
             setProducts([...products, { id: docRef.id, ...newProduct }]);
@@ -199,6 +209,8 @@ export default function ProductsPage() {
                     <TableHeader>
                     <TableRow>
                         <TableHead>Nome</TableHead>
+                        <TableHead>Código</TableHead>
+                        <TableHead>Marca</TableHead>
                         <TableHead>Tipo</TableHead>
                         <TableHead className="text-right">Preço de Compra</TableHead>
                         <TableHead className="text-right">Preço de Venda</TableHead>
@@ -210,6 +222,8 @@ export default function ProductsPage() {
                     {products.map((product) => (
                         <TableRow key={product.id}>
                         <TableCell className="font-medium">{product.name}</TableCell>
+                        <TableCell>{product.partCode}</TableCell>
+                        <TableCell>{product.brand}</TableCell>
                         <TableCell>{product.type}</TableCell>
                         <TableCell className="text-right">{product.type === 'Peça' ? `R$ ${product.purchasePrice?.toFixed(2)}` : 'N/A'}</TableCell>
                         <TableCell className="text-right">R$ {product.price.toFixed(2)}</TableCell>
@@ -240,6 +254,16 @@ export default function ProductsPage() {
             <div className="space-y-2">
               <Label htmlFor="name">Nome</Label>
               <Input id="name" value={productData.name} onChange={handleInputChange} />
+            </div>
+             <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label htmlFor="partCode">Código da Peça</Label>
+                    <Input id="partCode" value={productData.partCode} onChange={handleInputChange} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="brand">Marca</Label>
+                    <Input id="brand" value={productData.brand} onChange={handleInputChange} />
+                </div>
             </div>
              <div className="space-y-2">
                 <Label htmlFor="type">Tipo</Label>

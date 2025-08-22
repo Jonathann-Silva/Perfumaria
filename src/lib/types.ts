@@ -19,6 +19,8 @@ export type Product = {
   price: number;
   purchasePrice?: number;
   stock: number;
+  partCode?: string;
+  brand?: string;
 };
 
 export type QuoteItem = {
@@ -73,5 +75,3 @@ export type ShopProfile = {
   cnpj: string;
   logoUrl?: string;
 };
-
-    
