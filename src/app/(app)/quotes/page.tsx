@@ -23,7 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { quotes } from '@/lib/data';
 import type { Quote } from '@/lib/types';
-import { PlusCircle, Search, Printer } from 'lucide-react';
+import { PlusCircle, Search, Printer, Trash2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -32,6 +32,17 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import {
   Select,
   SelectContent,
@@ -62,6 +73,16 @@ export default function QuotesPage() {
     if(selectedQuote) {
         setSelectedQuote({...selectedQuote, status: newStatus})
     }
+  };
+
+  const handleDeleteQuote = (quoteId: string) => {
+    const updatedQuotes = quotesData.filter((quote) => quote.id !== quoteId);
+    setQuotesData(updatedQuotes);
+    setSelectedQuote(null);
+    toast({
+        title: 'Orçamento excluído',
+        description: 'O orçamento foi removido com sucesso.',
+    });
   };
 
   const getStatusVariant = (status: 'Pendente' | 'Aprovado' | 'Rejeitado') => {
@@ -262,15 +283,40 @@ export default function QuotesPage() {
                 </div>
               </div>
             </div>
-             <DialogFooter className='mt-4'>
-                <Button variant="outline" onClick={handleSendWhatsApp} className="bg-green-500 text-white hover:bg-green-600 hover:text-white">
-                  <WhatsAppIcon className="mr-2 h-4 w-4" />
-                  Enviar via WhatsApp
-                </Button>
-                <Button variant="outline" onClick={handlePrint}>
-                  <Printer className="mr-2 h-4 w-4" />
-                  Imprimir
-                </Button>
+             <DialogFooter className='mt-4 sm:justify-between'>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="sm:mr-auto">
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Excluir Orçamento
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Esta ação não pode ser desfeita. Isso irá excluir permanentemente o orçamento <span className="font-medium">{selectedQuote.id}</span>.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => handleDeleteQuote(selectedQuote.id)}>
+                        Sim, Excluir
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
+                <div className="flex gap-2 justify-end">
+                    <Button variant="outline" onClick={handleSendWhatsApp} className="bg-green-500 text-white hover:bg-green-600 hover:text-white">
+                      <WhatsAppIcon className="mr-2 h-4 w-4" />
+                      Enviar via WhatsApp
+                    </Button>
+                    <Button variant="outline" onClick={handlePrint}>
+                      <Printer className="mr-2 h-4 w-4" />
+                      Imprimir
+                    </Button>
+                </div>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -346,3 +392,5 @@ export default function QuotesPage() {
     </>
   );
 }
+
+    
