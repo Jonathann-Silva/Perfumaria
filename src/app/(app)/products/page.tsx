@@ -55,6 +55,8 @@ export default function ProductsPage() {
     stock: '',
     partCode: '',
     brand: '',
+    vehicleCompatibility: '',
+    vehicleYear: '',
   });
 
   const fetchProducts = async () => {
@@ -93,6 +95,8 @@ export default function ProductsPage() {
         stock: String(product.stock),
         partCode: product.partCode || '',
         brand: product.brand || '',
+        vehicleCompatibility: product.vehicleCompatibility || '',
+        vehicleYear: product.vehicleYear || '',
       });
     } else {
       setProductData({
@@ -103,6 +107,8 @@ export default function ProductsPage() {
         stock: '',
         partCode: '',
         brand: '',
+        vehicleCompatibility: '',
+        vehicleYear: '',
       });
     }
     setIsDialogOpen(true);
@@ -147,6 +153,8 @@ export default function ProductsPage() {
                 stock: productData.type === 'Peça' ? stock : 999,
                 partCode: productData.partCode,
                 brand: productData.brand,
+                vehicleCompatibility: productData.vehicleCompatibility,
+                vehicleYear: productData.vehicleYear,
             };
             await updateDoc(productDoc, updatedData);
             setProducts(products.map(p => p.id === editingProduct.id ? updatedData : p));
@@ -161,6 +169,8 @@ export default function ProductsPage() {
                 stock: productData.type === 'Peça' ? stock : 999,
                 partCode: productData.partCode,
                 brand: productData.brand,
+                vehicleCompatibility: productData.vehicleCompatibility,
+                vehicleYear: productData.vehicleYear,
             };
             const docRef = await addDoc(collection(db, 'users', user.uid, 'products'), newProduct);
             setProducts([...products, { id: docRef.id, ...newProduct }]);
@@ -211,6 +221,7 @@ export default function ProductsPage() {
                         <TableHead>Nome</TableHead>
                         <TableHead>Código</TableHead>
                         <TableHead>Marca</TableHead>
+                        <TableHead>Veículo Compatível</TableHead>
                         <TableHead>Tipo</TableHead>
                         <TableHead className="text-right">Preço de Compra</TableHead>
                         <TableHead className="text-right">Preço de Venda</TableHead>
@@ -224,6 +235,7 @@ export default function ProductsPage() {
                         <TableCell className="font-medium">{product.name}</TableCell>
                         <TableCell>{product.partCode}</TableCell>
                         <TableCell>{product.brand}</TableCell>
+                        <TableCell>{product.vehicleCompatibility} {product.vehicleYear && `(${product.vehicleYear})`}</TableCell>
                         <TableCell>{product.type}</TableCell>
                         <TableCell className="text-right">{product.type === 'Peça' ? `R$ ${product.purchasePrice?.toFixed(2)}` : 'N/A'}</TableCell>
                         <TableCell className="text-right">R$ {product.price.toFixed(2)}</TableCell>
@@ -263,6 +275,16 @@ export default function ProductsPage() {
                 <div className="space-y-2">
                     <Label htmlFor="brand">Marca</Label>
                     <Input id="brand" value={productData.brand} onChange={handleInputChange} />
+                </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label htmlFor="vehicleCompatibility">Carro</Label>
+                    <Input id="vehicleCompatibility" value={productData.vehicleCompatibility} onChange={handleInputChange} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="vehicleYear">Ano</Label>
+                    <Input id="vehicleYear" value={productData.vehicleYear} onChange={handleInputChange} />
                 </div>
             </div>
              <div className="space-y-2">

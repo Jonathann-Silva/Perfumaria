@@ -21,6 +21,8 @@ export type Product = {
   stock: number;
   partCode?: string;
   brand?: string;
+  vehicleCompatibility?: string;
+  vehicleYear?: string;
 };
 
 export type QuoteItem = {
