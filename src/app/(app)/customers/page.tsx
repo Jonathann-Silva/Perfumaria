@@ -74,7 +74,9 @@ export default function CustomersPage() {
   };
 
   useEffect(() => {
-    fetchCustomers();
+    if(user) {
+        fetchCustomers();
+    }
   }, [user]);
 
   const handleRowClick = (customer: Customer) => {
@@ -251,12 +253,11 @@ export default function CustomersPage() {
               <Input id="addressStreet" value={newCustomerData.addressStreet} onChange={handleNewCustomerInputChange} className="col-span-3" />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="addressNeighborhood" className="text-right">Bairro</Label>
-              <Input id="addressNeighborhood" value={newCustomerData.addressNeighborhood} onChange={handleNewCustomerInputChange} className="col-span-3" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="addressNumber" className="text-right">Número</Label>
-              <Input id="addressNumber" value={newCustomerData.addressNumber} onChange={handleNewCustomerInputChange} className="col-span-3" />
+                <Label htmlFor="addressNeighborhood" className="text-right">Bairro/Número</Label>
+                <div className="col-span-3 grid grid-cols-3 gap-2">
+                    <Input id="addressNeighborhood" placeholder="Bairro" value={newCustomerData.addressNeighborhood} onChange={handleNewCustomerInputChange} className="col-span-2" />
+                    <Input id="addressNumber" placeholder="Nº" value={newCustomerData.addressNumber} onChange={handleNewCustomerInputChange} className="col-span-1" />
+                </div>
             </div>
           </div>
           <DialogFooter>
@@ -334,12 +335,11 @@ export default function CustomersPage() {
                         <Input id="addressStreet" value={editingCustomer.addressStreet} onChange={handleEditInputChange} className="col-span-3" />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="addressNeighborhood" className="text-right">Bairro</Label>
-                        <Input id="addressNeighborhood" value={editingCustomer.addressNeighborhood} onChange={handleEditInputChange} className="col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="addressNumber" className="text-right">Número</Label>
-                        <Input id="addressNumber" value={editingCustomer.addressNumber} onChange={handleEditInputChange} className="col-span-3" />
+                        <Label htmlFor="addressNeighborhood" className="text-right">Bairro/Número</Label>
+                        <div className="col-span-3 grid grid-cols-3 gap-2">
+                            <Input id="addressNeighborhood" placeholder="Bairro" value={editingCustomer.addressNeighborhood} onChange={handleEditInputChange} className="col-span-2" />
+                            <Input id="addressNumber" placeholder="Nº" value={editingCustomer.addressNumber} onChange={handleEditInputChange} className="col-span-1" />
+                        </div>
                     </div>
                 </div>
             ) : (
