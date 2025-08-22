@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 import { useAuth } from '@/components/auth-provider';
@@ -21,13 +21,20 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Calendar as CalendarIcon } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { format, parseISO } from 'date-fns';
+import type { DateRange } from 'react-day-picker';
+import { Label } from '@/components/ui/label';
 
 export default function HistoryPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [sales, setSales] = useState<Sale[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
   useEffect(() => {
     const fetchSales = async () => {
@@ -52,6 +59,28 @@ export default function HistoryPage() {
     fetchSales();
   }, [user, toast]);
 
+  const filteredSales = useMemo(() => {
+    if (!dateRange?.from && !dateRange?.to) {
+      return sales;
+    }
+    return sales.filter(sale => {
+      const saleDate = parseISO(sale.date);
+      const from = dateRange?.from;
+      const to = dateRange?.to;
+
+      if (from && to) {
+        return saleDate >= from && saleDate <= to;
+      }
+      if (from) {
+        return saleDate >= from;
+      }
+      if (to) {
+        return saleDate <= to;
+      }
+      return true;
+    });
+  }, [sales, dateRange]);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -60,6 +89,47 @@ export default function HistoryPage() {
        <Card>
         <CardHeader>
           <CardTitle>Vendas Realizadas</CardTitle>
+          <div className="flex items-center gap-4 pt-4">
+            <div className="grid gap-2">
+              <Label>Período</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    id="date"
+                    variant={"outline"}
+                    className="w-[260px] justify-start text-left font-normal"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dateRange?.from ? (
+                      dateRange.to ? (
+                        <>
+                          {format(dateRange.from, "LLL dd, y")} -{" "}
+                          {format(dateRange.to, "LLL dd, y")}
+                        </>
+                      ) : (
+                        format(dateRange.from, "LLL dd, y")
+                      )
+                    ) : (
+                      <span>Selecione um período</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    initialFocus
+                    mode="range"
+                    defaultMonth={dateRange?.from}
+                    selected={dateRange}
+                    onSelect={setDateRange}
+                    numberOfMonths={2}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+             { (dateRange?.from || dateRange?.to) && (
+              <Button variant="ghost" onClick={() => setDateRange(undefined)} className="self-end">Limpar</Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -77,7 +147,7 @@ export default function HistoryPage() {
                 </TableRow>
                 </TableHeader>
                 <TableBody>
-                {sales.map((sale) => (
+                {filteredSales.map((sale) => (
                     <TableRow key={sale.id}>
                     <TableCell className="font-medium">{sale.id.substring(0, 8)}...</TableCell>
                     <TableCell>{sale.customerName}</TableCell>
@@ -85,6 +155,13 @@ export default function HistoryPage() {
                     <TableCell className="text-right">R$ {sale.total.toFixed(2)}</TableCell>
                     </TableRow>
                 ))}
+                {filteredSales.length === 0 && !isLoading && (
+                   <TableRow>
+                    <TableCell colSpan={4} className="h-24 text-center">
+                      Nenhuma venda encontrada para o período selecionado.
+                    </TableCell>
+                  </TableRow>
+                )}
                 </TableBody>
             </Table>
           )}
