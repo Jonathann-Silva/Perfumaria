@@ -59,8 +59,7 @@ export default function LoginPage() {
   return (
     <Card className="w-full max-w-sm">
       <CardHeader className="flex flex-col items-center text-center">
-         <div className="flex items-center justify-center gap-3 mb-4 text-3xl">
-            <MechAppLogo />
+         <div className="flex items-center gap-3 mb-4 text-3xl">
             <h1 className="font-bold m-0">MechApp</h1>
         </div>
         <CardTitle className="text-2xl">Login</CardTitle>
@@ -97,6 +96,17 @@ export default function LoginPage() {
             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Entrar'}
           </Button>
         </form>
+         <p className="mt-4 px-8 text-center text-sm text-muted-foreground">
+            Entre em contato com o administrador para ter acesso ao app.{' '}
+            <a
+              href="https://wa.me/5511999999999"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-4 hover:text-primary"
+            >
+              Fale conosco
+            </a>
+          </p>
       </CardContent>
     </Card>
   );
