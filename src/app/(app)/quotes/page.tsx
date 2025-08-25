@@ -55,7 +55,8 @@ import { useAuth } from '@/components/auth-provider';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 
-const formatSequentialId = (id: number) => {
+const formatSequentialId = (id: number | null | undefined) => {
+    if (id === null || id === undefined) return 'N/A';
     return id.toString().padStart(4, '0');
 };
 

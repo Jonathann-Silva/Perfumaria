@@ -32,7 +32,8 @@ import { collection, getDocs, limit, orderBy, query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 
-const formatSequentialId = (id: number) => {
+const formatSequentialId = (id: number | null | undefined) => {
+    if (id === null || id === undefined) return 'N/A';
     return id.toString().padStart(4, '0');
 };
 

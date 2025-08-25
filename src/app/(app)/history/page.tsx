@@ -41,7 +41,8 @@ import type { DateRange } from 'react-day-picker';
 import { Label } from '@/components/ui/label';
 import { WhatsAppIcon } from '@/components/icons';
 
-const formatSequentialId = (id: number) => {
+const formatSequentialId = (id: number | null | undefined) => {
+    if (id === null || id === undefined) return 'N/A';
     return id.toString().padStart(4, '0');
 };
 

@@ -62,7 +62,7 @@ export default function CustomersPage() {
       const customersSnapshot = await getDocs(customersCollection);
       const customersList = customersSnapshot.docs
         .map(doc => ({ id: doc.id, ...doc.data() } as Customer))
-        .sort((a, b) => a.sequentialId - b.sequentialId); // Sort by sequentialId
+        .sort((a, b) => (a.sequentialId || 0) - (b.sequentialId || 0)); // Sort by sequentialId
       setCustomers(customersList);
     } catch (error) {
       console.error("Error fetching customers: ", error);
@@ -131,7 +131,7 @@ export default function CustomersPage() {
         // Update local state
         const updatedCustomers = customers
           .map(c => c.id === editingCustomer.id ? editingCustomer : c)
-          .sort((a,b) => a.sequentialId - b.sequentialId);
+          .sort((a,b) => (a.sequentialId || 0) - (b.sequentialId || 0));
         
         setCustomers(updatedCustomers);
         setSelectedCustomer(editingCustomer);
@@ -194,7 +194,7 @@ export default function CustomersPage() {
         transaction.update(counterRef, { lastId: newSequentialId });
         
         // Optimistically update UI
-        setCustomers(prev => [...prev, { id: newCustomerDocRef.id, ...newCustomer }].sort((a, b) => a.sequentialId - b.sequentialId));
+        setCustomers(prev => [...prev, { id: newCustomerDocRef.id, ...newCustomer }].sort((a, b) => (a.sequentialId || 0) - (b.sequentialId || 0)));
       });
 
       setIsNewCustomerDialogOpen(false);
@@ -224,7 +224,8 @@ export default function CustomersPage() {
     }
   };
   
-  const formatSequentialId = (id: number) => {
+  const formatSequentialId = (id: number | null | undefined) => {
+    if (id === null || id === undefined) return 'N/A';
     return id.toString().padStart(4, '0');
   }
 
