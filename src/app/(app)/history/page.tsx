@@ -41,9 +41,14 @@ import type { DateRange } from 'react-day-picker';
 import { Label } from '@/components/ui/label';
 import { WhatsAppIcon } from '@/components/icons';
 
-const formatSequentialId = (id: number | null | undefined) => {
-    if (id === null || id === undefined) return 'N/A';
-    return id.toString().padStart(4, '0');
+const formatDisplayId = (sale: Sale) => {
+    if (sale.sequentialId !== null && sale.sequentialId !== undefined) {
+      return `#${sale.sequentialId.toString().padStart(4, '0')}`;
+    }
+    if (sale.id) {
+      return `#${sale.id.substring(0, 6)}`;
+    }
+    return 'N/A';
 };
 
 export default function HistoryPage() {
@@ -221,7 +226,7 @@ export default function HistoryPage() {
                     {filteredSales.map((sale) => (
                       <DialogTrigger asChild key={sale.id}>
                         <TableRow className="cursor-pointer" onClick={() => setSelectedSale(sale)}>
-                            <TableCell className="font-medium">#{formatSequentialId(sale.sequentialId)}</TableCell>
+                            <TableCell className="font-medium">{formatDisplayId(sale)}</TableCell>
                             <TableCell>{sale.customerName}</TableCell>
                             <TableCell>{new Date(sale.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</TableCell>
                             <TableCell className="text-right">R$ {sale.total.toFixed(2)}</TableCell>
@@ -240,7 +245,7 @@ export default function HistoryPage() {
                 {selectedSale && (
                   <DialogContent className="sm:max-w-xl no-print">
                       <DialogHeader>
-                          <DialogTitle>Detalhes da Venda - #{formatSequentialId(selectedSale.sequentialId)}</DialogTitle>
+                          <DialogTitle>Detalhes da Venda - {formatDisplayId(selectedSale)}</DialogTitle>
                           <DialogDescription asChild>
                             <div>
                               <div><b>Cliente:</b> {selectedSale.customerName}</div>
@@ -317,7 +322,7 @@ export default function HistoryPage() {
                   <p className='text-sm'>{profile.phone} | CNPJ: {profile.cnpj}</p>
               </div>
               <div className="text-right">
-                  <h2 className="text-2xl font-bold mb-2">Recibo de Venda #{formatSequentialId(selectedSale.sequentialId)}</h2>
+                  <h2 className="text-2xl font-bold mb-2">Recibo de Venda {formatDisplayId(selectedSale)}</h2>
                   <p>Data: {new Date(selectedSale.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</p>
               </div>
           </header>

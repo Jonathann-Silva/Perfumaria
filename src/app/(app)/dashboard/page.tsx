@@ -32,9 +32,14 @@ import { collection, getDocs, limit, orderBy, query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 
-const formatSequentialId = (id: number | null | undefined) => {
-    if (id === null || id === undefined) return 'N/A';
-    return id.toString().padStart(4, '0');
+const formatDisplayId = (sale: Sale) => {
+    if (sale.sequentialId !== null && sale.sequentialId !== undefined) {
+      return `#${sale.sequentialId.toString().padStart(4, '0')}`;
+    }
+    if (sale.id) {
+      return `#${sale.id.substring(0, 6)}`;
+    }
+    return 'N/A';
 };
 
 function StatCard({ title, value, icon: Icon }: { title: string, value: string, icon: React.ElementType }) {
@@ -74,7 +79,7 @@ function RecentSales({ recentSales }: { recentSales: Sale[] }) {
                             {recentSales.map((sale) => (
                                  <DialogTrigger key={sale.id} asChild>
                                      <TableRow className="cursor-pointer" onClick={() => setSelectedSale(sale)}>
-                                         <TableCell>#{formatSequentialId(sale.sequentialId)}</TableCell>
+                                         <TableCell>{formatDisplayId(sale)}</TableCell>
                                          <TableCell>{sale.customerName}</TableCell>
                                          <TableCell className="text-right">R$ {sale.total.toFixed(2)}</TableCell>
                                          <TableCell className="text-right">{new Date(sale.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</TableCell>
@@ -88,7 +93,7 @@ function RecentSales({ recentSales }: { recentSales: Sale[] }) {
             {selectedSale && (
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Detalhes da Venda - #{formatSequentialId(selectedSale.sequentialId)}</DialogTitle>
+                        <DialogTitle>Detalhes da Venda - {formatDisplayId(selectedSale)}</DialogTitle>
                         <DialogDescription asChild>
                           <div>
                             <div><b>Cliente:</b> {selectedSale.customerName}</div>

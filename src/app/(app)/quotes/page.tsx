@@ -55,10 +55,16 @@ import { useAuth } from '@/components/auth-provider';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 
-const formatSequentialId = (id: number | null | undefined) => {
-    if (id === null || id === undefined) return 'N/A';
-    return id.toString().padStart(4, '0');
+const formatDisplayId = (quote: Quote) => {
+    if (quote.sequentialId !== null && quote.sequentialId !== undefined) {
+      return `#${quote.sequentialId.toString().padStart(4, '0')}`;
+    }
+    if (quote.id) {
+      return `#${quote.id.substring(0, 6)}`;
+    }
+    return 'N/A';
 };
+
 
 export default function QuotesPage() {
   const { toast } = useToast();
@@ -250,7 +256,7 @@ export default function QuotesPage() {
                         className="cursor-pointer"
                         onClick={() => setSelectedQuote(quote)}
                     >
-                        <TableCell className="font-medium">#{formatSequentialId(quote.sequentialId)}</TableCell>
+                        <TableCell className="font-medium">{formatDisplayId(quote)}</TableCell>
                         <TableCell>{quote.customerName}</TableCell>
                         <TableCell>{quote.vehicle}</TableCell>
                         <TableCell>{new Date(quote.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</TableCell>
@@ -288,7 +294,7 @@ export default function QuotesPage() {
         >
           <DialogContent className="max-w-3xl no-print">
             <DialogHeader>
-              <DialogTitle>Detalhes do Orçamento - #{formatSequentialId(selectedQuote.sequentialId)}</DialogTitle>
+              <DialogTitle>Detalhes do Orçamento - {formatDisplayId(selectedQuote)}</DialogTitle>
               <DialogDescription asChild>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1 pt-2">
                     <div><b>Cliente:</b> {selectedQuote.customerName}</div>
@@ -361,7 +367,7 @@ export default function QuotesPage() {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Esta ação não pode ser desfeita. Isso irá excluir permanentemente o orçamento <span className="font-medium">#{formatSequentialId(selectedQuote.sequentialId)}</span>.
+                        Esta ação não pode ser desfeita. Isso irá excluir permanentemente o orçamento <span className="font-medium">{formatDisplayId(selectedQuote)}</span>.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -402,7 +408,7 @@ export default function QuotesPage() {
                   <p>{profile.phone} | CNPJ: {profile.cnpj}</p>
               </div>
               <div className="text-right">
-                  <h2 className="text-2xl font-bold mb-2">Orçamento #{formatSequentialId(selectedQuote.sequentialId)}</h2>
+                  <h2 className="text-2xl font-bold mb-2">Orçamento {formatDisplayId(selectedQuote)}</h2>
                   <p>Data: {new Date(selectedQuote.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</p>
               </div>
           </div>
@@ -458,5 +464,3 @@ export default function QuotesPage() {
     </>
   );
 }
-
-    
