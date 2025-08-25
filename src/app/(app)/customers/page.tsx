@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, doc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, updateDoc, runTransaction } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -59,7 +59,9 @@ export default function CustomersPage() {
     try {
       const customersCollection = collection(db, 'users', user.uid, 'customers');
       const customersSnapshot = await getDocs(customersCollection);
-      const customersList = customersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Customer));
+      const customersList = customersSnapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() } as Customer))
+        .sort((a, b) => a.sequentialId - b.sequentialId); // Sort by sequentialId
       setCustomers(customersList);
     } catch (error) {
       console.error("Error fetching customers: ", error);
@@ -105,9 +107,10 @@ export default function CustomersPage() {
         });
 
         // Update local state
-        const updatedCustomers = customers.map(c => 
-            c.id === editingCustomer.id ? editingCustomer : c
-        );
+        const updatedCustomers = customers
+          .map(c => c.id === editingCustomer.id ? editingCustomer : c)
+          .sort((a,b) => a.sequentialId - b.sequentialId);
+        
         setCustomers(updatedCustomers);
         setSelectedCustomer(editingCustomer);
         setIsEditing(false);
@@ -134,40 +137,63 @@ export default function CustomersPage() {
 
   const handleAddNewCustomer = async () => {
     if (!user) return;
-    try {
-        const newCustomer: Omit<Customer, 'id' | 'lastService'> = {
-            ...newCustomerData,
-        };
-        const docRef = await addDoc(collection(db, 'users', user.uid, 'customers'), {
-            ...newCustomer,
-            lastService: new Date().toISOString().split('T')[0],
-        });
 
-        setCustomers([...customers, { id: docRef.id, ...newCustomer, lastService: new Date().toISOString().split('T')[0] }]);
-        setIsNewCustomerDialogOpen(false);
-        setNewCustomerData({
-            name: '',
-            email: '',
-            phone: '',
-            vehicle: '',
-            vehiclePlate: '',
-            addressStreet: '',
-            addressNeighborhood: '',
-            addressNumber: '',
-        });
-         toast({
-            title: 'Cliente adicionado!',
-            description: 'O novo cliente foi salvo com sucesso.',
-        });
+    try {
+      await runTransaction(db, async (transaction) => {
+        const counterRef = doc(db, 'users', user.uid, 'counters', 'customers');
+        const counterSnap = await transaction.get(counterRef);
+
+        let newSequentialId = 1;
+        if (counterSnap.exists()) {
+          newSequentialId = counterSnap.data().lastId + 1;
+        } else {
+          // If counter doesn't exist, create it.
+          transaction.set(counterRef, { lastId: 0 });
+        }
+        
+        const newCustomerDocRef = doc(collection(db, 'users', user.uid, 'customers'));
+        const newCustomer: Omit<Customer, 'id'> = {
+          sequentialId: newSequentialId,
+          ...newCustomerData,
+          lastService: new Date().toISOString().split('T')[0],
+        };
+
+        transaction.set(newCustomerDocRef, newCustomer);
+        transaction.update(counterRef, { lastId: newSequentialId });
+        
+        // Optimistically update UI
+        setCustomers(prev => [...prev, { id: newCustomerDocRef.id, ...newCustomer }].sort((a, b) => a.sequentialId - b.sequentialId));
+      });
+
+      setIsNewCustomerDialogOpen(false);
+      setNewCustomerData({
+          name: '',
+          email: '',
+          phone: '',
+          vehicle: '',
+          vehiclePlate: '',
+          addressStreet: '',
+          addressNeighborhood: '',
+          addressNumber: '',
+      });
+      toast({
+          title: 'Cliente adicionado!',
+          description: 'O novo cliente foi salvo com sucesso.',
+      });
+
     } catch (error) {
         console.error("Error adding customer: ", error);
-         toast({
+        toast({
             title: 'Erro ao adicionar cliente',
             description: 'Não foi possível salvar o novo cliente.',
             variant: 'destructive',
         });
     }
   };
+  
+  const formatSequentialId = (id: number) => {
+    return id.toString().padStart(4, '0');
+  }
 
   return (
     <>
@@ -192,6 +218,7 @@ export default function CustomersPage() {
                 <Table>
                 <TableHeader>
                     <TableRow>
+                    <TableHead>ID</TableHead>
                     <TableHead>Nome</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Telefone</TableHead>
@@ -207,7 +234,10 @@ export default function CustomersPage() {
                         onClick={() => handleRowClick(customer)}
                     >
                         <TableCell className="font-medium">
-                        {customer.name}
+                          {formatSequentialId(customer.sequentialId)}
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {customer.name}
                         </TableCell>
                         <TableCell>{customer.email}</TableCell>
                         <TableCell>{customer.phone}</TableCell>
@@ -282,7 +312,7 @@ export default function CustomersPage() {
               <DialogTitle>
                 <div className="flex items-center gap-2">
                   <User className="h-6 w-6" />
-                  <span>{isEditing ? 'Editando Cliente' : selectedCustomer.name}</span>
+                  <span>{isEditing ? `Editando Cliente #${formatSequentialId(selectedCustomer.sequentialId)}` : selectedCustomer.name}</span>
                 </div>
               </DialogTitle>
               {!isEditing && (

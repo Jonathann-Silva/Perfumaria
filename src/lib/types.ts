@@ -1,7 +1,8 @@
 
 
 export type Customer = {
-  id: string;
+  id: string; // Firestore document ID
+  sequentialId: number;
   name: string;
   email: string;
   phone: string;
