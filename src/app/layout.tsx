@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'EngrenApp',
+  title: 'MechApp',
   description: 'Gerenciador de oficina mecânica',
 };
 

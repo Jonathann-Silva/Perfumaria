@@ -28,7 +28,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { EngrenAppLogo } from '@/components/icons';
+import { MechAppLogo } from '@/components/icons';
 import { AuthProvider, useAuth } from '@/components/auth-provider';
 import { getAuth, signOut } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
@@ -74,9 +74,9 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
       <Sidebar side="left" variant="sidebar" collapsible="icon">
         <SidebarHeader className="items-center justify-start gap-3 p-4 text-3xl">
-          <EngrenAppLogo />
+          <MechAppLogo />
           <span className="font-semibold text-sidebar-foreground">
-            {shopLoading ? <Skeleton className="h-6 w-24" /> : profile?.name || 'EngrenApp'}
+            {shopLoading ? <Skeleton className="h-6 w-24" /> : profile?.name || 'MechApp'}
           </span>
         </SidebarHeader>
         <SidebarContent>

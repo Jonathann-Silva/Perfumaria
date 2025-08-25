@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { Loader2 } from 'lucide-react';
-import { EngrenAppLogo } from '@/components/icons';
+import { MechAppLogo } from '@/components/icons';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -60,8 +60,8 @@ export default function LoginPage() {
     <Card className="w-full max-w-sm">
       <CardHeader className="text-center">
          <div className="flex items-center justify-center gap-3 mb-4 text-3xl">
-            <EngrenAppLogo />
-            <h1 className="font-bold">EngrenApp</h1>
+            <MechAppLogo />
+            <h1 className="font-bold">MechApp</h1>
         </div>
         <CardTitle className="text-2xl">Login</CardTitle>
         <CardDescription>
