@@ -184,7 +184,7 @@ export function SalesForm() {
   const handleFinalizeSale = async () => {
     if (!user) return;
     if (saleItems.length === 0) {
-        toast({ title: 'Nenhum item na venda', description: 'Adicione pelo menos um item para registrar a venda.', variant: 'destructive'});
+        toast({ title: 'Nenhum item na venda', description: 'Adicione pelo menos um item para registrar a venda.', variant: 'destructive', duration: 2000});
         return;
     }
      if (!customerName) {
