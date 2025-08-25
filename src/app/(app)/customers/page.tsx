@@ -94,6 +94,27 @@ export default function CustomersPage() {
     setIsEditing(false);
   };
 
+  const formatPlate = (value: string): string => {
+    const cleaned = value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    if (cleaned.length <= 3) {
+      return cleaned;
+    }
+    if (cleaned.length === 4) {
+      return `${cleaned.slice(0, 3)}-${cleaned.slice(3)}`;
+    }
+    if (cleaned.length <= 7) {
+       return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 4)}${cleaned.slice(4, 5)}-${cleaned.slice(5)}`.replace(/-+/g, '-').slice(0, 9);
+    }
+     // Format AAA-0A00 for Mercosul
+    let plate = cleaned.slice(0, 7);
+    return `${plate.slice(0, 3)}-${plate.slice(3, 4)}${plate.slice(4, 5)}${plate.slice(5, 7)}`;
+  };
+
+  const handlePlateChange = (setter: React.Dispatch<React.SetStateAction<any>>, fieldName: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      const formattedPlate = formatPlate(e.target.value);
+      setter(prev => ({...prev, [fieldName]: formattedPlate}));
+  };
+
   const handleSave = async () => {
     if (!editingCustomer || !editingCustomer.id || !user) return;
 
@@ -128,12 +149,22 @@ export default function CustomersPage() {
   const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!editingCustomer) return;
     const { id, value } = e.target;
-    setEditingCustomer({ ...editingCustomer, [id]: value });
+    if (id === 'vehiclePlate') {
+        const formattedPlate = formatPlate(value);
+        setEditingCustomer({ ...editingCustomer, [id]: formattedPlate });
+    } else {
+        setEditingCustomer({ ...editingCustomer, [id]: value });
+    }
   };
 
   const handleNewCustomerInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
-    setNewCustomerData({ ...newCustomerData, [id]: value });
+     if (id === 'vehiclePlate') {
+        const formattedPlate = formatPlate(value);
+        setNewCustomerData({ ...newCustomerData, [id]: formattedPlate });
+    } else {
+        setNewCustomerData({ ...newCustomerData, [id]: value });
+    }
   };
 
   const handleAddNewCustomer = async () => {
@@ -278,7 +309,7 @@ export default function CustomersPage() {
                 <div className="col-span-3 grid grid-cols-5 gap-2">
                     <Input id="vehicle" placeholder="Veículo" value={newCustomerData.vehicle} onChange={handleNewCustomerInputChange} className="col-span-2" />
                     <Input id="vehicleYear" placeholder="Ano" value={newCustomerData.vehicleYear} onChange={handleNewCustomerInputChange} className="col-span-1" />
-                    <Input id="vehiclePlate" placeholder="Placa" value={newCustomerData.vehiclePlate} onChange={handleNewCustomerInputChange} className="col-span-2" />
+                    <Input id="vehiclePlate" placeholder="Placa" value={newCustomerData.vehiclePlate} onChange={handleNewCustomerInputChange} className="col-span-2" maxLength={8} />
                 </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -361,7 +392,7 @@ export default function CustomersPage() {
                         <div className="col-span-3 grid grid-cols-5 gap-2">
                             <Input id="vehicle" placeholder="Veículo" value={editingCustomer.vehicle} onChange={handleEditInputChange} className="col-span-2" />
                             <Input id="vehicleYear" placeholder="Ano" value={editingCustomer.vehicleYear} onChange={handleEditInputChange} className="col-span-1" />
-                            <Input id="vehiclePlate" placeholder="Placa" value={editingCustomer.vehiclePlate} onChange={handleEditInputChange} className="col-span-2" />
+                            <Input id="vehiclePlate" placeholder="Placa" value={editingCustomer.vehiclePlate} onChange={handleEditInputChange} className="col-span-2" maxLength={8} />
                         </div>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">

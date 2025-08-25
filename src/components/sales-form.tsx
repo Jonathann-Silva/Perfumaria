@@ -181,6 +181,22 @@ export function SalesForm() {
     setSaleItems(saleItems.map(item => item.id === itemId ? {...item, quantity: Math.max(1, quantity) } : item));
   }
 
+  const formatPlate = (value: string): string => {
+    const cleaned = value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    if (cleaned.length <= 3) {
+      return cleaned;
+    }
+    if (cleaned.length === 4) {
+      return `${cleaned.slice(0, 3)}-${cleaned.slice(3)}`;
+    }
+    if (cleaned.length <= 7) {
+       return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 4)}${cleaned.slice(4, 5)}-${cleaned.slice(5)}`.replace(/-+/g, '-').slice(0, 9);
+    }
+     // Format AAA-0A00 for Mercosul
+    let plate = cleaned.slice(0, 7);
+    return `${plate.slice(0, 3)}-${plate.slice(3, 4)}${plate.slice(4, 5)}${plate.slice(5, 7)}`;
+  };
+
   const handleFinalizeSale = async () => {
     if (!user) return;
     if (saleItems.length === 0) {
@@ -290,7 +306,7 @@ export function SalesForm() {
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="vehiclePlate">Placa do Carro</Label>
-                            <Input id="vehiclePlate" value={vehiclePlate} onChange={(e) => setVehiclePlate(e.target.value)} placeholder="Ex: ABC-1234" />
+                            <Input id="vehiclePlate" value={vehiclePlate} onChange={(e) => setVehiclePlate(formatPlate(e.target.value))} placeholder="Ex: ABC-1A23" maxLength={8}/>
                         </div>
                     </div>
                 </div>
