@@ -6,7 +6,7 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { usePathname, useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
-import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore';
 import type { ShopProfile } from '@/lib/types';
 
 interface AuthContextType {
@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!currentUser) return;
     const docRef = doc(db, 'users', currentUser.uid, 'shopSettings', 'profile');
     
-    const unsubscribe = onSnapshot(docRef, (docSnap) => {
+    const unsubscribe = onSnapshot(docRef, async (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data() as Partial<ShopProfile>;
         const profileData: ShopProfile = {
@@ -49,9 +49,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           cnpj: '',
           logoUrl: '',
         };
-        setDoc(docRef, defaultProfile).then(() => {
-          setProfile(defaultProfile);
-        });
+        // Check again before setting to avoid race conditions
+        const freshSnap = await getDoc(docRef);
+        if (!freshSnap.exists()) {
+          try {
+            await setDoc(docRef, defaultProfile);
+            setProfile(defaultProfile);
+          } catch (error) {
+            console.error("Error creating default profile:", error);
+          }
+        }
       }
       setLoading(false);
     }, (error) => {
