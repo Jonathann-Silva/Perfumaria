@@ -13,6 +13,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
+  CardDescription
 } from '@/components/ui/card';
 import {
   Table,
@@ -22,6 +23,14 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { Loader2, Calendar as CalendarIcon } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
@@ -37,6 +46,7 @@ export default function HistoryPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
 
   useEffect(() => {
     const fetchSales = async () => {
@@ -103,100 +113,146 @@ export default function HistoryPage() {
     }
   }
 
-
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Histórico de Vendas</h1>
-      </div>
-       <Card>
-        <CardHeader>
-          <CardTitle>Vendas Realizadas</CardTitle>
-          <div className="flex items-center gap-4 pt-4">
-            <div className="grid gap-2">
-              <Label>Período</Label>
-              <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    id="date"
-                    variant={"outline"}
-                    className="w-[260px] justify-start text-left font-normal"
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateRange?.from ? (
-                      dateRange.to ? (
-                        <>
-                          {format(dateRange.from, "LLL dd, y")} -{" "}
-                          {format(dateRange.to, "LLL dd, y")}
-                        </>
+    <>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold tracking-tight">Histórico de Vendas</h1>
+        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Vendas Realizadas</CardTitle>
+            <div className="flex items-center gap-4 pt-4">
+              <div className="grid gap-2">
+                <Label>Período</Label>
+                <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id="date"
+                      variant={"outline"}
+                      className="w-[260px] justify-start text-left font-normal"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dateRange?.from ? (
+                        dateRange.to ? (
+                          <>
+                            {format(dateRange.from, "LLL dd, y")} -{" "}
+                            {format(dateRange.to, "LLL dd, y")}
+                          </>
+                        ) : (
+                          format(dateRange.from, "LLL dd, y")
+                        )
                       ) : (
-                        format(dateRange.from, "LLL dd, y")
-                      )
-                    ) : (
-                      <span>Selecione um período</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    initialFocus
-                    mode="range"
-                    defaultMonth={dateRange?.from}
-                    selected={dateRange}
-                    onSelect={handleDateSelect}
-                    numberOfMonths={1}
-                  />
-                </PopoverContent>
-              </Popover>
+                        <span>Selecione um período</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      initialFocus
+                      mode="range"
+                      defaultMonth={dateRange?.from}
+                      selected={dateRange}
+                      onSelect={handleDateSelect}
+                      numberOfMonths={1}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              { (dateRange?.from || dateRange?.to) && (
+                <Button variant="ghost" onClick={() => setDateRange(undefined)} className="self-end">Limpar</Button>
+              )}
             </div>
-             { (dateRange?.from || dateRange?.to) && (
-              <Button variant="ghost" onClick={() => setDateRange(undefined)} className="self-end">Limpar</Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-             <div className="flex justify-center items-center h-40">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : (
-            <Table>
-                <TableHeader>
-                <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Cliente</TableHead>
-                    <TableHead>Data</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
-                </TableRow>
-                </TableHeader>
-                <TableBody>
-                {filteredSales.map((sale) => (
-                    <TableRow key={sale.id}>
-                    <TableCell className="font-medium">{sale.id.substring(0, 8)}...</TableCell>
-                    <TableCell>{sale.customerName}</TableCell>
-                    <TableCell>{new Date(sale.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</TableCell>
-                    <TableCell className="text-right">R$ {sale.total.toFixed(2)}</TableCell>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="flex justify-center items-center h-40">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <Dialog open={!!selectedSale} onOpenChange={(isOpen) => !isOpen && setSelectedSale(null)}>
+                <Table>
+                    <TableHeader>
+                    <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>Cliente</TableHead>
+                        <TableHead>Data</TableHead>
+                        <TableHead className="text-right">Total</TableHead>
                     </TableRow>
-                ))}
-                {filteredSales.length === 0 && !isLoading && (
-                   <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center">
-                      Nenhuma venda encontrada para o período selecionado.
-                    </TableCell>
-                  </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                    {filteredSales.map((sale) => (
+                      <DialogTrigger asChild key={sale.id}>
+                        <TableRow className="cursor-pointer" onClick={() => setSelectedSale(sale)}>
+                            <TableCell className="font-medium">{sale.id.substring(0, 8)}...</TableCell>
+                            <TableCell>{sale.customerName}</TableCell>
+                            <TableCell>{new Date(sale.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</TableCell>
+                            <TableCell className="text-right">R$ {sale.total.toFixed(2)}</TableCell>
+                        </TableRow>
+                      </DialogTrigger>
+                    ))}
+                    {filteredSales.length === 0 && !isLoading && (
+                      <TableRow>
+                        <TableCell colSpan={4} className="h-24 text-center">
+                          Nenhuma venda encontrada para o período selecionado.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    </TableBody>
+                </Table>
+                {selectedSale && (
+                  <DialogContent>
+                      <DialogHeader>
+                          <DialogTitle>Detalhes da Venda - {selectedSale.id.substring(0,8)}</DialogTitle>
+                          <DialogDescription asChild>
+                            <div>
+                              <div><b>Cliente:</b> {selectedSale.customerName}</div>
+                              <div><b>Data:</b> {new Date(selectedSale.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</div>
+                            </div>
+                          </DialogDescription>
+                      </DialogHeader>
+                      <div>
+                          <h4 className="font-semibold mb-2 mt-4">Itens da Venda</h4>
+                          <Table>
+                              <TableHeader>
+                                  <TableRow>
+                                      <TableHead>Item</TableHead>
+                                      <TableHead className="text-center">Qtd.</TableHead>
+                                      <TableHead className="text-right">Preço Unit.</TableHead>
+                                      <TableHead className="text-right">Subtotal</TableHead>
+                                  </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                  {selectedSale.items.map((item, index) => (
+                                      <TableRow key={index}>
+                                          <TableCell>{item.name}</TableCell>
+                                          <TableCell className="text-center">{item.quantity}</TableCell>
+                                          <TableCell className="text-right">R$ {item.price.toFixed(2)}</TableCell>
+                                          <TableCell className="text-right">R$ {(item.price * item.quantity).toFixed(2)}</TableCell>
+                                      </TableRow>
+                                  ))}
+                              </TableBody>
+                          </Table>
+                          <div className="mt-4 flex justify-end">
+                              <div className="text-lg font-bold">
+                                  Total: R$ {selectedSale.total.toFixed(2)}
+                              </div>
+                          </div>
+                      </div>
+                  </DialogContent>
                 )}
-                </TableBody>
-            </Table>
+              </Dialog>
+            )}
+          </CardContent>
+          {(dateRange?.from || dateRange?.to) && filteredSales.length > 0 && (
+            <CardFooter className="justify-end">
+              <div className="text-lg font-bold">
+                Total do Período: R$ {totalFilteredSales.toFixed(2)}
+              </div>
+            </CardFooter>
           )}
-        </CardContent>
-        {(dateRange?.from || dateRange?.to) && filteredSales.length > 0 && (
-          <CardFooter className="justify-end">
-            <div className="text-lg font-bold">
-              Total do Período: R$ {totalFilteredSales.toFixed(2)}
-            </div>
-          </CardFooter>
-        )}
-      </Card>
-    </div>
+        </Card>
+      </div>
+    </>
   );
 }
