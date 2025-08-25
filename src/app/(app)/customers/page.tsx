@@ -99,16 +99,17 @@ export default function CustomersPage() {
     if (cleaned.length <= 3) {
       return cleaned;
     }
-    if (cleaned.length === 4) {
-      return `${cleaned.slice(0, 3)}-${cleaned.slice(3)}`;
-    }
     if (cleaned.length <= 7) {
-       return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 4)}${cleaned.slice(4, 5)}-${cleaned.slice(5)}`.replace(/-+/g, '-').slice(0, 9);
+       // Format AAA-0A00 for Mercosul
+      let plate = cleaned.slice(0, 7);
+      if (cleaned.length >= 5 && isNaN(parseInt(cleaned.charAt(4)))) {
+        return `${plate.slice(0, 3)}${plate.slice(3, 4)}${plate.slice(4, 5)}${plate.slice(5, 7)}`;
+      }
     }
-     // Format AAA-0A00 for Mercosul
-    let plate = cleaned.slice(0, 7);
-    return `${plate.slice(0, 3)}-${plate.slice(3, 4)}${plate.slice(4, 5)}${plate.slice(5, 7)}`;
+    // Handle older formats or incomplete input
+    return cleaned;
   };
+
 
   const handlePlateChange = (setter: React.Dispatch<React.SetStateAction<any>>, fieldName: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
       const formattedPlate = formatPlate(e.target.value);
@@ -433,3 +434,5 @@ export default function CustomersPage() {
     </>
   );
 }
+
+    
