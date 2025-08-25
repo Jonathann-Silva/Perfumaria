@@ -59,10 +59,7 @@ const formatDisplayId = (quote: Quote) => {
     if (quote.sequentialId !== null && quote.sequentialId !== undefined) {
       return `#${quote.sequentialId.toString().padStart(4, '0')}`;
     }
-    if (quote.id) {
-      return `#${quote.id.substring(0, 6)}`;
-    }
-    return 'N/A';
+    return '';
 };
 
 

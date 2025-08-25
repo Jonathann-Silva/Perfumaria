@@ -45,10 +45,7 @@ const formatDisplayId = (sale: Sale) => {
     if (sale.sequentialId !== null && sale.sequentialId !== undefined) {
       return `#${sale.sequentialId.toString().padStart(4, '0')}`;
     }
-    if (sale.id) {
-      return `#${sale.id.substring(0, 6)}`;
-    }
-    return 'N/A';
+    return '';
 };
 
 export default function HistoryPage() {
