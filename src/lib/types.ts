@@ -55,6 +55,7 @@ export type SaleItem = {
 export type Sale = {
     id: string;
     customerName: string;
+    customerPhone?: string;
     date: string;
     items: SaleItem[];
     total: number;

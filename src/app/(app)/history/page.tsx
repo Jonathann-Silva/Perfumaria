@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import Image from 'next/image';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 import { useAuth } from '@/components/auth-provider';
@@ -13,7 +14,6 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-  CardDescription
 } from '@/components/ui/card';
 import {
   Table,
@@ -30,17 +30,20 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogDescription,
+  DialogFooter,
 } from '@/components/ui/dialog';
-import { Loader2, Calendar as CalendarIcon } from 'lucide-react';
+import { Loader2, Calendar as CalendarIcon, Printer } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { format, parseISO } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
 import { Label } from '@/components/ui/label';
+import { WhatsAppIcon } from '@/components/icons';
+
 
 export default function HistoryPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
   const [sales, setSales] = useState<Sale[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -113,9 +116,39 @@ export default function HistoryPage() {
     }
   }
 
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleSendWhatsApp = () => {
+    if (!selectedSale || !selectedSale.customerPhone) {
+      toast({
+        title: 'Telefone do cliente não encontrado',
+        description: 'Não é possível enviar a venda pois o cliente não tem telefone salvo.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    let message = `*Recibo de Venda - ${profile?.name || 'Oficina'}*\n\n`;
+    message += `Olá ${selectedSale.customerName},\n`;
+    message += `Segue o resumo da sua compra realizada em ${new Date(selectedSale.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}:\n\n`;
+    message += `*Itens:*\n`;
+    selectedSale.items.forEach(item => {
+      message += `- ${item.name} (Qtd: ${item.quantity}) - R$ ${(item.price * item.quantity).toFixed(2)}\n`;
+    });
+    message += `\n*Total: R$ ${selectedSale.total.toFixed(2)}*\n\n`;
+    message += `Agradecemos a preferência!`;
+
+    const cleanedPhone = selectedSale.customerPhone.replace(/\D/g, '');
+    const whatsappUrl = `https://wa.me/55${cleanedPhone}?text=${encodeURIComponent(message)}`;
+    
+    window.open(whatsappUrl, '_blank');
+  };
+
   return (
     <>
-      <div className="space-y-6">
+      <div className="space-y-6 no-print">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight">Histórico de Vendas</h1>
         </div>
@@ -201,7 +234,7 @@ export default function HistoryPage() {
                     </TableBody>
                 </Table>
                 {selectedSale && (
-                  <DialogContent>
+                  <DialogContent className="sm:max-w-xl no-print">
                       <DialogHeader>
                           <DialogTitle>Detalhes da Venda - {selectedSale.id.substring(0,8)}</DialogTitle>
                           <DialogDescription asChild>
@@ -239,6 +272,18 @@ export default function HistoryPage() {
                               </div>
                           </div>
                       </div>
+                      <DialogFooter className="mt-4 justify-end">
+                        <div className="flex gap-2">
+                           <Button variant="outline" onClick={handleSendWhatsApp} className="bg-green-500 text-white hover:bg-green-600 hover:text-white">
+                              <WhatsAppIcon className="mr-2 h-4 w-4" />
+                              Enviar via WhatsApp
+                            </Button>
+                            <Button variant="outline" onClick={handlePrint}>
+                              <Printer className="mr-2 h-4 w-4" />
+                              Imprimir
+                            </Button>
+                        </div>
+                      </DialogFooter>
                   </DialogContent>
                 )}
               </Dialog>
@@ -253,6 +298,71 @@ export default function HistoryPage() {
           )}
         </Card>
       </div>
+      
+      {selectedSale && profile && (
+        <div id="printable-quote" className="hidden print-only">
+          <div className="flex justify-between items-start mb-8">
+              <div>
+                  <div className="flex items-center gap-4 mb-4">
+                      {profile.logoUrl ? (
+                         <Image src={profile.logoUrl} alt={`Logo de ${profile.name}`} width={80} height={80} className="object-contain" />
+                      ) : null}
+                      <h1 className="text-3xl font-bold">{profile.name}</h1>
+                  </div>
+                  <p>{profile.address}</p>
+                  <p>{profile.phone} | CNPJ: {profile.cnpj}</p>
+              </div>
+              <div className="text-right">
+                  <h2 className="text-2xl font-bold mb-2">Recibo de Venda #{selectedSale.id.substring(0,8)}</h2>
+                  <p>Data: {new Date(selectedSale.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</p>
+              </div>
+          </div>
+
+          <Card className="mb-8">
+              <CardHeader>
+                  <CardTitle>Informações do Cliente</CardTitle>
+              </CardHeader>
+              <CardContent>
+                  <div><span className="font-semibold">Nome:</span> {selectedSale.customerName}</div>
+              </CardContent>
+          </Card>
+
+          <h3 className="text-xl font-bold mb-4">Itens da Venda</h3>
+          <Table>
+              <TableHeader>
+                  <TableRow>
+                      <TableHead>Item</TableHead>
+                      <TableHead className='text-center'>Qtd.</TableHead>
+                      <TableHead className="text-right">Preço Unit.</TableHead>
+                      <TableHead className="text-right">Subtotal</TableHead>
+                  </TableRow>
+              </TableHeader>
+              <TableBody>
+                  {selectedSale.items.map(item => (
+                      <TableRow key={item.name}>
+                          <TableCell className="font-medium">{item.name}</TableCell>
+                          <TableCell className='text-center'>{item.quantity}</TableCell>
+                          <TableCell className="text-right">R$ {item.price.toFixed(2)}</TableCell>
+                          <TableCell className="text-right">R$ {(item.price * item.quantity).toFixed(2)}</TableCell>
+                      </TableRow>
+                  ))}
+              </TableBody>
+          </Table>
+
+          <div className="flex justify-end mt-8">
+              <div className="w-1/3">
+                  <div className="flex justify-between text-lg">
+                      <span>Total</span>
+                      <span className="font-bold">R$ {selectedSale.total.toFixed(2)}</span>
+                  </div>
+              </div>
+          </div>
+
+          <div className="mt-24 text-center text-sm text-muted-foreground">
+              <p>Agradecemos a sua preferência!</p>
+          </div>
+        </div>
+      )}
     </>
   );
 }

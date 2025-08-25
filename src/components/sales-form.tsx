@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import type { Sale, SaleItem, Product } from '@/lib/types';
+import type { Sale, SaleItem, Product, Customer } from '@/lib/types';
 import { Plus, Trash2, Search, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -59,33 +59,40 @@ export function SalesForm() {
   const [installments, setInstallments] = useState(2);
 
   const [products, setProducts] = useState<Product[]>([]);
-  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
   const [isSearchPopoverOpen, setIsSearchPopoverOpen] = useState(false);
 
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      if (!user) return;
-      setIsLoadingProducts(true);
+    if (!user) return;
+    const fetchData = async () => {
+      setIsLoading(true);
       try {
         const productsCollection = collection(db, 'users', user.uid, 'products');
         const productsSnapshot = await getDocs(productsCollection);
         const productsList = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
         setProducts(productsList);
+
+        const customersCollection = collection(db, 'users', user.uid, 'customers');
+        const customersSnapshot = await getDocs(customersCollection);
+        const customersList = customersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Customer));
+        setCustomers(customersList);
+
       } catch (error) {
-        console.error("Error fetching products: ", error);
+        console.error("Error fetching data: ", error);
         toast({
-          title: 'Erro ao carregar produtos',
-          description: 'Não foi possível buscar seu inventário.',
+          title: 'Erro ao carregar dados',
+          description: 'Não foi possível buscar seu inventário e clientes.',
           variant: 'destructive',
         });
       } finally {
-        setIsLoadingProducts(false);
+        setIsLoading(false);
       }
     };
-    fetchProducts();
+    fetchData();
   }, [user, toast]);
 
   const filteredProducts = useMemo(() => {
@@ -175,6 +182,7 @@ export function SalesForm() {
     
     try {
         const batch = writeBatch(db);
+        const selectedCustomer = customers.find(c => c.name === customerName);
 
         // 1. Update stock for products
         for (const item of saleItems) {
@@ -191,13 +199,14 @@ export function SalesForm() {
         // 2. Create sale record
         const saleData: Omit<Sale, 'id'> = {
             customerName,
+            customerPhone: selectedCustomer?.phone,
             items: saleItems,
             total,
-            date: new Date().toISOString().split('T')[0],
+            date: new Date().toISOString(),
         };
 
         const salesCollection = collection(db, 'users', user.uid, 'sales');
-        await addDoc(salesCollection, saleData); // addDoc is outside the batch to get the ID, though not used here
+        await addDoc(salesCollection, saleData); 
 
         // Commit all changes
         await batch.commit();
@@ -239,7 +248,12 @@ export function SalesForm() {
             <CardContent className="space-y-6">
                 <div className="space-y-2">
                     <Label htmlFor="customer-name">Nome do Cliente</Label>
-                    <Input id="customer-name" value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Ex: João da Silva" />
+                    <Input id="customer-name" list="customers-list" value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Selecione ou digite o nome do cliente" />
+                    <datalist id="customers-list">
+                        {customers.map(customer => (
+                            <option key={customer.id} value={customer.name} />
+                        ))}
+                    </datalist>
                 </div>
                 
                 <div>
@@ -258,12 +272,12 @@ export function SalesForm() {
                                             placeholder="Digite para buscar ou adicionar novo item..."
                                             className="pl-8"
                                             autoComplete="off"
-                                            disabled={isLoadingProducts}
+                                            disabled={isLoading}
                                         />
                                     </div>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-[--radix-popover-trigger-width] max-h-60 overflow-y-auto p-0">
-                                    {isLoadingProducts ? (
+                                    {isLoading ? (
                                          <div className="flex justify-center items-center p-4">
                                             <Loader2 className="h-4 w-4 animate-spin" />
                                          </div>
