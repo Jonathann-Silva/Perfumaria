@@ -252,7 +252,6 @@ export default function CustomersPage() {
                 <Table>
                 <TableHeader>
                     <TableRow>
-                    <TableHead>ID</TableHead>
                     <TableHead>Nome</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Telefone</TableHead>
@@ -267,9 +266,6 @@ export default function CustomersPage() {
                         className="cursor-pointer"
                         onClick={() => handleRowClick(customer)}
                     >
-                        <TableCell className="font-medium">
-                          {formatSequentialId(customer.sequentialId)}
-                        </TableCell>
                         <TableCell className="font-medium">
                           {customer.name}
                         </TableCell>
