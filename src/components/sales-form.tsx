@@ -49,6 +49,10 @@ export function SalesForm() {
   const { toast } = useToast();
   
   const [customerName, setCustomerName] = useState('');
+  const [vehicle, setVehicle] = useState('');
+  const [vehicleYear, setVehicleYear] = useState('');
+  const [vehiclePlate, setVehiclePlate] = useState('');
+
   const [saleItems, setSaleItems] = useState<SaleItem[]>([]);
   
   const [itemName, setItemName] = useState('');
@@ -94,6 +98,20 @@ export function SalesForm() {
     };
     fetchData();
   }, [user, toast]);
+  
+  useEffect(() => {
+    const selectedCustomer = customers.find(c => c.name === customerName);
+    if (selectedCustomer) {
+      setVehicle(selectedCustomer.vehicle || '');
+      setVehicleYear(selectedCustomer.vehicleYear || '');
+      setVehiclePlate(selectedCustomer.vehiclePlate || '');
+    } else {
+      // If customer is not found (e.g., new customer being typed), clear vehicle fields
+      setVehicle('');
+      setVehicleYear('');
+      setVehiclePlate('');
+    }
+  }, [customerName, customers]);
 
   const filteredProducts = useMemo(() => {
     if (!itemName) return products;
@@ -201,8 +219,9 @@ export function SalesForm() {
             customerName,
             customerPhone: selectedCustomer?.phone || '',
             customerAddress: selectedCustomer ? `${selectedCustomer.addressStreet}, ${selectedCustomer.addressNumber} - ${selectedCustomer.addressNeighborhood}` : '',
-            customerVehicle: selectedCustomer?.vehicle || '',
-            customerVehiclePlate: selectedCustomer?.vehiclePlate || '',
+            customerVehicle: vehicle,
+            customerVehiclePlate: vehiclePlate,
+            customerVehicleYear: vehicleYear,
             items: saleItems,
             total,
             date: new Date().toISOString(),
@@ -249,14 +268,31 @@ export function SalesForm() {
                 <CardDescription>Preencha os dados e adicione os itens para registrar a venda.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                <div className="space-y-2">
-                    <Label htmlFor="customer-name">Nome do Cliente</Label>
-                    <Input id="customer-name" list="customers-list" value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Selecione ou digite o nome do cliente" />
-                    <datalist id="customers-list">
-                        {customers.map(customer => (
-                            <option key={customer.id} value={customer.name} />
-                        ))}
-                    </datalist>
+                <div className="space-y-4 rounded-lg border p-4">
+                    <h3 className="font-semibold">Informações do Cliente e Veículo</h3>
+                    <div className="space-y-2">
+                        <Label htmlFor="customer-name">Nome do Cliente</Label>
+                        <Input id="customer-name" list="customers-list" value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Selecione ou digite o nome do cliente" />
+                        <datalist id="customers-list">
+                            {customers.map(customer => (
+                                <option key={customer.id} value={customer.name} />
+                            ))}
+                        </datalist>
+                    </div>
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="vehicle">Carro</Label>
+                            <Input id="vehicle" value={vehicle} onChange={(e) => setVehicle(e.target.value)} placeholder="Ex: Toyota Corolla" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="vehicleYear">Ano do Carro</Label>
+                            <Input id="vehicleYear" value={vehicleYear} onChange={(e) => setVehicleYear(e.target.value)} placeholder="Ex: 2021" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="vehiclePlate">Placa do Carro</Label>
+                            <Input id="vehiclePlate" value={vehiclePlate} onChange={(e) => setVehiclePlate(e.target.value)} placeholder="Ex: ABC-1234" />
+                        </div>
+                    </div>
                 </div>
                 
                 <div>

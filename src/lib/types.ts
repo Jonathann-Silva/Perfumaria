@@ -8,6 +8,7 @@ export type Customer = {
   phone: string;
   vehicle: string;
   vehiclePlate: string;
+  vehicleYear: string;
   addressStreet: string;
   addressNeighborhood: string;
   addressNumber: string;

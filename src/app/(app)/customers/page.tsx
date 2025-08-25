@@ -49,6 +49,7 @@ export default function CustomersPage() {
     phone: '',
     vehicle: '',
     vehiclePlate: '',
+    vehicleYear: '',
     addressStreet: '',
     addressNeighborhood: '',
     addressNumber: '',
@@ -172,6 +173,7 @@ export default function CustomersPage() {
           phone: '',
           vehicle: '',
           vehiclePlate: '',
+          vehicleYear: '',
           addressStreet: '',
           addressNeighborhood: '',
           addressNumber: '',
@@ -272,10 +274,11 @@ export default function CustomersPage() {
               <Input id="phone" value={newCustomerData.phone} onChange={handleNewCustomerInputChange} className="col-span-3" />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="vehicle" className="text-right">Veículo/Placa</Label>
-                <div className="col-span-3 grid grid-cols-3 gap-2">
+                <Label htmlFor="vehicle" className="text-right">Veículo/Ano/Placa</Label>
+                <div className="col-span-3 grid grid-cols-5 gap-2">
                     <Input id="vehicle" placeholder="Veículo" value={newCustomerData.vehicle} onChange={handleNewCustomerInputChange} className="col-span-2" />
-                    <Input id="vehiclePlate" placeholder="Placa" value={newCustomerData.vehiclePlate} onChange={handleNewCustomerInputChange} className="col-span-1" />
+                    <Input id="vehicleYear" placeholder="Ano" value={newCustomerData.vehicleYear} onChange={handleNewCustomerInputChange} className="col-span-1" />
+                    <Input id="vehiclePlate" placeholder="Placa" value={newCustomerData.vehiclePlate} onChange={handleNewCustomerInputChange} className="col-span-2" />
                 </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -328,7 +331,7 @@ export default function CustomersPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Car className="h-4 w-4 text-muted-foreground" />
-                        <span>{selectedCustomer.vehicle} ({selectedCustomer.vehiclePlate})</span>
+                        <span>{selectedCustomer.vehicle} {selectedCustomer.vehicleYear && `(${selectedCustomer.vehicleYear})`} - {selectedCustomer.vehiclePlate}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Home className="h-4 w-4 text-muted-foreground" />
@@ -354,10 +357,11 @@ export default function CustomersPage() {
                         <Input id="phone" value={editingCustomer.phone} onChange={handleEditInputChange} className="col-span-3" />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="vehicle" className="text-right">Veículo/Placa</Label>
-                        <div className="col-span-3 grid grid-cols-3 gap-2">
+                        <Label htmlFor="vehicle" className="text-right">Veículo/Ano/Placa</Label>
+                        <div className="col-span-3 grid grid-cols-5 gap-2">
                             <Input id="vehicle" placeholder="Veículo" value={editingCustomer.vehicle} onChange={handleEditInputChange} className="col-span-2" />
-                            <Input id="vehiclePlate" placeholder="Placa" value={editingCustomer.vehiclePlate} onChange={handleEditInputChange} className="col-span-1" />
+                            <Input id="vehicleYear" placeholder="Ano" value={editingCustomer.vehicleYear} onChange={handleEditInputChange} className="col-span-1" />
+                            <Input id="vehiclePlate" placeholder="Placa" value={editingCustomer.vehiclePlate} onChange={handleEditInputChange} className="col-span-2" />
                         </div>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
