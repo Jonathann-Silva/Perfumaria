@@ -300,34 +300,38 @@ export default function HistoryPage() {
       </div>
       
       {selectedSale && profile && (
-        <div id="printable-quote" className="hidden print-only">
-          <div className="flex justify-between items-start mb-8">
+        <div id="printable-quote" className="hidden print-only p-8">
+          <header className="flex justify-between items-start mb-8">
               <div>
                   <div className="flex items-center gap-4 mb-4">
-                      {profile.logoUrl ? (
+                      {profile.logoUrl && (
                          <Image src={profile.logoUrl} alt={`Logo de ${profile.name}`} width={80} height={80} className="object-contain" />
-                      ) : null}
+                      )}
                       <h1 className="text-3xl font-bold">{profile.name}</h1>
                   </div>
-                  <p>{profile.address}</p>
-                  <p>{profile.phone} | CNPJ: {profile.cnpj}</p>
+                  <p className='text-sm'>{profile.address}</p>
+                  <p className='text-sm'>{profile.phone} | CNPJ: {profile.cnpj}</p>
               </div>
               <div className="text-right">
                   <h2 className="text-2xl font-bold mb-2">Recibo de Venda #{selectedSale.id.substring(0,8)}</h2>
                   <p>Data: {new Date(selectedSale.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</p>
               </div>
-          </div>
+          </header>
 
-          <Card className="mb-8">
+          <Card className="mb-8 border rounded-lg">
               <CardHeader>
                   <CardTitle>Informações do Cliente</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className='grid grid-cols-2 gap-x-8 gap-y-2 text-sm'>
                   <div><span className="font-semibold">Nome:</span> {selectedSale.customerName}</div>
+                  {selectedSale.customerPhone && <div><span className="font-semibold">Telefone:</span> {selectedSale.customerPhone}</div>}
+                  {selectedSale.customerAddress && <div className='col-span-2'><span className="font-semibold">Endereço:</span> {selectedSale.customerAddress}</div>}
+                  {selectedSale.customerVehicle && <div><span className="font-semibold">Veículo:</span> {selectedSale.customerVehicle}</div>}
+                  {selectedSale.customerVehiclePlate && <div><span className="font-semibold">Placa:</span> {selectedSale.customerVehiclePlate}</div>}
               </CardContent>
           </Card>
 
-          <h3 className="text-xl font-bold mb-4">Itens da Venda</h3>
+          <h3 className="text-xl font-bold mb-4">Serviços e Peças</h3>
           <Table>
               <TableHeader>
                   <TableRow>
@@ -338,8 +342,8 @@ export default function HistoryPage() {
                   </TableRow>
               </TableHeader>
               <TableBody>
-                  {selectedSale.items.map(item => (
-                      <TableRow key={item.name}>
+                  {selectedSale.items.map((item, index) => (
+                      <TableRow key={index}>
                           <TableCell className="font-medium">{item.name}</TableCell>
                           <TableCell className='text-center'>{item.quantity}</TableCell>
                           <TableCell className="text-right">R$ {item.price.toFixed(2)}</TableCell>
@@ -358,9 +362,9 @@ export default function HistoryPage() {
               </div>
           </div>
 
-          <div className="mt-24 text-center text-sm text-muted-foreground">
+          <footer className="mt-24 text-center text-sm text-muted-foreground">
               <p>Agradecemos a sua preferência!</p>
-          </div>
+          </footer>
         </div>
       )}
     </>

@@ -199,7 +199,10 @@ export function SalesForm() {
         // 2. Create sale record
         const saleData: Omit<Sale, 'id'> = {
             customerName,
-            customerPhone: selectedCustomer?.phone,
+            customerPhone: selectedCustomer?.phone || '',
+            customerAddress: selectedCustomer ? `${selectedCustomer.addressStreet}, ${selectedCustomer.addressNumber} - ${selectedCustomer.addressNeighborhood}` : '',
+            customerVehicle: selectedCustomer?.vehicle || '',
+            customerVehiclePlate: selectedCustomer?.vehiclePlate || '',
             items: saleItems,
             total,
             date: new Date().toISOString(),

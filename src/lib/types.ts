@@ -1,4 +1,5 @@
 
+
 export type Customer = {
   id: string;
   name: string;
@@ -56,6 +57,10 @@ export type Sale = {
     id: string;
     customerName: string;
     customerPhone?: string;
+    customerAddress?: string;
+    customerVehicle?: string;
+    customerVehiclePlate?: string;
+    customerVehicleYear?: string;
     date: string;
     items: SaleItem[];
     total: number;
