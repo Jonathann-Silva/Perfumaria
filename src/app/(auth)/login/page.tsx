@@ -61,7 +61,7 @@ export default function LoginPage() {
       <CardHeader className="text-center">
          <div className="flex items-center justify-center gap-3 mb-4 text-3xl">
             <MechAppLogo />
-            <h1 className="font-bold">MechApp</h1>
+            <h1 className="font-bold m-0">MechApp</h1>
         </div>
         <CardTitle className="text-2xl">Login</CardTitle>
         <CardDescription>
