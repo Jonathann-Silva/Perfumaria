@@ -10,6 +10,7 @@ import type { Sale } from '@/lib/types';
 import {
   Card,
   CardContent,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -90,6 +91,10 @@ export default function HistoryPage() {
       return true;
     });
   }, [sales, dateRange]);
+
+  const totalFilteredSales = useMemo(() => {
+    return filteredSales.reduce((total, sale) => total + sale.total, 0);
+  }, [filteredSales]);
   
   const handleDateSelect = (selectedRange: DateRange | undefined) => {
     setDateRange(selectedRange);
@@ -139,6 +144,7 @@ export default function HistoryPage() {
                     defaultMonth={dateRange?.from}
                     selected={dateRange}
                     onSelect={handleDateSelect}
+                    numberOfMonths={1}
                   />
                 </PopoverContent>
               </Popover>
@@ -183,6 +189,13 @@ export default function HistoryPage() {
             </Table>
           )}
         </CardContent>
+        {(dateRange?.from || dateRange?.to) && filteredSales.length > 0 && (
+          <CardFooter className="justify-end">
+            <div className="text-lg font-bold">
+              Total do Período: R$ {totalFilteredSales.toFixed(2)}
+            </div>
+          </CardFooter>
+        )}
       </Card>
     </div>
   );
