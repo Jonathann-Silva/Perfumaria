@@ -55,6 +55,9 @@ import { useAuth } from '@/components/auth-provider';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 
+const formatSequentialId = (id: number) => {
+    return id.toString().padStart(4, '0');
+};
 
 export default function QuotesPage() {
   const { toast } = useToast();
@@ -246,7 +249,7 @@ export default function QuotesPage() {
                         className="cursor-pointer"
                         onClick={() => setSelectedQuote(quote)}
                     >
-                        <TableCell className="font-medium">{quote.id.substring(0, 8)}...</TableCell>
+                        <TableCell className="font-medium">#{formatSequentialId(quote.sequentialId)}</TableCell>
                         <TableCell>{quote.customerName}</TableCell>
                         <TableCell>{quote.vehicle}</TableCell>
                         <TableCell>{new Date(quote.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</TableCell>
@@ -284,7 +287,7 @@ export default function QuotesPage() {
         >
           <DialogContent className="max-w-3xl no-print">
             <DialogHeader>
-              <DialogTitle>Detalhes do Orçamento - {selectedQuote.id.substring(0,8)}</DialogTitle>
+              <DialogTitle>Detalhes do Orçamento - #{formatSequentialId(selectedQuote.sequentialId)}</DialogTitle>
               <DialogDescription asChild>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1 pt-2">
                     <div><b>Cliente:</b> {selectedQuote.customerName}</div>
@@ -357,7 +360,7 @@ export default function QuotesPage() {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Esta ação não pode ser desfeita. Isso irá excluir permanentemente o orçamento <span className="font-medium">{selectedQuote.id.substring(0,8)}</span>.
+                        Esta ação não pode ser desfeita. Isso irá excluir permanentemente o orçamento <span className="font-medium">#{formatSequentialId(selectedQuote.sequentialId)}</span>.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -398,7 +401,7 @@ export default function QuotesPage() {
                   <p>{profile.phone} | CNPJ: {profile.cnpj}</p>
               </div>
               <div className="text-right">
-                  <h2 className="text-2xl font-bold mb-2">Orçamento #{selectedQuote.id.substring(0,8)}</h2>
+                  <h2 className="text-2xl font-bold mb-2">Orçamento #{formatSequentialId(selectedQuote.sequentialId)}</h2>
                   <p>Data: {new Date(selectedQuote.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</p>
               </div>
           </div>

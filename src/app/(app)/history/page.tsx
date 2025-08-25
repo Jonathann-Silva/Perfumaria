@@ -41,6 +41,9 @@ import type { DateRange } from 'react-day-picker';
 import { Label } from '@/components/ui/label';
 import { WhatsAppIcon } from '@/components/icons';
 
+const formatSequentialId = (id: number) => {
+    return id.toString().padStart(4, '0');
+};
 
 export default function HistoryPage() {
   const { user, profile } = useAuth();
@@ -217,7 +220,7 @@ export default function HistoryPage() {
                     {filteredSales.map((sale) => (
                       <DialogTrigger asChild key={sale.id}>
                         <TableRow className="cursor-pointer" onClick={() => setSelectedSale(sale)}>
-                            <TableCell className="font-medium">{sale.id.substring(0, 8)}...</TableCell>
+                            <TableCell className="font-medium">#{formatSequentialId(sale.sequentialId)}</TableCell>
                             <TableCell>{sale.customerName}</TableCell>
                             <TableCell>{new Date(sale.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</TableCell>
                             <TableCell className="text-right">R$ {sale.total.toFixed(2)}</TableCell>
@@ -236,7 +239,7 @@ export default function HistoryPage() {
                 {selectedSale && (
                   <DialogContent className="sm:max-w-xl no-print">
                       <DialogHeader>
-                          <DialogTitle>Detalhes da Venda - {selectedSale.id.substring(0,8)}</DialogTitle>
+                          <DialogTitle>Detalhes da Venda - #{formatSequentialId(selectedSale.sequentialId)}</DialogTitle>
                           <DialogDescription asChild>
                             <div>
                               <div><b>Cliente:</b> {selectedSale.customerName}</div>
@@ -313,7 +316,7 @@ export default function HistoryPage() {
                   <p className='text-sm'>{profile.phone} | CNPJ: {profile.cnpj}</p>
               </div>
               <div className="text-right">
-                  <h2 className="text-2xl font-bold mb-2">Recibo de Venda #{selectedSale.id.substring(0,8)}</h2>
+                  <h2 className="text-2xl font-bold mb-2">Recibo de Venda #{formatSequentialId(selectedSale.sequentialId)}</h2>
                   <p>Data: {new Date(selectedSale.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</p>
               </div>
           </header>

@@ -28,7 +28,7 @@ import {
   } from '@/components/ui/table';
 import { WhatsAppIcon } from './icons';
 import { useAuth } from './auth-provider';
-import { addDoc, collection } from 'firebase/firestore';
+import { collection, doc, runTransaction } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 
@@ -118,20 +118,35 @@ export function QuoteForm() {
 
     setIsSaving(true);
     try {
-        const quoteData: Omit<Quote, 'id'> = {
-            customerName,
-            customerEmail,
-            customerPhone,
-            vehicle: customerVehicle,
-            vehiclePlate: customerVehiclePlate,
-            items: quoteItems,
-            total,
-            date: new Date().toISOString(),
-            status: 'Pendente'
-        };
+        await runTransaction(db, async (transaction) => {
+            const counterRef = doc(db, 'users', user.uid, 'counters', 'quotes');
+            const counterSnap = await transaction.get(counterRef);
 
-        const quotesCollection = collection(db, 'users', user.uid, 'quotes');
-        await addDoc(quotesCollection, quoteData);
+            let newSequentialId = 1;
+            if (counterSnap.exists()) {
+                newSequentialId = counterSnap.data().lastId + 1;
+            } else {
+                // Initialize counter if it doesn't exist.
+                transaction.set(counterRef, { lastId: 0 });
+            }
+
+            const quoteData: Omit<Quote, 'id'> = {
+                sequentialId: newSequentialId,
+                customerName,
+                customerEmail,
+                customerPhone,
+                vehicle: customerVehicle,
+                vehiclePlate: customerVehiclePlate,
+                items: quoteItems,
+                total,
+                date: new Date().toISOString(),
+                status: 'Pendente'
+            };
+
+            const newQuoteDocRef = doc(collection(db, 'users', user.uid, 'quotes'));
+            transaction.set(newQuoteDocRef, quoteData);
+            transaction.update(counterRef, { lastId: newSequentialId });
+        });
 
         setIsQuoteGenerated(true);
         toast({

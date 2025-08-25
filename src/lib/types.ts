@@ -36,6 +36,7 @@ export type QuoteItem = {
 
 export type Quote = {
   id: string;
+  sequentialId: number;
   customerName: string;
   customerEmail?: string;
   customerPhone?: string;
@@ -57,6 +58,7 @@ export type SaleItem = {
 
 export type Sale = {
     id: string;
+    sequentialId: number;
     customerName: string;
     customerPhone?: string;
     customerAddress?: string;

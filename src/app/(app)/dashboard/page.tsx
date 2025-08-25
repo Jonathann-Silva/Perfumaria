@@ -32,6 +32,9 @@ import { collection, getDocs, limit, orderBy, query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 
+const formatSequentialId = (id: number) => {
+    return id.toString().padStart(4, '0');
+};
 
 function StatCard({ title, value, icon: Icon }: { title: string, value: string, icon: React.ElementType }) {
     return (
@@ -60,6 +63,7 @@ function RecentSales({ recentSales }: { recentSales: Sale[] }) {
                     <Table>
                         <TableHeader>
                             <TableRow>
+                                <TableHead>ID</TableHead>
                                 <TableHead>Cliente</TableHead>
                                 <TableHead className="text-right">Total</TableHead>
                                 <TableHead className="text-right">Data</TableHead>
@@ -69,6 +73,7 @@ function RecentSales({ recentSales }: { recentSales: Sale[] }) {
                             {recentSales.map((sale) => (
                                  <DialogTrigger key={sale.id} asChild>
                                      <TableRow className="cursor-pointer" onClick={() => setSelectedSale(sale)}>
+                                         <TableCell>#{formatSequentialId(sale.sequentialId)}</TableCell>
                                          <TableCell>{sale.customerName}</TableCell>
                                          <TableCell className="text-right">R$ {sale.total.toFixed(2)}</TableCell>
                                          <TableCell className="text-right">{new Date(sale.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</TableCell>
@@ -82,7 +87,7 @@ function RecentSales({ recentSales }: { recentSales: Sale[] }) {
             {selectedSale && (
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Detalhes da Venda - {selectedSale.id.substring(0,8)}</DialogTitle>
+                        <DialogTitle>Detalhes da Venda - #{formatSequentialId(selectedSale.sequentialId)}</DialogTitle>
                         <DialogDescription asChild>
                           <div>
                             <div><b>Cliente:</b> {selectedSale.customerName}</div>

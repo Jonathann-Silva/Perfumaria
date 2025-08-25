@@ -38,7 +38,7 @@ import {
 } from '@/components/ui/popover';
 import { useAuth } from './auth-provider';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, doc, writeBatch, serverTimestamp, addDoc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, writeBatch, runTransaction } from 'firebase/firestore';
 
 
 type PaymentMethod = 'credit_card_on_time' | 'debit_card' | 'pix' | 'credit_card_installments' | '';
@@ -215,39 +215,56 @@ export function SalesForm() {
     setIsSaving(true);
     
     try {
-        const batch = writeBatch(db);
-        const selectedCustomer = customers.find(c => c.name === customerName);
+        await runTransaction(db, async (transaction) => {
+            const selectedCustomer = customers.find(c => c.name === customerName);
 
-        // 1. Update stock for products
-        for (const item of saleItems) {
-            if (item.type === 'Peça') {
-                const productRef = doc(db, 'users', user.uid, 'products', item.id);
-                const productInState = products.find(p => p.id === item.id);
-                if (productInState) {
-                    const newStock = productInState.stock - item.quantity;
-                    batch.update(productRef, { stock: newStock });
+            // 1. Update stock for products
+            for (const item of saleItems) {
+                if (item.type === 'Peça') {
+                    const productRef = doc(db, 'users', user.uid, 'products', item.id);
+                    // We need to get the product doc within the transaction to ensure atomicity
+                    const productDoc = await transaction.get(productRef);
+                    if (!productDoc.exists()) {
+                        throw new Error(`Produto com ID ${item.id} não encontrado.`);
+                    }
+                    const currentStock = productDoc.data().stock;
+                    const newStock = currentStock - item.quantity;
+                    if (newStock < 0) {
+                        throw new Error(`Estoque insuficiente para o produto ${item.name}.`);
+                    }
+                    transaction.update(productRef, { stock: newStock });
                 }
             }
-        }
-        
-        // 2. Create sale record
-        const saleData: Omit<Sale, 'id'> = {
-            customerName,
-            customerPhone: selectedCustomer?.phone || '',
-            customerAddress: selectedCustomer ? `${selectedCustomer.addressStreet}, ${selectedCustomer.addressNumber} - ${selectedCustomer.addressNeighborhood}` : '',
-            customerVehicle: vehicle,
-            customerVehiclePlate: vehiclePlate,
-            customerVehicleYear: vehicleYear,
-            items: saleItems,
-            total,
-            date: new Date().toISOString(),
-        };
+            
+            // 2. Get new sequential ID for the sale
+            const counterRef = doc(db, 'users', user.uid, 'counters', 'sales');
+            const counterSnap = await transaction.get(counterRef);
 
-        const salesCollection = collection(db, 'users', user.uid, 'sales');
-        await addDoc(salesCollection, saleData); 
+            let newSequentialId = 1;
+            if (counterSnap.exists()) {
+                newSequentialId = counterSnap.data().lastId + 1;
+            } else {
+                 transaction.set(counterRef, { lastId: 0 });
+            }
 
-        // Commit all changes
-        await batch.commit();
+            // 3. Create sale record
+            const saleData: Omit<Sale, 'id'> = {
+                sequentialId: newSequentialId,
+                customerName,
+                customerPhone: selectedCustomer?.phone || '',
+                customerAddress: selectedCustomer ? `${selectedCustomer.addressStreet}, ${selectedCustomer.addressNumber} - ${selectedCustomer.addressNeighborhood}` : '',
+                customerVehicle: vehicle,
+                customerVehiclePlate: vehiclePlate,
+                customerVehicleYear: vehicleYear,
+                items: saleItems,
+                total,
+                date: new Date().toISOString(),
+            };
+
+            const newSaleDocRef = doc(collection(db, 'users', user.uid, 'sales'));
+            transaction.set(newSaleDocRef, saleData);
+            transaction.update(counterRef, { lastId: newSequentialId });
+        });
 
         toast({
             title: 'Venda Finalizada!',
@@ -261,11 +278,11 @@ export function SalesForm() {
         setPaymentMethod('');
         setInstallments(2);
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error finalizing sale: ", error);
         toast({
             title: 'Erro ao finalizar venda',
-            description: 'Não foi possível registrar a venda ou atualizar o estoque.',
+            description: error.message || 'Não foi possível registrar a venda ou atualizar o estoque.',
             variant: 'destructive',
         });
     } finally {
