@@ -3,8 +3,9 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
-import { db } from '@/lib/firebase';
-import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { db, auth } from '@/lib/firebase';
+import { collection, getDocs, orderBy, query, doc, deleteDoc, runTransaction, getDoc } from 'firebase/firestore';
+import { EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import { useAuth } from '@/components/auth-provider';
 import { useToast } from '@/hooks/use-toast';
 import type { Sale } from '@/lib/types';
@@ -32,10 +33,22 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Loader2, Calendar as CalendarIcon, Printer } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Loader2, Calendar as CalendarIcon, Printer, Trash2 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
+import { Input } from '@/components/ui/input';
 import { format, parseISO } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
 import { Label } from '@/components/ui/label';
@@ -56,9 +69,12 @@ export default function HistoryPage() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
+  const [password, setPassword] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchSales = async () => {
+
+  const fetchSales = async () => {
       if (!user) return;
       try {
         const salesCollection = collection(db, 'users', user.uid, 'sales');
@@ -77,8 +93,10 @@ export default function HistoryPage() {
         setIsLoading(false);
       }
     };
+
+  useEffect(() => {
     fetchSales();
-  }, [user, toast]);
+  }, [user]);
 
   const filteredSales = useMemo(() => {
     if (!dateRange?.from && !dateRange?.to) {
@@ -125,6 +143,67 @@ export default function HistoryPage() {
   const handlePrint = () => {
     window.print();
   };
+
+  const handleDeleteSale = async () => {
+    if (!selectedSale || !user || !user.email) return;
+
+    setIsDeleting(true);
+
+    try {
+      // Re-authenticate user
+      const credential = EmailAuthProvider.credential(user.email, password);
+      await reauthenticateWithCredential(user, credential);
+
+      // Proceed with deletion in a transaction
+      await runTransaction(db, async (transaction) => {
+        // 1. Restore stock for each item in the sale
+        for (const item of selectedSale.items) {
+          if (item.type === 'Peça' || item.type === 'Serviço') {
+            const productRef = doc(db, 'users', user.uid, 'products', item.id);
+            const productDoc = await transaction.get(productRef);
+            if (productDoc.exists()) {
+              const currentStock = productDoc.data().stock;
+              const newStock = currentStock + item.quantity;
+              transaction.update(productRef, { stock: newStock });
+            }
+          }
+        }
+
+        // 2. Delete the sale document
+        const saleDocRef = doc(db, 'users', user.uid, 'sales', selectedSale.id);
+        transaction.delete(saleDocRef);
+      });
+      
+      // Update UI state
+      setSales(sales.filter(s => s.id !== selectedSale.id));
+      
+      toast({
+        title: 'Venda excluída!',
+        description: 'A venda foi removida e o estoque atualizado.',
+        duration: 2000,
+      });
+
+      // Close dialogs
+      setSelectedSale(null);
+      setIsDeleteAlertOpen(false);
+      setPassword('');
+
+    } catch (error: any) {
+      console.error("Error deleting sale: ", error);
+      let description = 'Ocorreu um erro ao excluir a venda.';
+      if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+        description = 'A senha informada está incorreta. Tente novamente.';
+      }
+      toast({
+        title: 'Erro ao excluir',
+        description,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
 
   const handleSendWhatsApp = () => {
     if (!selectedSale || !selectedSale.customerPhone) {
@@ -276,7 +355,45 @@ export default function HistoryPage() {
                               </div>
                           </div>
                       </div>
-                      <DialogFooter className="mt-4 justify-end">
+                      <DialogFooter className="mt-4 sm:justify-between">
+                        <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="destructive">
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Excluir Venda
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Para excluir a venda, por favor, insira sua senha. Esta ação não pode ser desfeita e irá restaurar o estoque dos itens vendidos.
+                              </AlertDialogDescription>
+                               <div className="space-y-2 pt-2">
+                                <Label htmlFor="password">Senha</Label>
+                                <Input
+                                  id="password"
+                                  type="password"
+                                  value={password}
+                                  onChange={(e) => setPassword(e.target.value)}
+                                  placeholder="Sua senha de login"
+                                />
+                              </div>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel onClick={() => setPassword('')}>Cancelar</AlertDialogCancel>
+                              <Button
+                                variant="destructive"
+                                onClick={handleDeleteSale}
+                                disabled={isDeleting || !password}
+                              >
+                                {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                Excluir Permanentemente
+                              </Button>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+
                         <div className="flex gap-2">
                            <Button variant="outline" onClick={handleSendWhatsApp} className="bg-green-500 text-white hover:bg-green-600 hover:text-white">
                               <WhatsAppIcon className="mr-2 h-4 w-4" />
