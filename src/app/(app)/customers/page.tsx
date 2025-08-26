@@ -127,6 +127,7 @@ export default function CustomersPage() {
         toast({
             title: 'Cliente atualizado!',
             description: 'Os dados do cliente foram salvos com sucesso.',
+            duration: 2000,
         });
 
         // Update local state
@@ -213,6 +214,7 @@ export default function CustomersPage() {
       toast({
           title: 'Cliente adicionado!',
           description: 'O novo cliente foi salvo com sucesso.',
+          duration: 2000,
       });
 
     } catch (error) {
