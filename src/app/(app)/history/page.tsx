@@ -376,7 +376,7 @@ export default function HistoryPage() {
                                   type="password"
                                   value={password}
                                   onChange={(e) => setPassword(e.target.value)}
-                                  placeholder="Sua senha de login"
+                                  placeholder="Sua senha"
                                 />
                               </div>
                             </AlertDialogHeader>

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -19,11 +19,46 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { schedules } from '@/lib/data';
-import { PlusCircle, Search } from 'lucide-react';
+import type { Schedule } from '@/lib/types';
+import { PlusCircle, Search, Loader2 } from 'lucide-react';
+import { useAuth } from '@/components/auth-provider';
+import { useToast } from '@/hooks/use-toast';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 
 export default function SchedulesPage() {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    const fetchSchedules = async () => {
+      if (!user) return;
+      setIsLoading(true);
+      try {
+        const schedulesCollection = collection(db, 'users', user.uid, 'schedules');
+        const q = query(schedulesCollection, orderBy('date', 'desc'));
+        const schedulesSnapshot = await getDocs(q);
+        const schedulesList = schedulesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Schedule));
+        setSchedules(schedulesList);
+      } catch (error) {
+        console.error("Error fetching schedules: ", error);
+        toast({
+          title: 'Erro ao buscar agendamentos',
+          description: 'Não foi possível carregar a lista de agendamentos.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchSchedules();
+    }
+  }, [user, toast]);
 
   const getStatusVariant = (status: 'Agendado' | 'Concluído' | 'Cancelado') => {
     switch (status) {
@@ -49,7 +84,7 @@ export default function SchedulesPage() {
           .includes(searchTerm.toLowerCase()) ||
         schedule.vehicle.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [searchTerm]);
+  }, [searchTerm, schedules]);
 
   return (
     <div className="space-y-6">
@@ -75,43 +110,49 @@ export default function SchedulesPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Veículo</TableHead>
-                <TableHead>Serviço</TableHead>
-                <TableHead>Data</TableHead>
-                <TableHead>Hora</TableHead>
-                <TableHead className="text-center">Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredSchedules.map((schedule) => (
-                <TableRow key={schedule.id}>
-                  <TableCell className="font-medium">
-                    {schedule.customerName}
-                  </TableCell>
-                  <TableCell>{schedule.vehicle}</TableCell>
-                  <TableCell>{schedule.service}</TableCell>
-                  <TableCell>{schedule.date}</TableCell>
-                  <TableCell>{schedule.time}</TableCell>
-                  <TableCell className="text-center">
-                    <Badge variant={getStatusVariant(schedule.status)}>
-                      {schedule.status}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
-               {filteredSchedules.length === 0 && (
+          {isLoading ? (
+             <div className="flex justify-center items-center h-40">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
-                    Nenhum agendamento encontrado.
-                  </TableCell>
+                  <TableHead>Cliente</TableHead>
+                  <TableHead>Veículo</TableHead>
+                  <TableHead>Serviço</TableHead>
+                  <TableHead>Data</TableHead>
+                  <TableHead>Hora</TableHead>
+                  <TableHead className="text-center">Status</TableHead>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredSchedules.map((schedule) => (
+                  <TableRow key={schedule.id}>
+                    <TableCell className="font-medium">
+                      {schedule.customerName}
+                    </TableCell>
+                    <TableCell>{schedule.vehicle}</TableCell>
+                    <TableCell>{schedule.service}</TableCell>
+                    <TableCell>{new Date(schedule.date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</TableCell>
+                    <TableCell>{schedule.time}</TableCell>
+                    <TableCell className="text-center">
+                      <Badge variant={getStatusVariant(schedule.status)}>
+                        {schedule.status}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {filteredSchedules.length === 0 && !isLoading && (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
+                      Nenhum agendamento encontrado.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>
