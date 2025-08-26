@@ -213,7 +213,6 @@ export default function HistoryPage() {
                 <Table>
                     <TableHeader>
                     <TableRow>
-                        <TableHead>ID</TableHead>
                         <TableHead>Cliente</TableHead>
                         <TableHead>Data</TableHead>
                         <TableHead className="text-right">Total</TableHead>
@@ -223,7 +222,6 @@ export default function HistoryPage() {
                     {filteredSales.map((sale) => (
                       <DialogTrigger asChild key={sale.id}>
                         <TableRow className="cursor-pointer" onClick={() => setSelectedSale(sale)}>
-                            <TableCell className="font-medium">{formatDisplayId(sale)}</TableCell>
                             <TableCell>{sale.customerName}</TableCell>
                             <TableCell>{new Date(sale.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</TableCell>
                             <TableCell className="text-right">R$ {sale.total.toFixed(2)}</TableCell>

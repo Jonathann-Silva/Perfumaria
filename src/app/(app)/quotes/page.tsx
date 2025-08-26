@@ -238,7 +238,6 @@ export default function QuotesPage() {
                 <Table>
                 <TableHeader>
                     <TableRow>
-                    <TableHead>ID</TableHead>
                     <TableHead>Cliente</TableHead>
                     <TableHead>Veículo</TableHead>
                     <TableHead>Data</TableHead>
@@ -253,7 +252,6 @@ export default function QuotesPage() {
                         className="cursor-pointer"
                         onClick={() => setSelectedQuote(quote)}
                     >
-                        <TableCell className="font-medium">{formatDisplayId(quote)}</TableCell>
                         <TableCell>{quote.customerName}</TableCell>
                         <TableCell>{quote.vehicle}</TableCell>
                         <TableCell>{new Date(quote.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</TableCell>

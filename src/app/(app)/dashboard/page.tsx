@@ -66,7 +66,6 @@ function RecentSales({ recentSales }: { recentSales: Sale[] }) {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>ID</TableHead>
                                 <TableHead>Cliente</TableHead>
                                 <TableHead className="text-right">Total</TableHead>
                                 <TableHead className="text-right">Data</TableHead>
@@ -76,7 +75,6 @@ function RecentSales({ recentSales }: { recentSales: Sale[] }) {
                             {recentSales.map((sale) => (
                                  <DialogTrigger key={sale.id} asChild>
                                      <TableRow className="cursor-pointer" onClick={() => setSelectedSale(sale)}>
-                                         <TableCell>{formatDisplayId(sale)}</TableCell>
                                          <TableCell>{sale.customerName}</TableCell>
                                          <TableCell className="text-right">R$ {sale.total.toFixed(2)}</TableCell>
                                          <TableCell className="text-right">{new Date(sale.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</TableCell>
