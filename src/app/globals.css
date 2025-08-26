@@ -100,10 +100,15 @@ body {
 }
 
 @media print {
+  @page {
+    margin: 0;
+  }
+
   body {
     background: white !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+    margin: 1.5cm;
   }
 
   body * {
