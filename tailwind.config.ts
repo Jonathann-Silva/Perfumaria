@@ -86,5 +86,7 @@ export default {
       },
     },
   },
-  plugins: [require('tailwindcss-animate'), require('@tailwindcss/forms')],
+  plugins: [require('tailwindcss-animate'), require('@tailwindcss/forms')({
+    strategy: 'class',
+  })],
 } satisfies Config;
