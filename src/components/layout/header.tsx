@@ -6,13 +6,31 @@ import {
   ShoppingBag,
   Sprout,
   User,
+  LogIn,
+  Lock,
+  Eye,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from '../ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { LogoIcon } from '../icons/logo-icon';
 
 export function Header() {
   const [isSheetOpen, setSheetOpen] = useState(false);
@@ -77,9 +95,98 @@ export function Header() {
             </nav>
 
             <div className="flex items-center gap-2">
-              <Button className="hidden h-10 rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground transition-transform active:scale-95 sm:flex">
-                Login
-              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button className="hidden h-10 rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground transition-transform active:scale-95 sm:flex">
+                    Login
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-[480px] p-0">
+                  <DialogHeader className="flex flex-col items-center border-b border-border px-8 pt-10 pb-6 text-center">
+                    <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-primary/20 text-foreground dark:text-primary">
+                      <LogoIcon className="size-8" />
+                    </div>
+                    <DialogTitle className="font-headline text-center text-[28px] font-bold leading-tight tracking-tight text-foreground">
+                      Bem-vindo de volta
+                    </DialogTitle>
+                    <DialogDescription className="mt-2 text-center text-base text-muted-foreground">
+                      Login Admin - Acesso Restrito
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="px-8 py-8">
+                    <form
+                      action="/admin/products"
+                      method="GET"
+                      className="flex flex-col gap-5"
+                    >
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="email-modal"
+                          className="font-bold leading-normal text-foreground"
+                        >
+                          E-mail ou Usuário
+                        </Label>
+                        <div className="relative flex items-center">
+                          <User className="absolute left-4 text-muted-foreground" />
+                          <Input
+                            id="email-modal"
+                            name="email"
+                            type="text"
+                            placeholder="admin@exemplo.com"
+                            required
+                            className="h-14 w-full rounded-xl border-border bg-muted/50 pl-12 pr-4 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary dark:bg-background dark:focus:bg-background"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="password-modal"
+                          className="font-bold leading-normal text-foreground"
+                        >
+                          Senha
+                        </Label>
+                        <div className="relative flex items-center">
+                          <Lock className="absolute left-4 text-muted-foreground" />
+                          <Input
+                            id="password-modal"
+                            name="password"
+                            type="password"
+                            placeholder="••••••••"
+                            required
+                            className="h-14 w-full rounded-xl border-border bg-muted/50 pl-12 pr-12 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary dark:bg-background dark:focus:bg-background"
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-1 size-10 rounded-full text-muted-foreground hover:bg-muted/80"
+                            aria-label="Show password"
+                          >
+                            <Eye />
+                          </Button>
+                        </div>
+                        <div className="mt-2 flex justify-end">
+                          <Link
+                            href="#"
+                            className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+                          >
+                            Esqueci minha senha
+                          </Link>
+                        </div>
+                      </div>
+
+                      <Button
+                        type="submit"
+                        className="mt-4 h-12 w-full rounded-full bg-primary text-sm font-bold leading-normal tracking-[0.015em] text-primary-foreground shadow-sm transition-all active:scale-[0.98] hover:brightness-95 focus:ring-4 focus:ring-primary/30"
+                      >
+                        <LogIn className="mr-2 size-5" />
+                        Entrar
+                      </Button>
+                    </form>
+                  </div>
+                </DialogContent>
+              </Dialog>
               <Button
                 variant="ghost"
                 size="icon"
@@ -107,6 +214,7 @@ export function Header() {
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left">
+                  <SheetTitle className="sr-only">Menu</SheetTitle>
                   <div className="flex flex-col gap-6 p-6">
                     <Link
                       href="/"
