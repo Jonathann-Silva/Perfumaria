@@ -22,9 +22,9 @@ import { useState } from 'react';
 const navLinks = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/products', label: 'Produtos', icon: Package },
-  { href: '#', label: 'Pedidos', icon: ShoppingBag, badge: '3' },
-  { href: '#', label: 'Clientes', icon: Users },
-  { href: '#', label: 'Configurações', icon: Settings },
+  { href: '/admin/orders', label: 'Pedidos', icon: ShoppingBag, badge: '3' },
+  { href: '/admin/customers', label: 'Clientes', icon: Users },
+  { href: '/admin/settings', label: 'Configurações', icon: Settings },
 ];
 
 function NavContent() {
