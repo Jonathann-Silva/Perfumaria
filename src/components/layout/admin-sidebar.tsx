@@ -61,7 +61,7 @@ function NavContent() {
             const isActive = pathname === link.href;
             return (
               <Link
-                key={link.href}
+                key={link.label}
                 href={link.href}
                 className={cn(
                   'group flex items-center gap-3 rounded-full px-4 py-3 text-muted-foreground transition-colors hover:bg-muted/50 dark:hover:bg-white/5',
