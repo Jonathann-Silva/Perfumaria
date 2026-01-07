@@ -30,6 +30,12 @@ import { products } from '@/lib/data';
 import type { Product } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
 import { ProductForm } from './_components/product-form';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 function RecentAddItem({ product }: { product: Product }) {
   const image = getImageById(product.imageId);
@@ -153,9 +159,69 @@ export default function AdminProductsPage() {
           </Button>
         </div>
       </div>
+
+      <Dialog open={showProductForm} onOpenChange={setShowProductForm}>
+        <DialogContent className="max-w-3xl p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle className="flex items-center gap-2 text-lg font-bold text-foreground">
+              <Edit className="text-primary" />
+              Novo Cadastro de Produto
+            </DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[80vh] overflow-y-auto p-6 pt-0">
+            <ProductForm onSave={() => setShowProductForm(false)} />
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
         <div className="flex flex-col gap-6 xl:col-span-8">
-          {showProductForm && <ProductForm onCancel={() => setShowProductForm(false)} />}
+            <div className="overflow-hidden rounded-lg border bg-card shadow-sm dark:bg-[#1a190b]">
+            <div className="flex flex-col gap-4 border-b p-6 sm:flex-row sm:items-center sm:justify-between">
+              <h2 className="text-lg font-bold text-foreground">Gerenciar Estoque</h2>
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder="Buscar produto..."
+                    className="w-full rounded-full border-border bg-muted/60 pl-10 pr-4 text-sm transition-all focus:bg-card dark:bg-neutral-900 sm:w-64"
+                  />
+                </div>
+                <Button variant="outline" size="icon" className="rounded-full">
+                  <Filter />
+                </Button>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-border bg-muted/50 dark:bg-neutral-900/20">
+                    <TableHead className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Produto</TableHead>
+                    <TableHead className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Marca</TableHead>
+                    <TableHead className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Categoria</TableHead>
+                    <TableHead className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Preço</TableHead>
+                    <TableHead className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Status</TableHead>
+                    <TableHead className="p-4 text-right text-xs font-bold uppercase tracking-wider text-muted-foreground">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody className="divide-y divide-border">
+                  {products.map((p) => p.id !== '4' && <ProductRow key={p.id} product={p} />)}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="flex items-center justify-between border-t p-4">
+              <span className="text-sm text-muted-foreground">Mostrando 1-3 de 1,240</span>
+              <div className="flex gap-2">
+                <Button variant="outline" size="icon" className="rounded-full" disabled><ChevronLeft /></Button>
+                <Button size="icon" className="rounded-full">1</Button>
+                <Button variant="outline" size="icon" className="rounded-full">2</Button>
+                <Button variant="outline" size="icon" className="rounded-full">3</Button>
+                <span className="flex items-center justify-center text-muted-foreground">...</span>
+                <Button variant="outline" size="icon" className="rounded-full"><ChevronRight /></Button>
+              </div>
+            </div>
+          </div>
         </div>
         <div className="flex flex-col gap-6 xl:col-span-4">
           <div className="grid grid-cols-2 gap-4">
@@ -184,52 +250,6 @@ export default function AdminProductsPage() {
                 {products.slice(4, 7).map((p) => <RecentAddItem key={p.id} product={p} />)}
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-      <div className="overflow-hidden rounded-lg border bg-card shadow-sm dark:bg-[#1a190b]">
-        <div className="flex flex-col gap-4 border-b p-6 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-lg font-bold text-foreground">Gerenciar Estoque</h2>
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Buscar produto..."
-                className="w-full rounded-full border-border bg-muted/60 pl-10 pr-4 text-sm transition-all focus:bg-card dark:bg-neutral-900 sm:w-64"
-              />
-            </div>
-            <Button variant="outline" size="icon" className="rounded-full">
-              <Filter />
-            </Button>
-          </div>
-        </div>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-border bg-muted/50 dark:bg-neutral-900/20">
-                <TableHead className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Produto</TableHead>
-                <TableHead className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Marca</TableHead>
-                <TableHead className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Categoria</TableHead>
-                <TableHead className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Preço</TableHead>
-                <TableHead className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Status</TableHead>
-                <TableHead className="p-4 text-right text-xs font-bold uppercase tracking-wider text-muted-foreground">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody className="divide-y divide-border">
-              {products.map((p) => p.id !== '4' && <ProductRow key={p.id} product={p} />)}
-            </TableBody>
-          </Table>
-        </div>
-        <div className="flex items-center justify-between border-t p-4">
-          <span className="text-sm text-muted-foreground">Mostrando 1-3 de 1,240</span>
-          <div className="flex gap-2">
-            <Button variant="outline" size="icon" className="rounded-full" disabled><ChevronLeft /></Button>
-            <Button size="icon" className="rounded-full">1</Button>
-            <Button variant="outline" size="icon" className="rounded-full">2</Button>
-            <Button variant="outline" size="icon" className="rounded-full">3</Button>
-            <span className="flex items-center justify-center text-muted-foreground">...</span>
-            <Button variant="outline" size="icon" className="rounded-full"><ChevronRight /></Button>
           </div>
         </div>
       </div>
