@@ -1,3 +1,172 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero",
+      "description": "Elegant glass perfume bottle with golden liquid on a minimal beige background with soft lighting shadows",
+      "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuDRYFuMrtEPBzKDjMzExIrbtA0oNdC8ahRvwE_OyEqtFP31XgrMpj9SMQ2w87tik6RSD_oTfj00wWgpX1xlaHSiFpRO7w3J5KBgUZalDsQdvwvxJ_rUfkzme1RuQEOIXm-V9sNtRger_dcyoELsp85TFvpUdSsaRmBtFRsdXZ5-lv9kUCxAlhQYc_XmIw983nmy44CgH5YbzL6dST0_cxKVLJDzfToP985P-27Z7XhdiMhV_s0j-jdQ3AFMIguIl7rRNQuaK4jTgqg",
+      "imageHint": "perfume bottle"
+    },
+    {
+      "id": "category-floral",
+      "description": "Soft pink peony flowers texture representing floral scent category",
+      "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuD3rr5_FqdMBv7gtqr5gnx1F1pp3XLVbMq05Jz2y_g_PExern4Wjn-gWwI0_Y8rb8FOHy8y-2JFCadRRhKSvr4xEpNB1vQZx87nTpsLYfS1OpZTeP8-yF8CseX2VFktRNo8A4_5F37gSD3rm2VRZHQd15ZbEiquMUestg7XRJ3wuXA8WQ0O2B6Fnr1aKkiODvCGuU2_hlL_cZIn9_Xd6cHXjqBTG6THXWznB_ah9uJJUeP_TRnWEwLDfXoSH1PvTS3Qh-vLm_a7hBQ",
+      "imageHint": "pink flowers"
+    },
+    {
+      "id": "category-woody",
+      "description": "Textured tree bark and wood grain representing woody scent category",
+      "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuBroaJeZFTilzjvJLcuPZlRyLTfp0qFwstZJphfDkzw0QSBIZ_zAh411sqGH54JEBLnXL3Kkee3lj9QARIbUuqz4np29vXTeTPI1cT0kqp_VibhhRpLXNjb3gzscZNQZlaB0EBzcBLnBgdoQrLT4w2SbtKx8_iNNha_poVOl-vup3ufb5tYEh4frrPyF0MLebEGSZXItphnzGf-ouQKrCWmdUUDNcPU-gud02r8CRFcV-qB4YMqzr3FpHcb6Rf8xLfo4lKy2IRXtWs",
+      "imageHint": "tree bark"
+    },
+    {
+      "id": "category-citrus",
+      "description": "Fresh sliced lemons and oranges representing citrus scent category",
+      "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuC1in1zBvXU7-6QswElwNsnOirGc2R0dZIqoaWIrNzPIHYzuaw9YmCiYpUPmSO6_EXPF2AMEXqEDUsxFYKzIyGA2CH17OhLq9n1bI0Ravu9kf7G9j143zUnNc4Ics6G9J_-mI-QCP8gAzsICupboAVvgaKdcBZCx0qk-2saRSYVQZrydXAgkkmBVuJcgk389lWqJFvGJRwj-FwcJRH5cuK_eOSZLh1lQ_bRnHQnPjYhZoTl2xjaa0OGcekyCnwjD8paRvZn_37jOzk",
+      "imageHint": "sliced oranges"
+    },
+    {
+      "id": "category-oriental",
+      "description": "Spices like cinnamon and star anise representing oriental scent category",
+      "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuC0aw5cFwGOkZVXlu9GKTLvxXqVf4SzDQLLe6RSGO73FaV_gDkwsVbmrgkW5AsN0YggQ-cx2xqGfGCQrkh2IXijqgp1qbtLPfNGUgMxEvrt3HkgMugKmQ3eMQHsV3-WaypvMd3JVqRv_ViNvlDrr7B7EN7FZfcrWweF0G9MWlQhKOn5tkGRppHO3MgAR2FQXA3QzZBLAxl0tfQ1F_QIgK8JU262xQtVpeCHqq9dMPbkQQNydl10-eUlC9Kh9pYOjRI6rbBlKfMFj6k",
+      "imageHint": "spices cinnamon"
+    },
+    {
+      "id": "category-decants",
+      "description": "Small glass sample vials arranged in a row representing decants",
+      "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuD7ZpP3omF_iJHUFd5vASdSfn6KhiNFi2liHaEvAl2y_IjmwKIQF5dZXDrmLI9yATHvkK4s_IGnvAz1eyL-Vv2euwS2937wAiZpAY5oY1Y_Oc6IkDDVwdnf-_0psNtlT7SFJm4nmhq7G2WItmvSLojZGt9Pp9B-7c_-Hf7rT56bkapytMWmDbArblpl5N8nrAyveWcATEpjBgKG9U3uufImww2dVSRhQr9TsSIzTmIHJSCjfbn5anE6-h-47Y0_XlABW4V4COeM22M",
+      "imageHint": "sample vials"
+    },
+    {
+      "id": "product-1",
+      "description": "Chanel perfume bottle standing on a reflective surface",
+      "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuBB72Xt7T5yxE7EdW8XOAVCbfteoFiyIeWbkvi-b90DtCHMLSHK9qL0BuwAFW4EPFOY7NgXEjp7hIrRGy-BVLKjYkS6iykr8sM5Y4ZxAGIUv004LECgbjmCN_iOLtWZFeaQY3Ojt-BXvRkthausF6X3-kPK7_K2lzlUlJjrcyXcGSCdZMa2HsP-K3f1-cYiyr9Zb2wYGdvefI3cYwwkqElRsa2-AZfnB3RoGJcW_PJWvYXC6vvqD8o56iRLTvXD3V8oPjs-zX99KNE",
+      "imageHint": "Chanel bottle"
+    },
+    {
+      "id": "product-2",
+      "description": "Dior Sauvage perfume bottle outdoors with rocky background",
+      "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuDioV-_12Y0L5TKnoZ62dHgTuwzTy2uGJzxaA7N5nGgB92wlS0wk9jhyRCfj2leohjUb9a6aMHZsRQC8EN9wIGFSqBJ-YUvaJdpKZQrksnTEEOhc3BAbzOe_I1JPK7K6k5OXEpS8m57plv8Wa8kXQi0ZUEtWzDnOlrhE7g_c1SucGlm9eP-HK_6ipyvhpSF-TOksCCX2SRzOZUT4WaY4_3SII3iKetCq5JoYATxcQMkJZLI7nypDYH5yTMiqwdiWxcnWyx2Mwt_6Do",
+      "imageHint": "Dior Sauvage"
+    },
+    {
+      "id": "product-3",
+      "description": "Tom Ford Black Orchid perfume bottle on dark elegant background",
+      "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuATgXxRjf4nBH6J39FatRf4CmwiaSGkkGiIZaDyVQpO3cbHRZCPQFVR26O83ZA02udUdxBLfOXs3RpCVHMsT9lcoLoAdVh7K6PksTZU-WfpgNzgZUt0t2VEYmCMUWxDXCnyG4369ooNL3A0UVGUJcHTBUlAYsHGPdNDLW6xlNB6O7uw7II7GnEVieoN12msvJ0ZnPz0mbr8zKL-TeOHOGocuf6tt-AEJEuwc7buHX0co9kl8VsexjzBntg5jAmexJhcexlICBWOFYU",
+      "imageHint": "Tom Ford"
+    },
+    {
+      "id": "product-4",
+      "description": "Yves Saint Laurent Libre perfume bottle on marble table",
+      "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuDH0CwYsDvsbpY-IWkD2PD5b7AFjCAZ4VJqfSLFzKcseBQAK87R0JkPWmfhAgkTOcHGad_zropbTFICYg5xCInpTjeR8BqLWZ2uAX7IVDBGrFi_ieOhSB5qPMpl2Pxt9JJWI6Mg_mHwIHMY_X1RAQ-l3x8CHSB2Yi9zv6q-ViKYd6nARyeFeHiCndjR22-oMJS_8yLhmqwgeXCls0fmxu5bg1cmQ44lkG9sVZrRoTCs9CJf4BXQhX1rRr2jvFxMC-l4tlvi9JhhuqM",
+      "imageHint": "YSL Libre"
+    },
+    {
+      "id": "admin-avatar",
+      "description": "Admin user profile picture showing a professional person",
+      "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuD0ga9IT1jm1iXfbGjBPTS7gbRXgiQRcVGhpJL5zSIkMLEHSrBFSZ99a74LwFylX_OKONWArmFj_j_1XAVmC5Q__zibsmK9b_jxRpQa_0uVepdC7mLX9c9l_DfpBDMDzfuOmU02DkTACSZs-Tud0NgUiDVFdtyHYX5ijv22yS_lvE2p6r_pfeIyhPv22fxRSww1dqTFj77foipNrsKpP3hurP9lwgq6QlpGKlRg65TUBDmKZo3qy3tn6o-daJVuY_iMBNwIUcrFd-U",
+      "imageHint": "profile picture"
+    },
+    {
+      "id": "upload-preview",
+      "description": "Preview of uploaded perfume bottle photo",
+      "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuBaXGSXK5PP3khEQJ870VefUHlMdPHWhg0iFr9N7wt4BfLluVndSMvuQAT02mkoXp42b6SGFTBKvydxUy7KKIpRII89xlT5CyU3TMhpD10JF_uMU5fTOQ5FgFAAyhn--o8H8p_vE2nPApoVhmR5U_221kWGcI_A4knDaak1zjNt9G4yqtJYbchiZomlW0BAb1ZDqL7oIbkReRzacLt_-2BYPjBXohjcGAF-N1UW6p3EE16XhLcGNHXF942If8V_V_DYE1xDpU-0XTk",
+      "imageHint": "perfume bottle"
+    },
+    {
+      "id": "recent-1",
+      "description": "Small thumbnail of Chanel No 5 perfume bottle",
+      "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuBlKpR_m2epbbg77E7FW1CaF0pcharLXBEPRyAMEp6juM-AqbKHvidwGf-Npa4ZhmO0QkdlVkqMTpQvoX5wAZZ5e9Ec7OSIMe-r6p33ZegQ7RPhc18r6Cma5ZqP71QVWPQ86CI6e_wGcmKPtSPpeNsus2Lze9uGjSe9BSX5QFEzWQC4NAmk5co8uoKM2oM23UmOrItdgoKREj85ZjChNE8R1dD94B8glyueehdwXYWi3NjQrUodKkb1_9fuks9HtN6reEccRXcF9xE",
+      "imageHint": "Chanel No 5"
+    },
+    {
+      "id": "recent-2",
+      "description": "Small thumbnail of a generic minimal perfume bottle",
+      "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuBBaZN7S7-W-JP53tp3DoYKXobbL0sMrg1-6gCU6CA0aBekCmivv5RnJi4nhFy8p13TwUwLD8XcFuhliWjvRtpeBQjNNpXKgDJ6llJvMNSeprVbmd1vyHjDugnFS1dhVvTt_VGi5uEGrC8wej9MDxv_c87j8I-Uo0rCKVBCW-CMCKuZTNzaa10hyscXpAs1kY8uwgrcQY85USEATFL7aOLce9GOPP_K8f6CNP_dd1WG4wc9a_7e1zTtHw8YazyYUlncGhGzGtHzuJQ",
+      "imageHint": "perfume bottle"
+    },
+    {
+      "id": "recent-3",
+      "description": "Small thumbnail of a pink floral perfume bottle",
+      "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuDbTxSBTIVWKkOYxZNmcUGFGUI3kwpFQTRt05eIddH9OmKrtyFIAdxtEqy6uM4L-6zx08eZC-8nxbHA5NBHKoeWX4oD123pvav0f6NEWdjHNyjw9YDymk8ZSRwea1DNSTYA-dTOXUlqQBbd8SWcVUQ5c6zm3P67zzNbhvMm9OU-TbfhTYD3lhrUCYjv0aCETHA8GOx_fB4bVGDwX5UdL_PCOt3dPBoUlHZa8ski3WVcu2VsokCBg9U1MZ7f4Xc_zePr0mD5NfWYM_Y",
+      "imageHint": "pink bottle"
+    },
+    {
+      "id": "table-1",
+      "description": "Thumbnail of Chanel No 5 perfume",
+      "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuDBDnYN0CaEUzac42qmrJHt4kcJ20uAxgnSwxPmCq-dUcYD3kbJTftEsy0R_DiVri5kxZtibAlLFVI2XDdrVFWFA2fdtFyPoLDOKs0iZpf_xsTvA_ms9vjeq9294odnQKzITAaeQwY5WjpOAS8Kw7HsGH770YkZOUz1X1d5RZs2IZGrHDg3ChCocM6S21msxuiP74v5ewH7YPgejsvnfn6Al34N3c7Iz1sBOl-Jtf9e-Xp_3l5bKMHJEwnucvsWd30jLy-7tx2pv-k",
+      "imageHint": "Chanel No 5"
+    },
+    {
+      "id": "table-2",
+      "description": "Thumbnail of Tom Ford perfume bottle",
+      "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuDVv_xxGj_OTbUlA-9ICN79nocz3S8JY_bVyMNXPhZIgSPSd-OMX26RFmiHrN55egulKYBDHHt7pqNAbAqF7srPPlNPysGjHc3j5waejcV9l1EGHbw7x6_7tqIgXGvCGJSiYSr9rSc2BPp6IdzvzlSUWqTpqowNMtT5ocfBYVIdlDUZI3ypXI7ERrDKO4ZeSenjirNggKWwk2ltlQkrf3lZc19T6js-bgxmUSWTn8tU0DPDqFH5NHAOXH_ZDVZeD8NpLgLyo152WF8",
+      "imageHint": "Tom Ford"
+    },
+    {
+      "id": "table-3",
+      "description": "Thumbnail of Bleu de Chanel bottle",
+      "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuD9qo1JaOnMm0tTlb6dNSwpGXY5AUpv1JWqUsY6dA6c7awI2m4a__r2QYqgMNBNIXICnU-kaBr1I3RlQn1-czX0GUFXYrgk8N8E1LzNs1T54Aq9-UUW1dTsb476gKg9KdBVyueEELSOdhBsZmHj_LLW77x88uiwRrG2lGfyvRL7yF_J-MQBSWMelfV3c6Nss4uY4BrryKXHdwXRL4AylIObl2-uufZJ75rwjLBzlB_YRVujiraWGV3c1axWO2VG_GEFiFDQaP8Rqls",
+      "imageHint": "Bleu de Chanel"
+    },
+    {
+      "id": "login-bg",
+      "description": "Abstract blurry aesthetic background with glass textures",
+      "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuDyvNOCox5hjYsRwp_IYVpyI_hWmc3Ar8IfvAUQzHBL7KMcHrAfSpyB05lQmhlN0yHlvDFoj6fM42_bC0PLUbCemYP0p1DqwW6XUH0piyKZJCk0s-6os1yaU7rgyxo--v2HntA5nRj3hOUVUBycfs7j_9RJoJcaeCWAGgZXcqR7kdb_VfBy_r2-ktE0rmQRoyHzsMDgdULHfrlcm2EfvqVr3lIKTCn-7OsTsPmPJrGEXfi19sznXyx1ne6iJ-pOehuSGrWMKt1ju7E",
+      "imageHint": "abstract background"
+    },
+    {
+      "id": "visa-icon",
+      "description": "Visa Icon",
+      "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuAIQasW8cF7IzCZwVXqSu5cuTq9Jf7zbjBrxTMM7DdHFKHDUMhwUt2jRaj3sBzUL5XPKNDiHTz80-5KL4-VeYgRpXsSrEf8-KC4J2T6sWUMAJU-tCeNqoCZBkmu3UEMfbcZ92NPbb6EP9dN4tpQIKKwsTLXVbAabIBhco4J_V1A5yKMOqYaf3ZKZ3cpIxzBvRPLgasTqOJV34FBzhyT9NcgPnQTX42zbj4NtRrt-crV49UrE98_KamrNG_QefTaFYFQs2aAFKEGPI8",
+      "imageHint": "Visa icon"
+    },
+    {
+      "id": "mastercard-icon",
+      "description": "Mastercard Icon",
+      "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuCuRrTGJrwYiwmPh69UovF91iJR2S0XpLvbutwkL7P4-LeWDorc7gmp-f3YBWE6lulruHmEdjSvSyxTCbSgOBO3jVdFGqNRexy3ISAQJVUS2z_S6tjS4oajUIsnXRT99h8nvP3J3_dFYILuvvHrCLiS6cqHP7nxunhQpkMN6pV8TrWPJ941sR3J2uDNOy6HrKVuztHuBL2IbwZQQk2NDPnC_Qi4G--DX_49eivdqLH9eRrGMIyXjGy6mVnxiRJkFWaqk-qvfAA5_oA",
+      "imageHint": "Mastercard icon"
+    },
+    {
+      "id": "amex-icon",
+      "description": "Amex Icon",
+      "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuBoPsAfu5CE8kd4qkh-nHfUJ9-ccqUmyqAhHG-GqFP7Rvyba6h1H4lJpZFFBdtfngKGV2mhrsbYtOpwWIkJWsNBNZc4R6JB0cCp7hvoPxPgYde2gL-HmBiJQYoHcmBXh9rrMSjIydyTBl9tnupXbijt8VlRc6mVeR33DHsom9C-GW2sjedGmY98MIk2M2sD5Tl-0eT54-fdU50S6Vo8wFej9uMGTACqqZPuirGCjTEnbERh4P_wZsyAFhhHDtjF37JimD1B9IMDehI",
+      "imageHint": "Amex icon"
+    },
+    {
+      "id": "summary-1",
+      "description": "Blue luxury perfume bottle",
+      "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuC-yRRqa63KkMzSSxe3MQpc2yu9OfzLjL-8p23sW39rAheFOUaj7aH30uWgtzdA1wMUcFMJzEzeLiwwYOIJqddl0P_sce2IyKl1qUwNH0WULTzOnfozKOEbl9eS50ZjspLLuQnkmSfy9VU8U-y573K3lQxbGx68YpaFJsZhnibTwBq6N3PhVm0a59i7cVvHc3ZsMue85GBVHMWdc3PEjoWMKo_CNzu6UfYcQ7EqvWWMoUqMg04y7xA-xAc-98LDoMerVjDLhVJq5A8",
+      "imageHint": "blue bottle"
+    },
+    {
+      "id": "summary-2",
+      "description": "Amber colored elegant perfume bottle",
+      "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuBHpZHALOHdDvFea5esdD42U38qiU04XTPtdUBOabSy31K2eIpMbsxirKFF694BMh1837GuxtrwjpbE-ADQi5ILqufUit5nT6kCia_BADyr5mGWtxG_QaVeD_SXgMGl0_CPwLom1NlW-s__yDuoiz82DvcFF7mz6bPI4bS0FcO0vU2oltMBxF4i3JJ3VLCR2Nrx1zqv_NbK6vYlgdp_3RPNKztDRW6SejKCke-2pe7kygUFS_1lCTkwHhXwk5HKqn5u5Myl2xuApzQ",
+      "imageHint": "amber bottle"
+    },
+    {
+      "id": "details-main",
+      "description": "Elegant amber perfume bottle on a dark textured rock surface with moody lighting",
+      "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuCY78yNyUW9A56sO4rmHJNV75EPBmg5Cx1pjuoqs8NT9PLv6NlZvLeUcVfQVLVZLvJ4zVOM1M1Io_Y7tf9JeP_QP0doLhgod3OMqRQ7CsZC_YUIPpnHz-gSXzv0l8dUid5V-X7OXiWVmjnYblqryaFT1Dwxts-KezUNjrAXM0YkQ_Ohng8XfVHxA1AjDHGhMiKuJGhcDndlPVcopuWau-bTs0BkC0fFI-fhKcf5sR9JEh-D6TtW3L8FX7OdTrABgJcOLeZ0S01-bkg",
+      "imageHint": "amber bottle"
+    },
+    {
+      "id": "details-thumb-1",
+      "description": "Thumbnail of main perfume bottle",
+      "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuANEhA4At9-Eo_1yzHrqvJTL5BQUSZUSEd6ct4AsPX2WAsGcbIl35yUBQZP2FpHGv-XcN6NTin-WtNDeFdmVLlfX5kKCmt5D0FpQYg2XQTQwnba8QGcLhkHMgBbwjP6rOD7ar3cc1dWeyBzDX_xnmT_8DrtkFSfEdmdY3a9bDHxDuXAJHyHxOQ-YACRabMUUWsnH7L3mbdfy7iQkmmm_IO7s6M6XkEE4ei7O5HVq9AHRmE4yIApN7zLvRVxRO4bBpMgFtQATcOEknY",
+      "imageHint": "bottle thumbnail"
+    },
+    {
+      "id": "details-thumb-2",
+      "description": "Close up of perfume atomizer spray nozzle",
+      "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuB8_p5Cdl1WQDYS5SYOE3_X1MqSf30uYQnM4DtVWyzBZrmXXR3xYREYR0StjVDfdR66JI8foal_5TeFfC17KsqYr98DsVF4h7TO4kEN9le4tFNrI5RL3qQ-59Ippb37X7qtQam8D8nDy4lpsXVezW1dQcQPMTIEJL5mBl-UBcThJs244Y_qoq9kecFmSk-mPoUrTQY5jnoqDhfJR2WnQBK9RpZxiXB-YDqrtEBhXxTRcpdiNw3nftNxfu14Iu57tpxT9TE_xo2aAQs",
+      "imageHint": "atomizer nozzle"
+    },
+    {
+      "id": "details-thumb-3",
+      "description": "Perfume bottle in a lifestyle setting with natural light",
+      "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuDOzKv89oRNXECDP9qFbunnC8XHaccYgOcZNjRg3L2xIDaNeEwfQ-8YoA2izvNW05IWE5UABOiT6bMH-urNR0UhoIw291DvHP_sn8xJ9DsLV8a7dQJJtIw9nKfepKAKHcXjAz5rAo9rANYT3Cmr175mcUFQ-RfbyjTKBYIXkBLUexKZoJa3STl1tDypI0PSTFY8N48iIzfxYpH2JwHgZKUcODUy4y4vH5XPp__BSEczijmDLV0VdbpVXeevOlIS5yGLRi14N-Ralas",
+      "imageHint": "perfume lifestyle"
+    }
+  ]
 }
