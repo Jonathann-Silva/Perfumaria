@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,6 +21,7 @@ import { getImageById } from '@/lib/placeholder-images';
 import { generateDescriptionAction } from '../actions';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import type { Product } from '@/lib/types';
 
 const productSchema = z.object({
   productName: z.string().min(1, 'Nome é obrigatório'),
@@ -37,10 +38,11 @@ const productSchema = z.object({
 type ProductFormData = z.infer<typeof productSchema>;
 
 interface ProductFormProps {
+  product: Product | null;
   onSave: () => void;
 }
 
-export function ProductForm({ onSave }: ProductFormProps) {
+export function ProductForm({ product, onSave }: ProductFormProps) {
   const [isPending, setIsPending] = useState(false);
   const { toast } = useToast();
 
@@ -50,20 +52,43 @@ export function ProductForm({ onSave }: ProductFormProps) {
     control,
     watch,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
-    defaultValues: {
-      price: 0,
-      stock: 0,
-    },
   });
+
+  useEffect(() => {
+    if (product) {
+      reset({
+        productName: product.name,
+        brand: product.brand,
+        price: product.price,
+        stock: product.stock,
+        category: product.category,
+        description: 'Pre-filled description from data.', // Placeholder
+      });
+    } else {
+      reset({
+        productName: '',
+        brand: '',
+        price: 0,
+        stock: 0,
+        category: '',
+        fragranceType: '',
+        keyNotes: '',
+        targetAudience: '',
+        description: '',
+      });
+    }
+  }, [product, reset]);
 
   const onSubmit = (data: ProductFormData) => {
     console.log(data);
+    const action = product ? 'atualizado' : 'criado';
     toast({
-      title: 'Produto Salvo!',
-      description: 'O produto foi salvo com sucesso.',
+      title: `Produto ${action}!`,
+      description: `O produto foi ${action} com sucesso.`,
     });
     onSave(); // Close form on success
   };
@@ -163,13 +188,15 @@ export function ProductForm({ onSave }: ProductFormProps) {
             name="brand"
             control={control}
             render={({ field }) => (
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value}>
                 <SelectTrigger><SelectValue placeholder="Selecione a marca" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="dior">Dior</SelectItem>
-                  <SelectItem value="chanel">Chanel</SelectItem>
-                  <SelectItem value="tomford">Tom Ford</SelectItem>
-                  <SelectItem value="ysl">YSL</SelectItem>
+                  <SelectItem value="Dior">Dior</SelectItem>
+                  <SelectItem value="Chanel">Chanel</SelectItem>
+                  <SelectItem value="Tom Ford">Tom Ford</SelectItem>
+                  <SelectItem value="YSL">YSL</SelectItem>
+                  <SelectItem value="Giorgio Armani">Giorgio Armani</SelectItem>
+                  <SelectItem value="Lancôme">Lancôme</SelectItem>
                 </SelectContent>
               </Select>
             )}
@@ -195,12 +222,12 @@ export function ProductForm({ onSave }: ProductFormProps) {
             name="category"
             control={control}
             render={({ field }) => (
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value}>
                 <SelectTrigger><SelectValue placeholder="Selecione a categoria" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="frasco">Perfume (Frasco)</SelectItem>
-                  <SelectItem value="decante">Decante</SelectItem>
-                  <SelectItem value="tester">Tester</SelectItem>
+                  <SelectItem value="Frasco">Perfume (Frasco)</SelectItem>
+                  <SelectItem value="Decante">Decante</SelectItem>
+                  <SelectItem value="Tester">Tester</SelectItem>
                 </SelectContent>
               </Select>
             )}
