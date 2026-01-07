@@ -1,29 +1,144 @@
-import { Settings } from 'lucide-react';
+import { Store, Phone, Mail, MapPin, Save, Building } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
 export default function AdminSettingsPage() {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div className="flex max-w-2xl flex-col gap-2">
           <h1 className="font-headline text-4xl font-black leading-tight tracking-tight text-foreground">
             Configurações da Loja
           </h1>
           <p className="text-lg text-muted-foreground">
-            Ajuste as configurações gerais, de pagamento e envio.
+            Ajuste as configurações gerais da sua loja.
           </p>
         </div>
+        <Button className="gap-2 rounded-full bg-primary px-6 py-3 font-bold text-primary-foreground shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl">
+          <Save className="size-5" />
+          Salvar Alterações
+        </Button>
       </div>
-      <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed bg-card shadow-sm dark:bg-[#1a190b]">
-        <div className="flex flex-col items-center gap-4 text-center">
-            <div className="flex size-16 items-center justify-center rounded-full bg-muted text-primary dark:bg-neutral-800">
-                <Settings className="size-8" />
-            </div>
-            <div className="max-w-sm">
-                <h2 className="text-lg font-bold text-foreground">Configurações</h2>
-                <p className="text-sm text-muted-foreground">
-                    Esta seção está em desenvolvimento. Em breve, você poderá configurar todos os aspectos da sua loja aqui.
-                </p>
-            </div>
+
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <Card className="dark:bg-[#1a190b]">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Store className="text-primary" />
+                Informações da Loja
+              </CardTitle>
+              <CardDescription>
+                Informações públicas que serão exibidas aos seus clientes.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="md:col-span-2">
+                <Label htmlFor="storeName">Nome da Loja</Label>
+                <Input
+                  id="storeName"
+                  placeholder="Ex: Perfumes & Decantes"
+                  defaultValue="Perfumes & Decantes"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <Label htmlFor="storeSlogan">Slogan (Opcional)</Label>
+                <Input
+                  id="storeSlogan"
+                  placeholder="Ex: Sua Assinatura Olfativa"
+                  defaultValue="Sua Assinatura Olfativa"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="mt-8 dark:bg-[#1a190b]">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Phone className="text-primary" />
+                Contato
+              </CardTitle>
+              <CardDescription>
+                Como seus clientes podem entrar em contato com você.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div>
+                <Label htmlFor="phone1">Telefone Principal</Label>
+                <Input
+                  id="phone1"
+                  type="tel"
+                  placeholder="(XX) 99999-9999"
+                />
+              </div>
+              <div>
+                <Label htmlFor="phone2">Telefone Secundário (Opcional)</Label>
+                <Input
+                  id="phone2"
+                  type="tel"
+                  placeholder="(XX) 99999-9999"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <Label htmlFor="supportEmail">E-mail de Suporte</Label>
+                <Input
+                  id="supportEmail"
+                  type="email"
+                  placeholder="suporte@exemplo.com"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="lg:col-span-1">
+          <Card className="sticky top-24 dark:bg-[#1a190b]">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building className="text-primary" />
+                Endereço da Sede
+              </CardTitle>
+              <CardDescription>
+                Endereço físico principal do seu negócio.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4">
+              <div>
+                <Label htmlFor="zipCode">CEP</Label>
+                <Input id="zipCode" placeholder="00000-000" />
+              </div>
+              <div>
+                <Label htmlFor="street">Logradouro</Label>
+                <Input id="street" placeholder="Rua das Flores" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="number">Número</Label>
+                  <Input id="number" placeholder="123" />
+                </div>
+                <div>
+                  <Label htmlFor="complement">Complemento</Label>
+                  <Input id="complement" placeholder="Sala 10" />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="city">Cidade</Label>
+                <Input id="city" placeholder="São Paulo" />
+              </div>
+              <div>
+                <Label htmlFor="state">Estado</Label>
+                <Input id="state" placeholder="SP" />
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
