@@ -36,7 +36,11 @@ const productSchema = z.object({
 
 type ProductFormData = z.infer<typeof productSchema>;
 
-export function ProductForm() {
+interface ProductFormProps {
+  onCancel: () => void;
+}
+
+export function ProductForm({ onCancel }: ProductFormProps) {
   const [isPending, setIsPending] = useState(false);
   const { toast } = useToast();
 
@@ -61,6 +65,7 @@ export function ProductForm() {
       title: 'Produto Salvo!',
       description: 'O produto foi salvo com sucesso.',
     });
+    onCancel(); // Close form on success
   };
 
   const handleGenerateDescription = async () => {
@@ -247,7 +252,7 @@ export function ProductForm() {
           </div>
 
         <div className="flex items-center justify-end gap-3 border-t pt-4">
-          <Button type="button" variant="ghost" className="rounded-full px-6 py-3 font-medium">
+          <Button type="button" variant="ghost" className="rounded-full px-6 py-3 font-medium" onClick={onCancel}>
             Cancelar
           </Button>
           <Button type="submit" className="rounded-full bg-primary px-8 py-3 font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:bg-yellow-400">

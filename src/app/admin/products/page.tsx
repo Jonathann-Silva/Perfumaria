@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import {
   Download,
   Plus,
@@ -123,6 +126,8 @@ function ProductRow({ product }: { product: Product }) {
 }
 
 export default function AdminProductsPage() {
+  const [showProductForm, setShowProductForm] = useState(false);
+
   return (
     <>
       <div className="flex flex-wrap items-end justify-between gap-6">
@@ -139,7 +144,10 @@ export default function AdminProductsPage() {
             <Download className="size-5" />
             <span>Exportar</span>
           </Button>
-          <Button className="gap-2 rounded-full bg-foreground px-6 py-3 font-bold text-background shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl dark:bg-white dark:text-black">
+          <Button
+            onClick={() => setShowProductForm(true)}
+            className="gap-2 rounded-full bg-foreground px-6 py-3 font-bold text-background shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl dark:bg-white dark:text-black"
+          >
             <Plus className="size-5" />
             <span>Novo Item</span>
           </Button>
@@ -147,7 +155,7 @@ export default function AdminProductsPage() {
       </div>
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
         <div className="flex flex-col gap-6 xl:col-span-8">
-          <ProductForm />
+          {showProductForm && <ProductForm onCancel={() => setShowProductForm(false)} />}
         </div>
         <div className="flex flex-col gap-6 xl:col-span-4">
           <div className="grid grid-cols-2 gap-4">
