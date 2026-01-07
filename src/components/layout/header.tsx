@@ -87,7 +87,7 @@ export function Header() {
                 Decantes
               </Link>
               <Link
-                href="#"
+                href="/products"
                 className="text-sm font-medium text-foreground transition-colors hover:text-primary"
               >
                 Marcas
@@ -238,7 +238,7 @@ export function Header() {
                       Decantes
                     </Link>
                     <Link
-                      href="#"
+                      href="/products"
                       className="text-lg font-medium"
                       onClick={() => setSheetOpen(false)}
                     >
