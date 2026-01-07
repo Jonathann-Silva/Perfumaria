@@ -9,7 +9,6 @@ import {
   Sprout,
   Cloud,
   TreePine,
-  Expand,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -169,9 +168,14 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
             </div>
 
             <div className="flex gap-4 pt-4">
-              <Button className="h-14 flex-1 gap-2 rounded-full font-bold text-lg text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-primary/40">
-                <ShoppingBag />
-                Adicionar ao Carrinho
+               <Button
+                className="h-14 flex-1 gap-2 rounded-full font-bold text-lg text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-primary/40"
+                asChild
+              >
+                <Link href="/checkout">
+                  <ShoppingBag />
+                  Adicionar ao Carrinho
+                </Link>
               </Button>
               <Button
                 variant="outline"
@@ -250,3 +254,5 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
     </div>
   );
 }
+
+    

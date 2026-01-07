@@ -80,12 +80,17 @@ export function ProductCard({ product }: ProductCardProps) {
               product.type === 'decant' && 'bg-muted dark:bg-white/10 hover:bg-primary hover:text-primary-foreground',
               product.type !== 'decant' && 'shadow-lg shadow-primary/20'
             )}
+            asChild
           >
-            <ShoppingCart className="size-5" />
-            <span className="sr-only">Adicionar ao carrinho</span>
+           <Link href="/checkout">
+              <ShoppingCart className="size-5" />
+              <span className="sr-only">Adicionar ao carrinho</span>
+            </Link>
           </Button>
         </div>
       </div>
     </div>
   );
 }
+
+    
