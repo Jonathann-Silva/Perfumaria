@@ -69,6 +69,18 @@
             }
         },
         "required": ["userId", "amount", "status", "items", "timestamp"]
+    },
+    "Coupon": {
+        "title": "Coupon",
+        "description": "Represents a discount coupon.",
+        "type": "object",
+        "properties": {
+            "code": { "type": "string", "description": "The promotional code." },
+            "discountPercentage": { "type": "number", "description": "The discount percentage." },
+            "quantity": { "type": "number", "description": "Number of available coupons." },
+            "used": { "type": "number", "description": "How many times the coupon has been used." }
+        },
+        "required": ["code", "discountPercentage", "quantity"]
     }
   },
   "auth": {
@@ -86,6 +98,10 @@
     "/orders/{orderId}": {
         "schema": { "$ref": "#/entities/Order" },
         "description": "Stores all customer orders."
+    },
+    "/coupons/{couponId}": {
+        "schema": { "$ref": "#/entities/Coupon" },
+        "description": "Stores all discount coupons."
     }
   }
 }
