@@ -10,15 +10,9 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import Image from 'next/image';
-import { getImageById } from '@/lib/placeholder-images';
 import { cn } from '@/lib/utils';
 import { Badge } from '../ui/badge';
-import { Button } from '../ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
-import { Menu } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { Sheet, SheetContent } from '../ui/sheet';
 import { LogoIcon } from '../icons/logo-icon';
 
 
@@ -30,9 +24,8 @@ const navLinks = [
   { href: '/admin/settings', label: 'Configurações', icon: Settings },
 ];
 
-function NavContent() {
+function NavContent({ onLinkClick }: { onLinkClick?: () => void }) {
   const pathname = usePathname();
-  const adminAvatar = getImageById('admin-avatar');
 
   return (
     <>
@@ -57,6 +50,7 @@ function NavContent() {
               <Link
                 key={link.label}
                 href={link.href}
+                onClick={onLinkClick}
                 className={cn(
                   'group flex items-center gap-3 rounded-full px-4 py-3 text-muted-foreground transition-colors hover:bg-muted/50 dark:hover:bg-white/5',
                   isActive && 'bg-primary text-primary-foreground shadow-md shadow-primary/20'
@@ -85,6 +79,7 @@ function NavContent() {
       <div className="flex">
         <Link
           href="/admin/login"
+          onClick={onLinkClick}
           className="flex w-full cursor-pointer items-center gap-3 rounded-full px-4 py-3 text-red-500 transition-colors hover:bg-red-50 dark:hover:bg-red-900/10"
         >
           <LogOut />
@@ -95,26 +90,24 @@ function NavContent() {
   );
 }
 
-export function AdminSidebar() {
-  const [isOpen, setIsOpen] = useState(false);
-  const isMobile = useIsMobile();
-  const pathname = usePathname();
+interface AdminSidebarProps {
+    isMobileMenuOpen: boolean;
+    setMobileMenuOpen: (isOpen: boolean) => void;
+}
 
-  useEffect(() => {
-      if (!isMobile) {
-          setIsOpen(false);
-      }
-  }, [isMobile]);
-
-  useEffect(() => {
-      setIsOpen(false);
-  }, [pathname]);
-
+export function AdminSidebar({ isMobileMenuOpen, setMobileMenuOpen }: AdminSidebarProps) {
   return (
     <>
       <aside className="hidden h-screen w-72 shrink-0 flex-col justify-between border-r border-border bg-card p-6 dark:bg-[#1a190b] lg:flex">
         <NavContent />
       </aside>
+      <div className="lg:hidden">
+        <Sheet open={isMobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <SheetContent side="left" className="flex w-72 flex-col justify-between bg-card p-6 dark:bg-[#1a190b]">
+                <NavContent onLinkClick={() => setMobileMenuOpen(false)} />
+            </SheetContent>
+        </Sheet>
+      </div>
     </>
   );
 }
