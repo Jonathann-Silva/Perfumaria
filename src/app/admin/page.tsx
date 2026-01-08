@@ -3,6 +3,11 @@
 import {
   ShoppingBag,
   BarChart3,
+  Users,
+  DollarSign,
+  CreditCard,
+  Activity,
+  Package
 } from 'lucide-react';
 import {
   Card,
@@ -23,6 +28,7 @@ import Link from 'next/link';
 import { useFirestore } from '@/firebase';
 import { collection, getDocs, onSnapshot, query, orderBy, limit, writeBatch, doc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
+import { formatCurrency } from '@/lib/utils';
 
 // Dados de exemplo para popular o Firestore se ele estiver vazio
 const sampleOrders = [
@@ -32,6 +38,13 @@ const sampleOrders = [
   { id: '4', user: 'William Kim', email: 'will@email.com', amount: 250.00, status: 'Concluído', timestamp: new Date(Date.now() - 10800000) },
   { id: '5', user: 'Sofia Davis', email: 'sofia.davis@email.com', amount: 99.90, status: 'Cancelado', timestamp: new Date(Date.now() - 14400000) },
 ];
+
+const kpis = [
+    { title: "Faturamento Total", value: "R$ 45.231,89", change: "+20.1% do último mês", icon: DollarSign },
+    { title: "Vendas", value: "+12.234", change: "+19% do último mês", icon: CreditCard },
+    { title: "Novos Clientes", value: "+235", change: "+180.1% do último mês", icon: Users },
+    { title: "Produtos Ativos", value: "890", change: "-2 desde ontem", icon: Package }
+]
 
 
 export default function AdminDashboardPage() {
@@ -87,6 +100,22 @@ export default function AdminDashboardPage() {
           </p>
         </div>
       </div>
+      
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {kpis.map((kpi, index) => (
+            <Card key={index} className="dark:bg-[#1a190b]">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{kpi.title}</CardTitle>
+                <kpi.icon className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{kpi.value}</div>
+                <p className="text-xs text-muted-foreground">{kpi.change}</p>
+              </CardContent>
+            </Card>
+        ))}
+      </div>
+
 
       <div className="grid grid-cols-1 gap-8">
         <Card className="dark:bg-[#1a190b]">
@@ -117,7 +146,7 @@ export default function AdminDashboardPage() {
                       <div className="font-medium">{order.user}</div>
                       <div className="text-sm text-muted-foreground">{order.email}</div>
                     </TableCell>
-                    <TableCell>R$ {order.amount.toFixed(2)}</TableCell>
+                    <TableCell>{formatCurrency(order.amount)}</TableCell>
                     <TableCell className="text-right">
                        <Badge
                         variant={
