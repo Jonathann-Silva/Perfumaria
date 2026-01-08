@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import {
   Check,
@@ -27,6 +27,7 @@ import { LogoIcon } from '@/components/icons/logo-icon';
 import { getShippingRates } from '../actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useCart } from '@/context/cart-context';
+import { useUser } from '@/firebase';
 
 const steps = [
   { id: 1, name: 'Identificação', status: 'current', icon: null },
@@ -55,6 +56,8 @@ const motoboyRates: { [key: string]: number } = {
 export default function CheckoutAddressPage() {
   const router = useRouter();
   const { cartItems, removeFromCart, cartSubtotal } = useCart();
+  const { user, loading: userLoading } = useUser();
+
   const [cep, setCep] = useState('');
   const [address, setAddress] = useState({
     street: '',
@@ -68,6 +71,13 @@ export default function CheckoutAddressPage() {
   const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
   const [selectedShipping, setSelectedShipping] = useState<ShippingOption | null>(null);
   const [shippingError, setShippingError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!userLoading && !user) {
+      router.push('/');
+    }
+  }, [user, userLoading, router]);
+
 
   const handleCepBlur = async (event: React.FocusEvent<HTMLInputElement>) => {
     const cepValue = event.target.value.replace(/\D/g, '');
@@ -164,6 +174,14 @@ export default function CheckoutAddressPage() {
   const shippingCost = selectedShipping ? parseFloat(selectedShipping.price) : 0;
   const total = cartSubtotal + shippingCost;
   
+  if (userLoading || !user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-background font-display text-foreground selection:bg-primary selection:text-primary-foreground">
       <header className="sticky top-0 z-50 w-full border-b bg-card/80 backdrop-blur-md dark:bg-background-dark/80">
@@ -246,11 +264,11 @@ export default function CheckoutAddressPage() {
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="email" className="font-bold">E-mail</Label>
-                  <Input id="email" type="email" placeholder="seuemail@exemplo.com" required />
+                  <Input id="email" type="email" placeholder="seuemail@exemplo.com" required value={user?.email || ''} readOnly />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone" className="font-bold">Telefone / Celular</Label>
-                  <Input id="phone" type="tel" placeholder="(XX) 99999-9999" required />
+                  <Input id="phone" type="tel" placeholder="(XX) 99999-9999" required value={user?.phoneNumber || ''} />
                 </div>
               </div>
             </section>
@@ -273,7 +291,7 @@ export default function CheckoutAddressPage() {
                     <Input
                       id="recipient-name"
                       placeholder="Ex: João da Silva"
-                      defaultValue="João da Silva"
+                      defaultValue={user?.displayName || ''}
                     />
                   </div>
                   <div className="sm:col-span-3 space-y-2">
