@@ -8,6 +8,7 @@ import {
   Lock,
   LockOpen,
   Search,
+  Trash2,
   Truck,
   User,
 } from 'lucide-react';
@@ -371,19 +372,22 @@ export default function CheckoutPage() {
                       />
                     )}
                   </div>
-                  <div className="flex flex-1 flex-col justify-between">
-                    <div>
-                      <div className="flex justify-between text-base font-bold text-foreground">
-                        <h3>Chanel Bleu</h3>
-                        <p className="ml-2">R$ 120,00</p>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Decant 10ml
-                      </p>
+                  <div className="flex flex-1 flex-col">
+                    <div className="flex justify-between text-base font-bold text-foreground">
+                      <h3>Chanel Bleu</h3>
+                      <p className="ml-2">R$ 120,00</p>
                     </div>
-                    <p className="rounded-lg bg-muted px-2 py-0.5 text-sm font-medium text-muted-foreground">
-                      Qtd: 1
+                    <p className="text-sm text-muted-foreground">
+                      Decant 10ml
                     </p>
+                    <div className="mt-auto flex items-center justify-between">
+                       <p className="rounded-lg bg-muted px-2 py-0.5 text-sm font-medium text-muted-foreground">
+                        Qtd: 1
+                      </p>
+                      <Button variant="ghost" size="icon" className="group -mr-2 h-8 w-8 rounded-full">
+                        <Trash2 className="size-4 text-muted-foreground transition-colors group-hover:text-red-500" />
+                      </Button>
+                    </div>
                   </div>
                 </li>
                 <li className="flex gap-4 py-4">
@@ -398,19 +402,22 @@ export default function CheckoutPage() {
                       />
                     )}
                   </div>
-                  <div className="flex flex-1 flex-col justify-between">
-                    <div>
-                      <div className="flex justify-between text-base font-bold text-foreground">
-                        <h3>Dior Sauvage</h3>
-                        <p className="ml-2">R$ 85,00</p>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Decant 5ml
-                      </p>
+                  <div className="flex flex-1 flex-col">
+                    <div className="flex justify-between text-base font-bold text-foreground">
+                      <h3>Dior Sauvage</h3>
+                      <p className="ml-2">R$ 85,00</p>
                     </div>
-                    <p className="rounded-lg bg-muted px-2 py-0.5 text-sm font-medium text-muted-foreground">
-                      Qtd: 1
+                    <p className="text-sm text-muted-foreground">
+                      Decant 5ml
                     </p>
+                     <div className="mt-auto flex items-center justify-between">
+                       <p className="rounded-lg bg-muted px-2 py-0.5 text-sm font-medium text-muted-foreground">
+                        Qtd: 1
+                      </p>
+                      <Button variant="ghost" size="icon" className="group -mr-2 h-8 w-8 rounded-full">
+                        <Trash2 className="size-4 text-muted-foreground transition-colors group-hover:text-red-500" />
+                      </Button>
+                    </div>
                   </div>
                 </li>
               </ul>
@@ -481,5 +488,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-
-    
