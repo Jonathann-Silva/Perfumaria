@@ -6,7 +6,7 @@ import Image from 'next/image';
 import {
   Check,
   CreditCard,
-  HelpCircle,
+  Copy,
   Lock,
   LockOpen,
   Loader2,
@@ -16,11 +16,11 @@ import {
   PartyPopper,
   ArrowLeft,
   Warehouse,
+  QrCode,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { getImageById } from '@/lib/placeholder-images';
 import { formatCurrency, cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -47,9 +47,7 @@ const steps = [
 function CheckoutPaymentPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const visaIcon = getImageById('visa-icon');
-  const mastercardIcon = getImageById('mastercard-icon');
-  const amexIcon = getImageById('amex-icon');
+  const pixQrCodeImage = getImageById('pix-qr-code');
   
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
@@ -77,17 +75,26 @@ function CheckoutPaymentPage() {
   }, [searchParams, paymentSuccess]);
 
   const total = cartSubtotal + shippingCost;
+  
+  const pixCopyPasteCode = "00020126360014br.gov.bcb.pix0114+5543999999999520400005303986540510.005802BR5913NOME DO LOJISTA6009SAO PAULO62070503***6304E2D5";
 
+  const handleCopyPixCode = () => {
+    navigator.clipboard.writeText(pixCopyPasteCode);
+    toast({
+      title: "Código PIX Copiado!",
+      description: "Use a função 'PIX Copia e Cola' no seu banco.",
+    });
+  };
 
   const handlePayment = async () => {
     setIsProcessingPayment(true);
     // Simula uma chamada de API de pagamento
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(resolve, 2500));
     
     // Simular notificação para o painel admin
     const newSale = {
       id: `sale_${new Date().getTime()}`,
-      user: 'João da Silva',
+      user: 'Cliente PIX', // Placeholder
       amount: total,
       timestamp: new Date().toISOString(),
       read: false,
@@ -221,97 +228,53 @@ function CheckoutPaymentPage() {
 
                 <div className="mb-6 flex items-center gap-2">
                     <div className="flex size-8 items-center justify-center rounded-full bg-primary/20 text-primary">
-                    <CreditCard className="size-4" />
+                    <QrCode className="size-4" />
                     </div>
                     <h2 className="font-headline text-xl font-black tracking-tight text-foreground">
-                    Pagamento
+                    Pagamento com PIX
                     </h2>
                 </div>
                 <div className="rounded-2xl border bg-card p-6 shadow-sm dark:bg-white/5 sm:p-8">
-                    <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                    <h3 className="text-lg font-bold text-foreground">
-                        Cartão de Crédito
-                    </h3>
-                    <div className="flex gap-2 opacity-80">
-                        {visaIcon && (
-                        <div className="h-8 w-12 rounded-md border bg-muted object-contain p-1">
+                  <div className='flex flex-col md:flex-row items-center justify-center md:justify-start gap-8'>
+                    <div className='flex flex-col items-center gap-4'>
+                      <p className='text-sm font-bold text-foreground text-center'>Escaneie o QR Code para pagar</p>
+                      {pixQrCodeImage && (
+                        <div className="p-4 bg-white rounded-lg border shadow-inner">
                             <Image
-                            src={visaIcon.imageUrl}
-                            width={48}
-                            height={32}
-                            alt="Visa"
-                            data-ai-hint="visa icon"
+                              src={pixQrCodeImage.imageUrl}
+                              width={200}
+                              height={200}
+                              alt={pixQrCodeImage.description}
+                              data-ai-hint={pixQrCodeImage.imageHint}
                             />
                         </div>
-                        )}
-                        {mastercardIcon && (
-                        <div className="h-8 w-12 rounded-md border bg-muted object-contain p-1">
-                            <Image
-                            src={mastercardIcon.imageUrl}
-                            width={48}
-                            height={32}
-                            alt="Mastercard"
-                            data-ai-hint="mastercard icon"
-                            />
-                        </div>
-                        )}
-                        {amexIcon && (
-                        <div className="h-8 w-12 rounded-md border bg-muted object-contain p-1">
-                            <Image
-                            src={amexIcon.imageUrl}
-                            width={48}
-                            height={32}
-                            alt="Amex"
-                            data-ai-hint="amex icon"
-                            />
-                        </div>
-                        )}
+                      )}
                     </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-5">
-                    <div className="col-span-2 space-y-2">
-                        <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                        Número do Cartão
-                        </Label>
-                        <div className="relative">
-                        <Input
-                            placeholder="0000 0000 0000 0000"
-                            className="pr-10"
-                        />
-                        <Lock className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-muted-foreground" />
+                    <div className="flex-1 w-full text-center md:text-left">
+                        <h3 className="font-bold text-foreground">Instruções de Pagamento</h3>
+                        <ol className="list-decimal list-inside text-sm text-muted-foreground mt-2 space-y-2">
+                          <li>Abra o aplicativo do seu banco e acesse a área PIX.</li>
+                          <li>Escolha a opção "Pagar com QR Code".</li>
+                          <li>Escaneie o código ao lado.</li>
+                          <li>Se preferir, use o "PIX Copia e Cola" abaixo.</li>
+                          <li>Confirme os dados e o valor e finalize o pagamento.</li>
+                        </ol>
+                        <div className="mt-6">
+                          <Label className='text-xs font-bold uppercase text-muted-foreground'>PIX Copia e Cola</Label>
+                          <div className='relative mt-1'>
+                             <Input 
+                                readOnly 
+                                value={pixCopyPasteCode} 
+                                className="bg-muted dark:bg-background pr-12 truncate"
+                              />
+                             <Button size="icon" variant="ghost" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={handleCopyPixCode}>
+                               <Copy className="size-4" />
+                             </Button>
+                          </div>
+                          <p className='text-xs text-muted-foreground mt-4'>O pagamento é confirmado em instantes. Após a confirmação, seu pedido será processado.</p>
                         </div>
                     </div>
-                    <div className="col-span-1 space-y-2">
-                        <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                        Validade
-                        </Label>
-                        <Input placeholder="MM/AA" />
-                    </div>
-                    <div className="col-span-1 space-y-2">
-                        <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                        CVC
-                        </Label>
-                        <div className="relative">
-                        <Input placeholder="123" className="pr-10" />
-                        <HelpCircle className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-muted-foreground" />
-                        </div>
-                    </div>
-                    <div className="col-span-2 space-y-2">
-                        <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                        Nome no Cartão
-                        </Label>
-                        <Input placeholder="Como impresso no cartão" />
-                    </div>
-                    </div>
-                    <div className="mt-6 flex items-center gap-3">
-                    <Checkbox id="save-card" />
-                    <Label
-                        htmlFor="save-card"
-                        className="cursor-pointer text-sm font-medium text-foreground"
-                    >
-                        Salvar cartão para compras futuras
-                    </Label>
-                    </div>
+                  </div>
                 </div>
             </section>
 
@@ -396,7 +359,7 @@ function CheckoutPaymentPage() {
                       {formatCurrency(total)}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      em até 3x sem juros
+                      Pagamento via PIX
                     </p>
                   </div>
                 </div>
@@ -412,7 +375,7 @@ function CheckoutPaymentPage() {
                   ) : (
                     <LockOpen className="mr-2 transition-transform group-hover:scale-110" />
                   )}
-                  {isProcessingPayment ? 'Processando...' : `Pagar ${formatCurrency(total)}`}
+                  {isProcessingPayment ? 'Aguardando Pagamento...' : `Finalizar Compra`}
                 </Button>
                 <div className="mt-6 flex flex-col items-center gap-3">
                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">

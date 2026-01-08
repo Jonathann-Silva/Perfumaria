@@ -167,6 +167,12 @@
       "description": "Perfume bottle in a lifestyle setting with natural light",
       "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuDOzKv89oRNXECDP9qFbunnC8XHaccYgOcZNjRg3L2xIDaNeEwfQ-8YoA2izvNW05IWE5UABOiT6bMH-urNR0UhoIw291DvHP_sn8xJ9DsLV8a7dQJJtIw9nKfepKAKHcXjAz5rAo9rANYT3Cmr175mcUFQ-RfbyjTKBYIXkBLUexKZoJa3STl1tDypI0PSTFY8N48iIzfxYpH2JwHgZKUcODUy4y4vH5XPp__BSEczijmDLV0VdbpVXeevOlIS5yGLRi14N-Ralas",
       "imageHint": "perfume lifestyle"
+    },
+    {
+      "id": "pix-qr-code",
+      "description": "Placeholder QR code for PIX payment",
+      "imageUrl": "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PlaceholderForPixPayment",
+      "imageHint": "QR code"
     }
   ]
 }
