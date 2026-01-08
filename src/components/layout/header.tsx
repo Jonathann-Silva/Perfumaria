@@ -92,7 +92,7 @@ export function Header() {
                 href="/products"
                 className="text-sm font-medium text-foreground transition-colors hover:text-primary"
               >
-                Marcas
+                Todos Produtos
               </Link>
             </nav>
 
@@ -251,7 +251,7 @@ export function Header() {
                       className="text-lg font-medium"
                       onClick={() => setSheetOpen(false)}
                     >
-                      Marcas
+                      Todos Produtos
                     </Link>
                   </div>
                 </SheetContent>
