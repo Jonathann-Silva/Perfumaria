@@ -1,9 +1,8 @@
-
 'use client';
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, LogIn, Lock, Eye, User } from 'lucide-react';
+import { ArrowLeft, LogIn, Lock, Eye, User, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,24 +11,62 @@ import { LogoIcon } from '@/components/icons/logo-icon';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 export default function AdminLoginPage() {
   const bgImage = getImageById('login-bg');
   const router = useRouter();
   const { toast } = useToast();
+  const auth = useAuth();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (email === 'admin@gmail.com') {
-      router.push('/admin');
-    } else {
+    if (!auth) {
       toast({
         variant: 'destructive',
-        title: 'Acesso Negado',
-        description: 'Este e-mail não tem permissão de administrador.',
+        title: 'Erro de Autenticação',
+        description: 'O serviço de autenticação não está disponível.',
       });
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      // Tenta autenticar o usuário com Firebase Auth
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Verifica se o email do usuário autenticado é o do admin
+      if (user.email === 'admin@gmail.com') {
+        toast({
+          title: 'Login bem-sucedido!',
+          description: 'Bem-vindo ao painel de administração.',
+        });
+        router.push('/admin'); // Redireciona para o painel do admin
+      } else {
+        // Se não for o admin, faz logout e mostra erro
+        await auth.signOut();
+        toast({
+          variant: 'destructive',
+          title: 'Acesso Negado',
+          description: 'Este usuário não tem permissão de administrador.',
+        });
+      }
+    } catch (error: any) {
+      console.error(error);
+      toast({
+        variant: 'destructive',
+        title: 'Falha no Login',
+        description: 'E-mail ou senha incorretos. Verifique suas credenciais.',
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -70,7 +107,7 @@ export default function AdminLoginPage() {
                   htmlFor="email"
                   className="font-bold leading-normal text-foreground"
                 >
-                  E-mail ou Usuário
+                  E-mail de Administrador
                 </Label>
                 <div className="relative flex items-center">
                   <User className="absolute left-4 text-muted-foreground" />
@@ -116,22 +153,19 @@ export default function AdminLoginPage() {
                     <Eye />
                   </Button>
                 </div>
-                <div className="mt-2 flex justify-end">
-                  <Link
-                    href="#"
-                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-                  >
-                    Esqueci minha senha
-                  </Link>
-                </div>
               </div>
 
               <Button
                 type="submit"
+                disabled={isSubmitting}
                 className="mt-4 h-12 w-full rounded-full bg-primary text-sm font-bold leading-normal tracking-[0.015em] text-primary-foreground shadow-sm transition-all active:scale-[0.98] hover:brightness-95 focus:ring-4 focus:ring-primary/30"
               >
-                <LogIn className="mr-2 size-5" />
-                Entrar
+                {isSubmitting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <LogIn className="mr-2 size-5" />
+                )}
+                {isSubmitting ? 'Verificando...' : 'Entrar'}
               </Button>
             </form>
           </div>
@@ -153,3 +187,5 @@ export default function AdminLoginPage() {
     </div>
   );
 }
+
+    

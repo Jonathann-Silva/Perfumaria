@@ -11,6 +11,7 @@ import {
   Eye,
   LogOut,
   ChevronDown,
+  Loader2,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -73,18 +74,6 @@ export function Header() {
   const auth = useAuth();
   const { user } = useUser();
 
-  const handleAdminLogin = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (email === 'admin@gmail.com') {
-      router.push('/admin');
-    } else {
-      toast({
-        variant: 'destructive',
-        title: 'Acesso Negado',
-        description: 'Este e-mail não tem permissão de administrador.',
-      });
-    }
-  };
 
   const handleSignOut = async () => {
     if (auth) {
@@ -135,7 +124,7 @@ export function Header() {
         message = 'E-mail ou senha incorretos.';
       } else if (errorCode === 'auth/invalid-email') {
         message = 'O formato do e-mail é inválido.';
-      } else if (errorCode === 'auth/user-not-found') {
+      } else if (errorCode === 'auth/user-not-found' || errorCode === 'auth/invalid-credential') {
         message = 'E-mail ou senha incorretos.';
       }
       toast({
@@ -150,6 +139,52 @@ export function Header() {
       setName('');
     }
   };
+
+  const handleAdminLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!auth) {
+      toast({
+        variant: 'destructive',
+        title: 'Erro de Autenticação',
+        description: 'O serviço de autenticação não está disponível.',
+      });
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      if (user.email === 'admin@gmail.com') {
+        toast({
+          title: 'Login bem-sucedido!',
+          description: 'Bem-vindo ao painel de administração.',
+        });
+        router.push('/admin');
+      } else {
+        await signOut(auth);
+        toast({
+          variant: 'destructive',
+          title: 'Acesso Negado',
+          description: 'Este usuário não tem permissão de administrador.',
+        });
+      }
+    } catch (error: any) {
+      console.error(error);
+      toast({
+        variant: 'destructive',
+        title: 'Falha no Login',
+        description: 'E-mail ou senha incorretos. Verifique suas credenciais.',
+      });
+    } finally {
+      setIsSubmitting(false);
+       setEmail('');
+      setPassword('');
+    }
+  };
+
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-card/90 backdrop-blur-md dark:bg-background-dark/90">
@@ -284,22 +319,19 @@ export function Header() {
                             <Eye />
                           </Button>
                         </div>
-                        <div className="mt-2 flex justify-end">
-                          <Link
-                            href="#"
-                            className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-                          >
-                            Esqueci minha senha
-                          </Link>
-                        </div>
                       </div>
 
                       <Button
                         type="submit"
+                        disabled={isSubmitting}
                         className="mt-4 h-12 w-full rounded-full bg-primary text-sm font-bold leading-normal tracking-[0.015em] text-primary-foreground shadow-sm transition-all active:scale-[0.98] hover:brightness-95 focus:ring-4 focus:ring-primary/30"
                       >
-                        <LogIn className="mr-2 size-5" />
-                        Entrar
+                         {isSubmitting ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <LogIn className="mr-2 size-5" />
+                        )}
+                        {isSubmitting ? 'Verificando...' : 'Entrar'}
                       </Button>
                     </form>
                   </div>
@@ -548,3 +580,5 @@ export function Header() {
     </header>
   );
 }
+
+    
