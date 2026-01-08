@@ -128,7 +128,7 @@ export function PageHeader() {
 
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2 text-sm">
-            <Link href="/admin" className="text-muted-foreground transition-colors hover:text-primary">
+            <Link href="/" className="text-muted-foreground transition-colors hover:text-primary">
               Home
             </Link>
              {pathname !== '/admin' && (
