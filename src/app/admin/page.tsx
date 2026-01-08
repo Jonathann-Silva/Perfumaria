@@ -26,7 +26,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useFirestore } from '@/firebase';
-import { collection, getDocs, onSnapshot, query, orderBy, limit, writeBatch } from 'firebase/firestore';
+import { collection, getDocs, onSnapshot, query, orderBy, limit, writeBatch, doc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
 // Dados estáticos para os KPIs, pois exigem cálculo (agregação) que é melhor feito no backend
@@ -85,8 +85,8 @@ export default function AdminDashboardPage() {
       if (snapshot.empty) {
         const batch = writeBatch(firestore);
         sampleOrders.forEach(order => {
-          const docRef = collection(firestore, 'orders');
-          batch.set(docRef.doc(order.id), order);
+          const docRef = doc(firestore, 'orders', order.id);
+          batch.set(docRef, order);
         });
         await batch.commit();
       }
