@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
 import {
   Check,
@@ -33,6 +34,44 @@ export default function CheckoutPage() {
   const visaIcon = getImageById('visa-icon');
   const mastercardIcon = getImageById('mastercard-icon');
   const amexIcon = getImageById('amex-icon');
+  
+  const [cep, setCep] = useState('');
+  const [address, setAddress] = useState('');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
+  const [isFetchingCep, setIsFetchingCep] = useState(false);
+
+  const handleCepBlur = async (event: React.FocusEvent<HTMLInputElement>) => {
+    const cepValue = event.target.value.replace(/\D/g, '');
+
+    if (cepValue.length !== 8) {
+      return;
+    }
+
+    setIsFetchingCep(true);
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cepValue}/json/`);
+      const data = await response.json();
+
+      if (!data.erro) {
+        setAddress(data.logradouro);
+        setCity(data.localidade);
+        setState(data.uf);
+      } else {
+        // Limpar campos se CEP for inválido
+        setAddress('');
+        setCity('');
+        setState('');
+        alert('CEP não encontrado. Por favor, verifique.');
+      }
+    } catch (error) {
+      console.error('Erro ao buscar CEP:', error);
+      alert('Não foi possível buscar o CEP. Tente novamente.');
+    } finally {
+      setIsFetchingCep(false);
+    }
+  };
+
 
   return (
     <div className="flex min-h-screen flex-col bg-background font-display text-foreground selection:bg-primary selection:text-primary-foreground">
@@ -138,8 +177,8 @@ export default function CheckoutPage() {
                     Endereço de Entrega
                   </h2>
                 </div>
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                  <div className="sm:col-span-2 space-y-2">
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-6">
+                  <div className="sm:col-span-6 space-y-2">
                     <Label htmlFor="recipient-name" className="font-bold">
                       Nome do Destinatário
                     </Label>
@@ -149,13 +188,13 @@ export default function CheckoutPage() {
                       defaultValue="João da Silva"
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="sm:col-span-3 space-y-2">
                     <Label htmlFor="cpf" className="font-bold">
                       CPF
                     </Label>
                     <Input id="cpf" placeholder="000.000.000-00" />
                   </div>
-                  <div className="space-y-2">
+                   <div className="sm:col-span-3 space-y-2">
                     <Label htmlFor="zip" className="font-bold">
                       CEP
                     </Label>
@@ -163,24 +202,30 @@ export default function CheckoutPage() {
                       <Input
                         id="zip"
                         placeholder="00000-000"
-                        className="pr-12"
+                        value={cep}
+                        onChange={(e) => setCep(e.target.value)}
+                        onBlur={handleCepBlur}
+                        maxLength={9}
                       />
-                      <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                       {isFetchingCep && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+                      )}
                     </div>
                   </div>
-                  <div className="sm:col-span-2 space-y-2">
+
+                  <div className="sm:col-span-4 space-y-2">
                     <Label htmlFor="address" className="font-bold">
-                      Endereço Completo
+                      Endereço
                     </Label>
-                    <Input id="address" placeholder="Rua, Avenida, etc." />
+                    <Input id="address" placeholder="Rua, Avenida, etc." value={address} onChange={e => setAddress(e.target.value)} />
                   </div>
-                  <div className="space-y-2">
+                   <div className="sm:col-span-2 space-y-2">
                     <Label htmlFor="number" className="font-bold">
                       Número
                     </Label>
                     <Input id="number" placeholder="123" />
                   </div>
-                  <div className="space-y-2">
+                   <div className="sm:col-span-2 space-y-2">
                     <Label htmlFor="complement" className="font-bold">
                       Complemento{' '}
                       <span className="font-normal text-muted-foreground">
@@ -188,6 +233,18 @@ export default function CheckoutPage() {
                       </span>
                     </Label>
                     <Input id="complement" placeholder="Apto 101, Bloco B" />
+                  </div>
+                  <div className="sm:col-span-2 space-y-2">
+                     <Label htmlFor="city" className="font-bold">
+                      Cidade
+                    </Label>
+                    <Input id="city" placeholder="Sua cidade" value={city} onChange={e => setCity(e.target.value)} />
+                  </div>
+                   <div className="sm:col-span-2 space-y-2">
+                     <Label htmlFor="state" className="font-bold">
+                      Estado
+                    </Label>
+                    <Input id="state" placeholder="UF" value={state} onChange={e => setState(e.target.value)} />
                   </div>
                 </div>
               </div>
@@ -488,3 +545,5 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
+    
