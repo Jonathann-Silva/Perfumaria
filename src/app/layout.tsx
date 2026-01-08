@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { CartProvider } from '@/context/cart-context';
+import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
   title: 'Aroma Allure',
@@ -37,9 +38,11 @@ export default function RootLayout({
           'min-h-screen bg-background font-body text-foreground antialiased transition-colors duration-200',
         )}
       >
-        <CartProvider>
-          {children}
-        </CartProvider>
+        <FirebaseClientProvider>
+          <CartProvider>
+            {children}
+          </CartProvider>
+        </FirebaseClientProvider>
         <Toaster />
       </body>
     </html>

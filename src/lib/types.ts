@@ -1,3 +1,5 @@
+import type { User } from 'firebase/auth';
+
 export type ProductStatus = 'in-stock' | 'low-stock' | 'out-of-stock';
 
 export type Product = {
@@ -23,3 +25,5 @@ export type Category = {
 export type CartItem = Product & {
   quantity: number;
 };
+
+export type FirebaseUser = User;
