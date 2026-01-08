@@ -65,16 +65,22 @@ export function Header() {
   const [isMenuSheetOpen, setMenuSheetOpen] = useState(false);
   const [isCartSheetOpen, setCartSheetOpen] = useState(false);
   const [isAuthDialogOpen, setAuthDialogOpen] = useState(false);
+  const [isAdminAuthDialogOpen, setAdminAuthDialogOpen] = useState(false);
   const [authView, setAuthView] = useState<'login' | 'register'>('login');
   const isMobile = useIsMobile();
   const { cartCount, cartItems, cartSubtotal, removeFromCart } = useCart();
   const router = useRouter();
   const { toast } = useToast();
   
-  // States for form inputs
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
+  // States for customer auth form
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [customerPassword, setCustomerPassword] = useState('');
+  const [customerName, setCustomerName] = useState('');
+  
+  // States for admin auth form
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Firebase hooks
@@ -106,15 +112,15 @@ export function Header() {
     setIsSubmitting(true);
     try {
       if (authView === 'register') {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(userCredential.user, { displayName: name });
+        const userCredential = await createUserWithEmailAndPassword(auth, customerEmail, customerPassword);
+        await updateProfile(userCredential.user, { displayName: customerName });
         toast({
           title: 'Conta Criada!',
           description: 'Sua conta foi criada com sucesso.',
         });
         setAuthDialogOpen(false);
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        await signInWithEmailAndPassword(auth, customerEmail, customerPassword);
         toast({
           title: 'Login bem-sucedido!',
           description: 'Bem-vindo de volta.',
@@ -139,9 +145,6 @@ export function Header() {
       });
     } finally {
       setIsSubmitting(false);
-      setEmail('');
-      setPassword('');
-      setName('');
     }
   };
 
@@ -159,7 +162,7 @@ export function Header() {
     setIsSubmitting(true);
     
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, adminEmail, adminPassword);
       const user = userCredential.user;
 
       if (user.email === 'admin@gmail.com') {
@@ -167,6 +170,7 @@ export function Header() {
           title: 'Login bem-sucedido!',
           description: 'Bem-vindo ao painel de administração.',
         });
+        setAdminAuthDialogOpen(false);
         router.push('/admin');
       } else {
         await signOut(auth);
@@ -185,8 +189,6 @@ export function Header() {
       });
     } finally {
       setIsSubmitting(false);
-       setEmail('');
-      setPassword('');
     }
   };
 
@@ -259,7 +261,13 @@ export function Header() {
             </nav>
 
             <div className="flex items-center gap-2">
-              <Dialog>
+               <Dialog open={isAdminAuthDialogOpen} onOpenChange={(open) => {
+                  if (!open) {
+                    setAdminEmail('');
+                    setAdminPassword('');
+                  }
+                  setAdminAuthDialogOpen(open);
+                }}>
                 <DialogTrigger asChild>
                   <Button className="hidden h-10 rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground transition-transform active:scale-95 sm:flex">
                     Login Admin
@@ -297,8 +305,8 @@ export function Header() {
                             type="email"
                             placeholder="admin@gmail.com"
                             required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            value={adminEmail}
+                            onChange={(e) => setAdminEmail(e.target.value)}
                             className="h-14 w-full rounded-xl border-border bg-muted/50 pl-12 pr-4 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary dark:bg-background dark:focus:bg-background"
                           />
                         </div>
@@ -319,8 +327,8 @@ export function Header() {
                             type="password"
                             placeholder="••••••••"
                             required
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            value={adminPassword}
+                            onChange={(e) => setAdminPassword(e.target.value)}
                             className="h-14 w-full rounded-xl border-border bg-muted/50 pl-12 pr-12 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary dark:bg-background dark:focus:bg-background"
                           />
                           <Button
@@ -385,9 +393,9 @@ export function Header() {
                 <Dialog open={isAuthDialogOpen} onOpenChange={(open) => {
                   if (!open) {
                     setAuthView('login');
-                    setEmail('');
-                    setPassword('');
-                    setName('');
+                    setCustomerEmail('');
+                    setCustomerPassword('');
+                    setCustomerName('');
                   }
                   setAuthDialogOpen(open);
                 }}>
@@ -435,8 +443,8 @@ export function Header() {
                                 type="text"
                                 placeholder="Seu nome completo"
                                 required
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
+                                value={customerName}
+                                onChange={(e) => setCustomerName(e.target.value)}
                                 className="h-14 w-full rounded-xl border-border bg-muted/50 pl-12 pr-4 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary dark:bg-background dark:focus:bg-background"
                               />
                             </div>
@@ -457,8 +465,8 @@ export function Header() {
                               type="email"
                               placeholder="seu@email.com"
                               required
-                              value={email}
-                              onChange={(e) => setEmail(e.target.value)}
+                              value={customerEmail}
+                              onChange={(e) => setCustomerEmail(e.target.value)}
                               className="h-14 w-full rounded-xl border-border bg-muted/50 pl-12 pr-4 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary dark:bg-background dark:focus:bg-background"
                             />
                           </div>
@@ -479,8 +487,8 @@ export function Header() {
                               type="password"
                               placeholder="••••••••"
                               required
-                              value={password}
-                              onChange={(e) => setPassword(e.target.value)}
+                              value={customerPassword}
+                              onChange={(e) => setCustomerPassword(e.target.value)}
                               className="h-14 w-full rounded-xl border-border bg-muted/50 pl-12 pr-12 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary dark:bg-background dark:focus:bg-background"
                             />
                           </div>
