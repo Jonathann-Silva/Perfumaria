@@ -169,6 +169,7 @@ function ProductRow({
 export default function AdminProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleNewProduct = () => {
     setEditingProduct(null);
@@ -188,6 +189,13 @@ export default function AdminProductsPage() {
   const formTitle = editingProduct
     ? 'Editar Produto'
     : 'Novo Cadastro de Produto';
+
+  const filteredProducts = products.filter(
+    (p) =>
+      p.id !== '4' &&
+      (p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.brand.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   return (
     <>
@@ -248,6 +256,8 @@ export default function AdminProductsPage() {
                   <Input
                     type="text"
                     placeholder="Buscar produto..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full rounded-full border-border bg-muted/60 pl-10 pr-4 text-sm transition-all focus:bg-card dark:bg-neutral-900 sm:w-64"
                   />
                 </div>
@@ -281,16 +291,13 @@ export default function AdminProductsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody className="divide-y divide-border">
-                  {products.map(
-                    (p) =>
-                      p.id !== '4' && (
-                        <ProductRow
-                          key={p.id}
-                          product={p}
-                          onEdit={handleEditProduct}
-                        />
-                      )
-                  )}
+                  {filteredProducts.map((p) => (
+                    <ProductRow
+                      key={p.id}
+                      product={p}
+                      onEdit={handleEditProduct}
+                    />
+                  ))}
                 </TableBody>
               </Table>
             </div>
