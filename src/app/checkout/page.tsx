@@ -195,7 +195,7 @@ export default function CheckoutPage() {
 
             <section className="rounded-2xl bg-muted/50 p-6 dark:bg-white/5">
               <h3 className="mb-4 text-base font-bold text-foreground">
-                Escolha o envio
+                Opções de Envio
               </h3>
               <div className="space-y-3">
                 <Label
@@ -209,7 +209,7 @@ export default function CheckoutPage() {
                       </div>
                       <div className="flex flex-col">
                         <span className="block text-sm font-bold text-foreground">
-                          SEDEX (Melhor Envio)
+                          SEDEX (via Melhor Envio)
                         </span>
                         <span className="block text-xs text-muted-foreground">
                           Entrega em 1 a 2 dias úteis
