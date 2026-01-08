@@ -22,6 +22,14 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { LogoIcon } from '../icons/logo-icon';
 
 
+const navLinks = [
+  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/products', label: 'Produtos', icon: Package },
+  { href: '/admin/orders', label: 'Pedidos', icon: ShoppingBag, badge: '3' },
+  { href: '/admin/customers', label: 'Clientes', icon: Users },
+  { href: '/admin/settings', label: 'Configurações', icon: Settings },
+];
+
 function NavContent() {
   const pathname = usePathname();
   const adminAvatar = getImageById('admin-avatar');
