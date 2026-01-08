@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -32,11 +33,30 @@ import {
 import { Label } from '@/components/ui/label';
 import { LogoIcon } from '../icons/logo-icon';
 import { useCart } from '@/context/cart-context';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 export function Header() {
   const [isSheetOpen, setSheetOpen] = useState(false);
   const isMobile = useIsMobile();
   const { cartCount } = useCart();
+  const router = useRouter();
+  const { toast } = useToast();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (email === 'admin@gmail.com') {
+      router.push('/admin');
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Acesso Negado',
+        description: 'Este e-mail não tem permissão de administrador.',
+      });
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-card/90 backdrop-blur-md dark:bg-background-dark/90">
@@ -100,7 +120,7 @@ export function Header() {
               <Dialog>
                 <DialogTrigger asChild>
                   <Button className="hidden h-10 rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground transition-transform active:scale-95 sm:flex">
-                    Login
+                    Login Admin
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-[480px] p-0">
@@ -117,8 +137,7 @@ export function Header() {
                   </DialogHeader>
                   <div className="px-8 py-8">
                     <form
-                      action="/admin"
-                      method="GET"
+                      onSubmit={handleLogin}
                       className="flex flex-col gap-5"
                     >
                       <div className="space-y-2">
@@ -133,9 +152,11 @@ export function Header() {
                           <Input
                             id="email-modal"
                             name="email"
-                            type="text"
-                            placeholder="admin@exemplo.com"
+                            type="email"
+                            placeholder="admin@gmail.com"
                             required
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             className="h-14 w-full rounded-xl border-border bg-muted/50 pl-12 pr-4 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary dark:bg-background dark:focus:bg-background"
                           />
                         </div>
@@ -156,6 +177,8 @@ export function Header() {
                             type="password"
                             placeholder="••••••••"
                             required
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                             className="h-14 w-full rounded-xl border-border bg-muted/50 pl-12 pr-12 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary dark:bg-background dark:focus:bg-background"
                           />
                           <Button

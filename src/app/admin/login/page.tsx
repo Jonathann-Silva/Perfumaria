@@ -1,3 +1,6 @@
+
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, LogIn, Lock, Eye, User } from 'lucide-react';
@@ -6,9 +9,29 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getImageById } from '@/lib/placeholder-images';
 import { LogoIcon } from '@/components/icons/logo-icon';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AdminLoginPage() {
   const bgImage = getImageById('login-bg');
+  const router = useRouter();
+  const { toast } = useToast();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (email === 'admin@gmail.com') {
+      router.push('/admin');
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Acesso Negado',
+        description: 'Este e-mail não tem permissão de administrador.',
+      });
+    }
+  };
 
   return (
     <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden font-display">
@@ -41,7 +64,7 @@ export default function AdminLoginPage() {
           </div>
 
           <div className="px-8 py-8">
-            <form action="/admin/products" method="GET" className="flex flex-col gap-5">
+            <form onSubmit={handleLogin} className="flex flex-col gap-5">
               <div className="space-y-2">
                 <Label
                   htmlFor="email"
@@ -54,9 +77,11 @@ export default function AdminLoginPage() {
                   <Input
                     id="email"
                     name="email"
-                    type="text"
-                    placeholder="admin@exemplo.com"
+                    type="email"
+                    placeholder="admin@gmail.com"
                     required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="h-14 w-full rounded-xl border-border bg-muted/50 pl-12 pr-4 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary dark:bg-background dark:focus:bg-background"
                   />
                 </div>
@@ -77,6 +102,8 @@ export default function AdminLoginPage() {
                     type="password"
                     placeholder="••••••••"
                     required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     className="h-14 w-full rounded-xl border-border bg-muted/50 pl-12 pr-12 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary dark:bg-background dark:focus:bg-background"
                   />
                   <Button
