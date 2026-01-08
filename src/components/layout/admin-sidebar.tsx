@@ -17,15 +17,10 @@ import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
 import { Menu } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { LogoIcon } from '../icons/logo-icon';
 
-const navLinks = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/products', label: 'Produtos', icon: Package },
-  { href: '/admin/orders', label: 'Pedidos', icon: ShoppingBag, badge: '3' },
-  { href: '/admin/customers', label: 'Clientes', icon: Users },
-  { href: '/admin/settings', label: 'Configurações', icon: Settings },
-];
 
 function NavContent() {
   const pathname = usePathname();
@@ -34,25 +29,16 @@ function NavContent() {
   return (
     <>
       <div className="flex flex-col gap-8">
-        <div className="flex items-center gap-4">
-          <div className="relative size-12 shrink-0 rounded-full shadow-sm">
-            {adminAvatar && (
-              <Image
-                src={adminAvatar.imageUrl}
-                alt={adminAvatar.description}
-                fill
-                className="rounded-full object-cover"
-                data-ai-hint={adminAvatar.imageHint}
-              />
-            )}
-            <div className="absolute bottom-0 right-0 size-3 rounded-full border-2 border-card bg-green-500 dark:border-[#1a190b]"></div>
-          </div>
+        <div className="flex items-center gap-4 px-2">
+           <div className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
+              <LogoIcon className="size-6" />
+            </div>
           <div className="flex flex-col">
             <h1 className="text-base font-bold leading-tight text-foreground">
               Admin Store
             </h1>
             <p className="text-sm font-normal text-muted-foreground">
-              Gerente Geral
+              Painel de Controle
             </p>
           </div>
         </div>
@@ -71,15 +57,15 @@ function NavContent() {
                 <link.icon
                   className={cn(
                     'text-muted-foreground group-hover:text-foreground',
-                    isActive ? 'fill-current' : ''
+                     isActive ? 'text-primary-foreground' : ''
                   )}
-                  size={24}
+                  size={20}
                 />
                 <p className={cn('text-sm font-medium', isActive && 'font-bold')}>
                   {link.label}
                 </p>
                 {link.badge && (
-                  <Badge className="ml-auto bg-primary text-[10px] font-bold text-primary-foreground">
+                  <Badge className="ml-auto bg-yellow-300 text-[10px] font-bold text-black hover:bg-yellow-300">
                     {link.badge}
                   </Badge>
                 )}
@@ -103,25 +89,24 @@ function NavContent() {
 
 export function AdminSidebar() {
   const [isOpen, setIsOpen] = useState(false);
+  const isMobile = useIsMobile();
+  const pathname = usePathname();
+
+  useEffect(() => {
+      if (!isMobile) {
+          setIsOpen(false);
+      }
+  }, [isMobile]);
+
+  useEffect(() => {
+      setIsOpen(false);
+  }, [pathname]);
 
   return (
     <>
-      <aside className="hidden h-full w-72 shrink-0 flex-col justify-between border-r border-border bg-card p-6 dark:bg-[#1a190b] lg:flex">
+      <aside className="hidden h-screen w-72 shrink-0 flex-col justify-between border-r border-border bg-card p-6 dark:bg-[#1a190b] lg:flex">
         <NavContent />
       </aside>
-
-      <div className="lg:hidden">
-         <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="absolute top-5 left-5 z-30">
-                    <Menu/>
-                </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="flex w-72 flex-col justify-between bg-card p-6 dark:bg-[#1a190b]">
-                 <NavContent />
-            </SheetContent>
-         </Sheet>
-      </div>
     </>
   );
 }
