@@ -1,6 +1,7 @@
 import type { User } from 'firebase/auth';
 
 export type ProductStatus = 'in-stock' | 'low-stock' | 'out-of-stock';
+export type OrderStatus = 'Pendente' | 'Concluído' | 'Cancelado';
 
 export type Product = {
   id: string;
@@ -14,6 +15,16 @@ export type Product = {
   status: ProductStatus;
   stock: number;
   category: string;
+};
+
+export type Order = {
+  id: string;
+  user: string;
+  email: string;
+  amount: number;
+  status: OrderStatus;
+  timestamp: any;
+  items: CartItem[];
 };
 
 export type Category = {

@@ -1,0 +1,91 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Represents a user's profile information.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The user's unique ID from Firebase Auth."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's email address."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The user's display name."
+        },
+        "photoURL": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the user's profile picture."
+        },
+        "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The timestamp when the user was created."
+        }
+      },
+      "required": ["uid", "email"]
+    },
+    "Product": {
+        "title": "Product",
+        "description": "Represents a perfume or decant available for sale.",
+        "type": "object",
+        "properties": {
+            "name": { "type": "string" },
+            "brand": { "type": "string" },
+            "price": { "type": "number" },
+            "oldPrice": { "type": "number" },
+            "imageId": { "type": "string" },
+            "type": { "type": "string", "enum": ["sealed", "decant"] },
+            "decantMl": { "type": "number" },
+            "status": { "type": "string", "enum": ["in-stock", "low-stock", "out-of-stock"] },
+            "stock": { "type": "number" },
+            "category": { "type": "string" }
+        },
+        "required": ["name", "brand", "price", "stock", "category", "type", "status"]
+    },
+    "Order": {
+        "title": "Order",
+        "description": "Represents a customer's order.",
+        "type": "object",
+        "properties": {
+            "userId": { "type": "string" },
+            "user": { "type": "string" },
+            "email": { "type": "string", "format": "email" },
+            "amount": { "type": "number" },
+            "status": { "type": "string", "enum": ["Pendente", "Concluído", "Cancelado"] },
+            "items": {
+                "type": "array",
+                "items": { "$ref": "#/entities/Product" }
+            },
+            "timestamp": {
+                "type": "string",
+                "format": "date-time"
+            }
+        },
+        "required": ["userId", "amount", "status", "items", "timestamp"]
+    }
+  },
+  "auth": {
+    "providers": ["email_password", "google.com"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Stores public profile information for each user."
+    },
+    "/products/{productId}": {
+        "schema": { "$ref": "#/entities/Product" },
+        "description": "Stores all available products."
+    },
+    "/orders/{orderId}": {
+        "schema": { "$ref": "#/entities/Order" },
+        "description": "Stores all customer orders."
+    }
+  }
+}
