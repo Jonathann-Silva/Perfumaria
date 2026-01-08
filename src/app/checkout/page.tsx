@@ -12,6 +12,7 @@ import {
   Trash2,
   Truck,
   User,
+  PartyPopper,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,6 +24,7 @@ import Link from 'next/link';
 import { LogoIcon } from '@/components/icons/logo-icon';
 import { getShippingRates } from './actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useToast } from '@/hooks/use-toast';
 
 const steps = [
   { id: 1, name: 'Identificação', status: 'complete', icon: Check },
@@ -54,9 +56,13 @@ export default function CheckoutPage() {
 
   const [isFetchingCep, setIsFetchingCep] = useState(false);
   const [isFetchingRates, setIsFetchingRates] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+
   const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
   const [selectedShipping, setSelectedShipping] = useState<ShippingOption | null>(null);
   const [shippingError, setShippingError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const handleCepBlur = async (event: React.FocusEvent<HTMLInputElement>) => {
     const cepValue = event.target.value.replace(/\D/g, '');
@@ -87,11 +93,12 @@ export default function CheckoutPage() {
         // Fetch shipping rates
         const rates = await getShippingRates(cepValue);
         if (rates && rates.length > 0) {
+          const validRates = rates.filter(rate => !rate.error);
           setShippingOptions(rates);
-          // Auto-select the first valid option
-          const firstValidOption = rates.find(rate => !rate.error);
-          if (firstValidOption) {
-            setSelectedShipping(firstValidOption);
+          if (validRates.length > 0) {
+            setSelectedShipping(validRates[0]);
+          } else {
+            setShippingError(rates[0]?.error || 'Nenhuma opção de frete válida encontrada.');
           }
         } else {
            setShippingError('Não foram encontradas opções de frete para este CEP. Verifique o CEP digitado.');
@@ -110,8 +117,36 @@ export default function CheckoutPage() {
     }
   };
 
+  const handlePayment = async () => {
+    setIsProcessingPayment(true);
+    // Simula uma chamada de API de pagamento
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    setIsProcessingPayment(false);
+    setPaymentSuccess(true);
+    toast({
+        title: "Pagamento Aprovado!",
+        description: "Seu pedido foi realizado com sucesso.",
+    })
+  }
+
   const subtotal = 205;
   const total = subtotal + (selectedShipping ? parseFloat(selectedShipping.price) : 0);
+  
+  if (paymentSuccess) {
+    return (
+        <div className="flex min-h-screen flex-col items-center justify-center bg-background p-8 text-center">
+            <PartyPopper className="mb-6 h-24 w-24 text-primary animate-bounce"/>
+            <h1 className="font-headline text-4xl font-bold text-foreground">Obrigado pela sua compra!</h1>
+            <p className="mt-4 max-w-md text-lg text-muted-foreground">Seu pedido <span className="font-bold text-foreground">#12345</span> foi confirmado e em breve será preparado para envio.</p>
+            <p className="mt-2 text-sm text-muted-foreground">Enviamos todos os detalhes para o seu e-mail.</p>
+            <Button asChild className="mt-8 rounded-full">
+                <Link href="/products">
+                    Continuar Comprando
+                </Link>
+            </Button>
+        </div>
+    )
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-background font-display text-foreground selection:bg-primary selection:text-primary-foreground">
@@ -320,9 +355,16 @@ export default function CheckoutPage() {
                     >
                       <div className="flex w-full items-center justify-between">
                         <div className="flex items-center gap-4">
-                          <div className="flex size-6 items-center justify-center rounded-full border border-border bg-card">
-                             {selectedShipping?.id === option.id && <div className="size-3 rounded-full bg-primary"></div>}
-                          </div>
+                           <input
+                            type="radio"
+                            name="shipping"
+                            id={`shipping-${option.id}`}
+                            value={option.id}
+                            checked={selectedShipping?.id === option.id}
+                            onChange={() => !option.error && setSelectedShipping(option)}
+                            className="h-4 w-4 border-muted-foreground text-primary focus:ring-primary"
+                            disabled={!!option.error}
+                          />
                           <div className="flex flex-col">
                             <span className="block text-sm font-bold text-foreground">
                               {option.name}
@@ -340,16 +382,6 @@ export default function CheckoutPage() {
                         </div>
                         <span className="font-bold text-foreground">{!option.error ? formatCurrency(parseFloat(option.price)) : '--'}</span>
                       </div>
-                      <Input
-                        type="radio"
-                        name="shipping"
-                        id={`shipping-${option.id}`}
-                        value={option.id}
-                        checked={selectedShipping?.id === option.id}
-                        onChange={() => !option.error && setSelectedShipping(option)}
-                        className="sr-only"
-                        disabled={!!option.error}
-                      />
                     </Label>
                   ))}
                 </div>
@@ -561,9 +593,17 @@ export default function CheckoutPage() {
                 </div>
               </div>
               <div className="mt-8">
-                <Button className="group flex h-auto w-full items-center justify-center rounded-full bg-primary py-4 px-6 text-lg font-bold text-primary-foreground shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] hover:bg-yellow-400 hover:shadow-primary/40 focus:ring-4 focus:ring-primary/30">
-                  <LockOpen className="mr-2 transition-transform group-hover:scale-110" />
-                  Finalizar Compra
+                <Button
+                  onClick={handlePayment}
+                  disabled={isProcessingPayment || !selectedShipping}
+                  className="group flex h-auto w-full items-center justify-center rounded-full bg-primary py-4 px-6 text-lg font-bold text-primary-foreground shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] hover:bg-yellow-400 hover:shadow-primary/40 focus:ring-4 focus:ring-primary/30"
+                >
+                  {isProcessingPayment ? (
+                    <Loader2 className="mr-2 animate-spin" />
+                  ) : (
+                    <LockOpen className="mr-2 transition-transform group-hover:scale-110" />
+                  )}
+                  {isProcessingPayment ? 'Processando...' : 'Finalizar Compra'}
                 </Button>
                 <div className="mt-6 flex flex-col items-center gap-3">
                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
@@ -588,5 +628,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-
-    
