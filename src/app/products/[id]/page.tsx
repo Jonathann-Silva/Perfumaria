@@ -37,6 +37,7 @@ const galleryImages = [
 ];
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
+  const resolvedParams = use(params);
   const [activeImageId, setActiveImageId] = useState(galleryImages[0]);
   const activeImage = getImageById(activeImageId);
   const [quantity, setQuantity] = useState(1);
@@ -45,7 +46,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   const { toast } = useToast();
 
   // In a real app, you would fetch product data based on the ID
-  const product = products.find(p => p.id === params.id) || products[0];
+  const product = products.find(p => p.id === resolvedParams.id) || products[0];
 
   const handleAddToCart = () => {
     addToCart(product, quantity);
