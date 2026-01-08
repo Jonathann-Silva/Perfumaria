@@ -57,6 +57,15 @@ export function Header() {
       });
     }
   };
+  
+  const handleCustomerLogin = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // Placeholder for customer login
+    toast({
+        title: 'Login em desenvolvimento',
+        description: 'Funcionalidade de login de cliente será implementada em breve.',
+    });
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-card/90 backdrop-blur-md dark:bg-background-dark/90">
@@ -212,13 +221,88 @@ export function Header() {
                   </div>
                 </DialogContent>
               </Dialog>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full bg-background hover:bg-muted dark:bg-white/10 dark:hover:bg-white/20"
-              >
-                <User className="size-5 text-foreground" />
-              </Button>
+             
+              <Dialog>
+                <DialogTrigger asChild>
+                   <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full bg-background hover:bg-muted dark:bg-white/10 dark:hover:bg-white/20"
+                  >
+                    <User className="size-5 text-foreground" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-[480px] p-0">
+                   <DialogHeader className="flex flex-col items-center border-b border-border px-8 pt-10 pb-6 text-center">
+                    <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-primary/20 text-foreground dark:text-primary">
+                      <LogoIcon className="size-8" />
+                    </div>
+                    <DialogTitle className="font-headline text-center text-[28px] font-bold leading-tight tracking-tight text-foreground">
+                      Acesse sua Conta
+                    </DialogTitle>
+                    <DialogDescription className="mt-2 text-center text-base text-muted-foreground">
+                      Entre ou crie sua conta para uma experiência completa.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="px-8 py-8">
+                    <form
+                      onSubmit={handleCustomerLogin}
+                      className="flex flex-col gap-5"
+                    >
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="customer-email-modal"
+                          className="font-bold leading-normal text-foreground"
+                        >
+                          E-mail
+                        </Label>
+                        <div className="relative flex items-center">
+                          <User className="absolute left-4 text-muted-foreground" />
+                          <Input
+                            id="customer-email-modal"
+                            name="email"
+                            type="email"
+                            placeholder="seu@email.com"
+                            required
+                            className="h-14 w-full rounded-xl border-border bg-muted/50 pl-12 pr-4 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary dark:bg-background dark:focus:bg-background"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="customer-password-modal"
+                          className="font-bold leading-normal text-foreground"
+                        >
+                          Senha
+                        </Label>
+                        <div className="relative flex items-center">
+                          <Lock className="absolute left-4 text-muted-foreground" />
+                          <Input
+                            id="customer-password-modal"
+                            name="password"
+                            type="password"
+                            placeholder="••••••••"
+                            required
+                            className="h-14 w-full rounded-xl border-border bg-muted/50 pl-12 pr-12 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary dark:bg-background dark:focus:bg-background"
+                          />
+                        </div>
+                      </div>
+
+                      <Button
+                        type="submit"
+                        className="mt-4 h-12 w-full rounded-full bg-primary text-sm font-bold leading-normal tracking-[0.015em] text-primary-foreground shadow-sm transition-all active:scale-[0.98] hover:brightness-95 focus:ring-4 focus:ring-primary/30"
+                      >
+                        <LogIn className="mr-2 size-5" />
+                        Entrar
+                      </Button>
+                       <p className="text-center text-sm text-muted-foreground">Não tem uma conta? <Link href="#" className="font-bold text-primary hover:underline">Crie uma agora</Link></p>
+
+                    </form>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
               <Button
                 variant="ghost"
                 size="icon"
