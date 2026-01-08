@@ -71,10 +71,10 @@ function CheckoutPaymentPage() {
     setShippingName(name);
     setShippingId(id);
 
-    if (id === 'pickup') {
+    if (id === 'pickup' && !paymentSuccess) {
       setShowPickupConfirm(true);
     }
-  }, [searchParams]);
+  }, [searchParams, paymentSuccess]);
 
   const total = cartSubtotal + shippingCost;
 
@@ -83,6 +83,19 @@ function CheckoutPaymentPage() {
     setIsProcessingPayment(true);
     // Simula uma chamada de API de pagamento
     await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Simular notificação para o painel admin
+    const newSale = {
+      id: `sale_${new Date().getTime()}`,
+      user: 'João da Silva',
+      amount: total,
+      timestamp: new Date().toISOString(),
+      read: false,
+    };
+    const existingSales = JSON.parse(localStorage.getItem('newSales') || '[]');
+    localStorage.setItem('newSales', JSON.stringify([...existingSales, newSale]));
+
+
     setIsProcessingPayment(false);
     setPaymentSuccess(true);
     clearCart();
