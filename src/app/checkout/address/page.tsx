@@ -542,7 +542,7 @@ export default function CheckoutAddressPage() {
                      placeholder="Cupom de desconto"
                      className="text-sm"
                      value={couponCode}
-                     onChange={(e) => setCouponCode(e.target.value)}
+                     onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                      disabled={!!appliedCoupon}
                    />
                    <Button variant="secondary" className="font-bold" onClick={handleApplyCoupon} disabled={!!appliedCoupon}>
@@ -619,5 +619,3 @@ export default function CheckoutAddressPage() {
     </div>
   );
 }
-
-    

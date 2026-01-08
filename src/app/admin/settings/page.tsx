@@ -136,7 +136,7 @@ export default function AdminSettingsPage() {
     }
 
     const newCoupon = {
-      code: newCouponCode,
+      code: newCouponCode.toUpperCase(),
       discountPercentage: parseInt(newCouponDiscount, 10),
       quantity: parseInt(newCouponQuantity, 10),
       used: 0,
@@ -247,7 +247,7 @@ export default function AdminSettingsPage() {
                 <div className="grid grid-cols-1 items-end gap-4 md:grid-cols-[1fr_1fr_1fr_auto]">
                     <div>
                         <Label htmlFor="newCouponCode">Código Promocional</Label>
-                        <Input id="newCouponCode" placeholder="EX: BEMVINDO10" value={newCouponCode} onChange={(e) => setNewCouponCode(e.target.value)} />
+                        <Input id="newCouponCode" placeholder="EX: BEMVINDO10" value={newCouponCode} onChange={(e) => setNewCouponCode(e.target.value.toUpperCase())} />
                     </div>
                     <div>
                         <Label htmlFor="newCouponDiscount">Desconto (%)</Label>
