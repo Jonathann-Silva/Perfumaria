@@ -50,7 +50,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
-  getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
@@ -188,6 +187,15 @@ export function Header() {
       setIsSubmitting(false);
        setEmail('');
       setPassword('');
+    }
+  };
+
+  const handleCheckout = () => {
+    setCartSheetOpen(false); // Fecha o carrinho
+    if (user) {
+      router.push('/checkout/address');
+    } else {
+      setAuthDialogOpen(true); // Abre o modal de login
     }
   };
 
@@ -561,8 +569,8 @@ export function Header() {
                             <span>Subtotal</span>
                             <span>{formatCurrency(cartSubtotal)}</span>
                          </div>
-                         <Button asChild className="w-full rounded-full" onClick={() => setCartSheetOpen(false)}>
-                            <Link href="/checkout/address">Finalizar Compra</Link>
+                         <Button onClick={handleCheckout} className="w-full rounded-full">
+                           Finalizar Compra
                          </Button>
                       </SheetFooter>
                     </>
