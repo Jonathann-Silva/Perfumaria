@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Download,
   Plus,
@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   ChevronRight,
   FileEdit,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,7 +28,6 @@ import {
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { getImageById } from '@/lib/placeholder-images';
-import { products } from '@/lib/data';
 import type { Product } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
 import { ProductForm } from './_components/product-form';
@@ -37,6 +37,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useFirestore, useCollection } from '@/firebase';
+import { collection, query, orderBy, deleteDoc, doc, getDocs, writeBatch } from 'firebase/firestore';
 
 function RecentAddItem({
   product,
@@ -55,7 +57,7 @@ function RecentAddItem({
         {image && (
           <Image
             src={image.imageUrl}
-            alt={image.description}
+            alt={image.description || product.name}
             width={48}
             height={48}
             className="size-full object-cover"
@@ -81,9 +83,11 @@ function RecentAddItem({
 function ProductRow({
   product,
   onEdit,
+  onDelete
 }: {
   product: Product;
   onEdit: (product: Product) => void;
+  onDelete: (productId: string) => void;
 }) {
   const image = getImageById(product.imageId);
   const statusConfig = {
@@ -114,7 +118,7 @@ function ProductRow({
           {image && (
             <Image
               src={image.imageUrl}
-              alt={image.description}
+              alt={image.description || product.name}
               width={40}
               height={40}
               className="size-10 rounded-lg object-cover bg-muted"
@@ -136,14 +140,16 @@ function ProductRow({
         {formatCurrency(product.price)}
       </td>
       <td className="p-4">
-        <Badge
-          className={`gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${currentStatus.color}`}
-        >
-          <span
-            className={`size-1.5 rounded-full ${currentStatus.dot}`}
-          ></span>
-          {currentStatus.label}
-        </Badge>
+        {currentStatus && (
+            <Badge
+            className={`gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${currentStatus.color}`}
+            >
+            <span
+                className={`size-1.5 rounded-full ${currentStatus.dot}`}
+            ></span>
+            {currentStatus.label}
+            </Badge>
+        )}
       </td>
       <td className="p-4 text-right">
         <Button
@@ -158,6 +164,7 @@ function ProductRow({
           variant="ghost"
           size="icon"
           className="text-muted-foreground hover:text-destructive"
+          onClick={() => onDelete(product.id)}
         >
           <Trash2 className="size-5" />
         </Button>
@@ -170,6 +177,15 @@ export default function AdminProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  const firestore = useFirestore();
+
+  const productsRef = useMemo(() => 
+    firestore ? query(collection(firestore, "products"), orderBy("name", "asc")) : null, 
+    [firestore]
+  );
+  
+  const { data: products, loading: productsLoading } = useCollection<Product>(productsRef);
 
   const handleNewProduct = () => {
     setEditingProduct(null);
@@ -181,6 +197,15 @@ export default function AdminProductsPage() {
     setIsFormOpen(true);
   };
 
+  const handleDeleteProduct = async (productId: string) => {
+    if (!firestore || !confirm('Tem certeza que deseja excluir este produto?')) return;
+    try {
+        await deleteDoc(doc(firestore, "products", productId));
+    } catch (error) {
+        console.error("Error deleting product: ", error);
+    }
+  }
+
   const handleFormClose = () => {
     setIsFormOpen(false);
     setEditingProduct(null);
@@ -190,12 +215,18 @@ export default function AdminProductsPage() {
     ? 'Editar Produto'
     : 'Novo Cadastro de Produto';
 
-  const filteredProducts = products.filter(
-    (p) =>
-      p.id !== '4' &&
-      (p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.brand.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredProducts = useMemo(() => 
+    products?.filter(
+        (p) =>
+          p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          p.brand.toLowerCase().includes(searchTerm.toLowerCase())
+      ) || [],
+    [products, searchTerm]
   );
+  
+  const lowStockCount = useMemo(() => products?.filter(p => p.status === 'low-stock').length || 0, [products]);
+  const totalProducts = useMemo(() => products?.length || 0, [products]);
+  const recentProducts = useMemo(() => products?.slice(0, 3) || [], [products]);
 
   return (
     <>
@@ -267,43 +298,50 @@ export default function AdminProductsPage() {
               </div>
             </div>
             <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-border bg-muted/50 dark:bg-neutral-900/20">
-                    <TableHead className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                      Produto
-                    </TableHead>
-                    <TableHead className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                      Marca
-                    </TableHead>
-                    <TableHead className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                      Categoria
-                    </TableHead>
-                    <TableHead className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                      Preço
-                    </TableHead>
-                    <TableHead className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                      Status
-                    </TableHead>
-                    <TableHead className="p-4 text-right text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                      Ações
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody className="divide-y divide-border">
-                  {filteredProducts.map((p) => (
-                    <ProductRow
-                      key={p.id}
-                      product={p}
-                      onEdit={handleEditProduct}
-                    />
-                  ))}
-                </TableBody>
-              </Table>
+              {productsLoading ? (
+                  <div className="flex items-center justify-center p-20">
+                      <Loader2 className="animate-spin text-primary" size={32}/>
+                  </div>
+              ) : (
+                <Table>
+                    <TableHeader>
+                    <TableRow className="border-border bg-muted/50 dark:bg-neutral-900/20">
+                        <TableHead className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        Produto
+                        </TableHead>
+                        <TableHead className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        Marca
+                        </TableHead>
+                        <TableHead className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        Categoria
+                        </TableHead>
+                        <TableHead className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        Preço
+                        </TableHead>
+                        <TableHead className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        Status
+                        </TableHead>
+                        <TableHead className="p-4 text-right text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        Ações
+                        </TableHead>
+                    </TableRow>
+                    </TableHeader>
+                    <TableBody className="divide-y divide-border">
+                    {filteredProducts.map((p) => (
+                        <ProductRow
+                        key={p.id}
+                        product={p}
+                        onEdit={handleEditProduct}
+                        onDelete={handleDeleteProduct}
+                        />
+                    ))}
+                    </TableBody>
+                </Table>
+              )}
             </div>
             <div className="flex items-center justify-between border-t p-4">
               <span className="text-sm text-muted-foreground">
-                Mostrando 1-3 de 1,240
+                Mostrando 1-{filteredProducts.length} de {totalProducts}
               </span>
               <div className="flex gap-2">
                 <Button variant="outline" size="icon" className="rounded-full" disabled>
@@ -312,15 +350,6 @@ export default function AdminProductsPage() {
                 <Button size="icon" className="rounded-full">
                   1
                 </Button>
-                <Button variant="outline" size="icon" className="rounded-full">
-                  2
-                </Button>
-                <Button variant="outline" size="icon" className="rounded-full">
-                  3
-                </Button>
-                <span className="flex items-center justify-center text-muted-foreground">
-                  ...
-                </span>
                 <Button variant="outline" size="icon" className="rounded-full">
                   <ChevronRight />
                 </Button>
@@ -332,14 +361,14 @@ export default function AdminProductsPage() {
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-2 rounded-lg border bg-card p-5 shadow-sm dark:bg-[#1a190b]">
               <Package className="text-muted-foreground" />
-              <p className="text-2xl font-bold text-foreground">1,240</p>
+              <p className="text-2xl font-bold text-foreground">{totalProducts}</p>
               <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
                 Total Produtos
               </p>
             </div>
             <div className="flex flex-col gap-2 rounded-lg border bg-card p-5 shadow-sm dark:bg-[#1a190b]">
               <AlertTriangle className="text-orange-500" />
-              <p className="text-2xl font-bold text-foreground">12</p>
+              <p className="text-2xl font-bold text-foreground">{lowStockCount}</p>
               <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
                 Estoque Baixo
               </p>
@@ -359,9 +388,7 @@ export default function AdminProductsPage() {
             </div>
             <div className="flex-1 overflow-y-auto p-2">
               <div className="flex flex-col gap-1">
-                {products
-                  .slice(4, 7)
-                  .map((p) => (
+                {recentProducts.map((p) => (
                     <RecentAddItem
                       key={p.id}
                       product={p}

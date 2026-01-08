@@ -22,9 +22,11 @@ import { generateDescriptionAction } from '../actions';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import type { Product } from '@/lib/types';
+import { useFirestore } from '@/firebase';
+import { collection, addDoc, setDoc, doc, serverTimestamp } from 'firebase/firestore';
 
 const productSchema = z.object({
-  productName: z.string().min(1, 'Nome é obrigatório'),
+  name: z.string().min(1, 'Nome é obrigatório'),
   brand: z.string().min(1, 'Marca é obrigatória'),
   price: z.number().min(0.01, 'Preço é obrigatório'),
   costPrice: z.number().optional(),
@@ -35,6 +37,8 @@ const productSchema = z.object({
   keyNotes: z.string().optional(),
   targetAudience: z.string().optional(),
   description: z.string().min(1, 'Descrição é obrigatória'),
+  type: z.enum(['sealed', 'decant']),
+  decantMl: z.number().optional(),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
@@ -46,7 +50,9 @@ interface ProductFormProps {
 
 export function ProductForm({ product, onSave }: ProductFormProps) {
   const [isPending, setIsPending] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
+  const firestore = useFirestore();
 
   const {
     register,
@@ -63,18 +69,20 @@ export function ProductForm({ product, onSave }: ProductFormProps) {
   useEffect(() => {
     if (product) {
       reset({
-        productName: product.name,
+        name: product.name,
         brand: product.brand,
         price: product.price,
         costPrice: product.costPrice,
         stock: product.stock,
         weight: product.weight,
         category: product.category,
-        description: 'Pre-filled description from data.', // Placeholder
+        description: product.description || 'Pre-filled description from data.',
+        type: product.type,
+        decantMl: product.decantMl,
       });
     } else {
       reset({
-        productName: '',
+        name: '',
         brand: '',
         price: 0,
         costPrice: 0,
@@ -85,24 +93,63 @@ export function ProductForm({ product, onSave }: ProductFormProps) {
         keyNotes: '',
         targetAudience: '',
         description: '',
+        type: 'sealed',
+        decantMl: 0,
       });
     }
   }, [product, reset]);
 
-  const onSubmit = (data: ProductFormData) => {
-    console.log(data);
-    const action = product ? 'atualizado' : 'criado';
-    toast({
-      title: `Produto ${action}!`,
-      description: `O produto foi ${action} com sucesso.`,
-    });
-    onSave(); // Close form on success
+  const onSubmit = async (data: ProductFormData) => {
+    if (!firestore) {
+        toast({ variant: 'destructive', title: 'Erro de Conexão', description: 'Não foi possível conectar ao banco de dados.' });
+        return;
+    }
+
+    setIsSaving(true);
+    
+    // Determine product status based on stock
+    let status: 'in-stock' | 'low-stock' | 'out-of-stock' = 'in-stock';
+    if (data.stock === 0) {
+        status = 'out-of-stock';
+    } else if (data.stock < 10) {
+        status = 'low-stock';
+    }
+
+    const productData = {
+        ...data,
+        status,
+        imageId: 'product-1', // Placeholder imageId
+        price: Number(data.price),
+        costPrice: Number(data.costPrice) || null,
+        stock: Number(data.stock),
+        weight: Number(data.weight) || null,
+    };
+
+    try {
+        if (product && product.id) {
+            // Update existing product
+            const productRef = doc(firestore, 'products', product.id);
+            await setDoc(productRef, { ...productData, updatedAt: serverTimestamp() }, { merge: true });
+            toast({ title: 'Produto Atualizado!', description: `O produto "${data.name}" foi atualizado com sucesso.` });
+        } else {
+            // Create new product
+            const productsCollection = collection(firestore, 'products');
+            await addDoc(productsCollection, { ...productData, createdAt: serverTimestamp() });
+            toast({ title: 'Produto Criado!', description: `O produto "${data.name}" foi criado com sucesso.` });
+        }
+        onSave(); // Close form on success
+    } catch (error) {
+        console.error("Error saving product: ", error);
+        toast({ variant: 'destructive', title: 'Erro ao Salvar', description: 'Não foi possível salvar o produto.' });
+    } finally {
+        setIsSaving(false);
+    }
   };
 
   const handleGenerateDescription = async () => {
-    const { productName, brand, fragranceType, keyNotes, targetAudience } = watch();
+    const { name, brand, fragranceType, keyNotes, targetAudience } = watch();
 
-    if (!productName || !brand) {
+    if (!name || !brand) {
       toast({
         variant: 'destructive',
         title: 'Campos Faltando',
@@ -114,7 +161,7 @@ export function ProductForm({ product, onSave }: ProductFormProps) {
     setIsPending(true);
     try {
       const result = await generateDescriptionAction({
-        productName,
+        productName: name,
         brand,
         fragranceType: fragranceType || 'Não especificado',
         keyNotes: keyNotes || 'Não especificado',
@@ -184,9 +231,9 @@ export function ProductForm({ product, onSave }: ProductFormProps) {
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="productName">Nome do Perfume</Label>
-          <Input id="productName" {...register('productName')} placeholder="Ex: Sauvage Elixir" />
-          {errors.productName && <p className="text-sm text-destructive">{errors.productName.message}</p>}
+          <Label htmlFor="name">Nome do Perfume</Label>
+          <Input id="name" {...register('name')} placeholder="Ex: Sauvage Elixir" />
+          {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="brand">Marca</Label>
@@ -254,6 +301,33 @@ export function ProductForm({ product, onSave }: ProductFormProps) {
           {errors.category && <p className="text-sm text-destructive">{errors.category.message}</p>}
         </div>
       </div>
+
+       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="type">Tipo</Label>
+               <Controller
+                name="type"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger><SelectValue placeholder="Selecione o tipo" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sealed">Frasco Lacrado</SelectItem>
+                      <SelectItem value="decant">Decante</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.type && <p className="text-sm text-destructive">{errors.type.message}</p>}
+            </div>
+            {watch('type') === 'decant' && (
+               <div className="flex flex-col gap-2">
+                <Label htmlFor="decantMl">Volume do Decante (ml)</Label>
+                <Input id="decantMl" type="number" {...register('decantMl', { valueAsNumber: true })} placeholder="5" />
+                {errors.decantMl && <p className="text-sm text-destructive">{errors.decantMl.message}</p>}
+              </div>
+            )}
+        </div>
       
       <div className="rounded-lg border bg-muted/30 p-4 space-y-4">
         <h3 className="font-bold text-foreground">Gerar Descrição com IA</h3>
@@ -291,8 +365,8 @@ export function ProductForm({ product, onSave }: ProductFormProps) {
         </div>
 
       <div className="flex items-center justify-end gap-3 border-t pt-6">
-        <Button type="submit" className="rounded-full bg-primary px-8 py-3 font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:bg-yellow-400">
-          Salvar Produto
+        <Button type="submit" disabled={isSaving} className="rounded-full bg-primary px-8 py-3 font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:bg-yellow-400">
+          {isSaving ? 'Salvando...' : 'Salvar Produto'}
         </Button>
       </div>
     </form>

@@ -1,4 +1,5 @@
 import type { User } from 'firebase/auth';
+import type { Timestamp } from 'firebase/firestore';
 
 export type ProductStatus = 'in-stock' | 'low-stock' | 'out-of-stock';
 export type OrderStatus = 'Pendente' | 'Concluído' | 'Cancelado';
@@ -17,6 +18,9 @@ export type Product = {
   stock: number;
   weight?: number;
   category: string;
+  description?: string;
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
 };
 
 export type Order = {

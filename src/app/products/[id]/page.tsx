@@ -11,6 +11,7 @@ import {
   TreePine,
   Plus,
   Minus,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,10 +25,12 @@ import Link from 'next/link';
 import { getImageById } from '@/lib/placeholder-images';
 import { cn, formatCurrency } from '@/lib/utils';
 import { Footer } from '@/components/layout/footer';
-import { products } from '@/lib/data';
 import type { Product } from '@/lib/types';
 import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
+import { useFirestore, useDoc } from '@/firebase';
+import { doc } from 'firebase/firestore';
+
 
 const galleryImages = [
   'details-main',
@@ -37,24 +40,46 @@ const galleryImages = [
 ];
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
-  const resolvedParams = use(params);
   const [activeImageId, setActiveImageId] = useState(galleryImages[0]);
   const activeImage = getImageById(activeImageId);
   const [quantity, setQuantity] = useState(1);
 
   const { addToCart } = useCart();
   const { toast } = useToast();
+  const firestore = useFirestore();
 
-  // In a real app, you would fetch product data based on the ID
-  const product = products.find(p => p.id === resolvedParams.id) || products[0];
+  const productRef = firestore ? doc(firestore, 'products', params.id) : null;
+  const { data: product, loading } = useDoc<Product>(productRef);
 
   const handleAddToCart = () => {
+    if (!product) return;
     addToCart(product, quantity);
     toast({
       title: "Adicionado ao Carrinho!",
       description: `${quantity}x ${product.name} foi adicionado ao seu carrinho.`,
     });
   }
+
+  if (loading) {
+    return (
+        <div className="flex min-h-screen items-center justify-center bg-background">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+    )
+  }
+
+  if (!product) {
+    return (
+        <div className="flex min-h-screen flex-col items-center justify-center bg-background text-center">
+            <h1 className="text-2xl font-bold">Produto não encontrado</h1>
+            <p className="text-muted-foreground">O produto que você está procurando não existe ou foi removido.</p>
+            <Button asChild className="mt-4">
+                <Link href="/products">Voltar para a Loja</Link>
+            </Button>
+        </div>
+    )
+  }
+
 
   return (
     <div className="bg-background font-display text-foreground antialiased">
@@ -150,9 +175,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
             </div>
 
             <p className="text-lg leading-relaxed text-muted-foreground">
-              Uma fragrância sedutora que combina notas amadeiradas profundas com
-              um toque cítrico vibrante. Perfeito para o homem moderno que deixa
-              sua marca por onde passa.
+              {product.description || 'Uma fragrância sedutora que combina notas amadeiradas profundas com um toque cítrico vibrante. Perfeito para o homem moderno que deixa sua marca por onde passa.'}
             </p>
 
             <div className="flex items-center gap-4">

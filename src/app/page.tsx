@@ -1,3 +1,4 @@
+'use client';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,7 @@ import {
   ArrowRight,
   Sprout,
   Star,
+  Loader2,
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -23,14 +25,27 @@ import {
   CarouselPrevious,
 } from '@/components/ui/carousel';
 import { ProductCard } from '@/components/shared/product-card';
-import { products, categories } from '@/lib/data';
+import { categories } from '@/lib/data-static';
 import {
   placeholderImages,
   getImageById,
 } from '@/lib/placeholder-images';
+import { useMemo } from 'react';
+import { useFirestore, useCollection } from '@/firebase';
+import { collection, query, orderBy, limit } from 'firebase/firestore';
+import type { Product } from '@/lib/types';
+
 
 export default function Home() {
   const heroImage = getImageById('hero');
+  const firestore = useFirestore();
+
+  const productsRef = useMemo(() => 
+    firestore ? query(collection(firestore, "products"), orderBy("name", "desc"), limit(4)) : null, 
+    [firestore]
+  );
+  const { data: products, loading } = useCollection<Product>(productsRef);
+
 
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
@@ -212,16 +227,22 @@ export default function Home() {
                 <CarouselNext className="relative right-0 top-0 translate-y-0" />
               </div>
             </div>
-            <CarouselContent className="-ml-6">
-              {products.slice(0, 4).map((product) => (
-                <CarouselItem
-                  key={product.id}
-                  className="pl-6 sm:basis-1/2 lg:basis-1/4"
-                >
-                  <ProductCard product={product} />
-                </CarouselItem>
-              ))}
-            </CarouselContent>
+            {loading ? (
+                <div className="flex items-center justify-center p-20">
+                    <Loader2 className="animate-spin text-primary" size={32}/>
+                </div>
+            ) : (
+                <CarouselContent className="-ml-6">
+                {products?.map((product) => (
+                    <CarouselItem
+                    key={product.id}
+                    className="pl-6 sm:basis-1/2 lg:basis-1/4"
+                    >
+                    <ProductCard product={product} />
+                    </CarouselItem>
+                ))}
+                </CarouselContent>
+            )}
           </Carousel>
         </section>
       </main>

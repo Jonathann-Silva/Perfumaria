@@ -1,7 +1,7 @@
+'use client';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { ProductCard } from '@/components/shared/product-card';
-import { products } from '@/lib/data';
 import {
   Select,
   SelectContent,
@@ -9,10 +9,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ListFilter, Beaker } from 'lucide-react';
+import { ListFilter, Beaker, Loader2 } from 'lucide-react';
+import { useMemo } from 'react';
+import { useFirestore, useCollection } from '@/firebase';
+import { collection, query, where, orderBy } from 'firebase/firestore';
+import type { Product } from '@/lib/types';
+
 
 export default function DecantesPage() {
-  const decantProducts = products.filter((p) => p.type === 'decant');
+  const firestore = useFirestore();
+  const decantsRef = useMemo(() => 
+    firestore 
+      ? query(
+          collection(firestore, "products"), 
+          where("type", "==", "decant"), 
+          orderBy("name", "asc")
+        ) 
+      : null, 
+    [firestore]
+  );
+  const { data: decantProducts, loading } = useCollection<Product>(decantsRef);
+
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
       <Header />
@@ -52,11 +69,17 @@ export default function DecantesPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {decantProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          {loading ? (
+             <div className="flex items-center justify-center p-20">
+                <Loader2 className="animate-spin text-primary" size={32}/>
+             </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {decantProducts?.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          )}
         </section>
       </main>
       <Footer />
