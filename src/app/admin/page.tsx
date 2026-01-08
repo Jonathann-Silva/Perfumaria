@@ -1,3 +1,5 @@
+'use client';
+
 import {
   DollarSign,
   Package,
@@ -23,7 +25,11 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import { useFirestore } from '@/firebase';
+import { collection, getDocs, onSnapshot, query, orderBy, limit, writeBatch } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
 
+// Dados estáticos para os KPIs, pois exigem cálculo (agregação) que é melhor feito no backend
 const kpis = [
   {
     icon: DollarSign,
@@ -55,40 +61,57 @@ const kpis = [
   },
 ];
 
-const recentOrders = [
-  {
-    user: 'Olivia Martin',
-    email: 'olivia.martin@email.com',
-    amount: 'R$ 420,50',
-    status: 'Concluído',
-  },
-  {
-    user: 'Jackson Lee',
-    email: 'jackson.lee@email.com',
-    amount: 'R$ 150,00',
-    status: 'Concluído',
-  },
-  {
-    user: 'Isabella Nguyen',
-    email: 'isabella.nguyen@email.com',
-    amount: 'R$ 310,00',
-    status: 'Pendente',
-  },
-  {
-    user: 'William Kim',
-    email: 'will@email.com',
-    amount: 'R$ 250,00',
-    status: 'Concluído',
-  },
-  {
-    user: 'Sofia Davis',
-    email: 'sofia.davis@email.com',
-    amount: 'R$ 99,90',
-    status: 'Cancelado',
-  },
+// Dados de exemplo para popular o Firestore se ele estiver vazio
+const sampleOrders = [
+  { id: '1', user: 'Olivia Martin', email: 'olivia.martin@email.com', amount: 420.50, status: 'Concluído', timestamp: new Date() },
+  { id: '2', user: 'Jackson Lee', email: 'jackson.lee@email.com', amount: 150.00, status: 'Concluído', timestamp: new Date(Date.now() - 3600000) },
+  { id: '3', user: 'Isabella Nguyen', email: 'isabella.nguyen@email.com', amount: 310.00, status: 'Pendente', timestamp: new Date(Date.now() - 7200000) },
+  { id: '4', user: 'William Kim', email: 'will@email.com', amount: 250.00, status: 'Concluído', timestamp: new Date(Date.now() - 10800000) },
+  { id: '5', user: 'Sofia Davis', email: 'sofia.davis@email.com', amount: 99.90, status: 'Cancelado', timestamp: new Date(Date.now() - 14400000) },
 ];
 
+
 export default function AdminDashboardPage() {
+  const firestore = useFirestore();
+  const [recentOrders, setRecentOrders] = useState<any[]>([]);
+
+  // Popula o Firestore com dados de exemplo se a coleção 'orders' estiver vazia
+  useEffect(() => {
+    if (!firestore) return;
+    const ordersCollection = collection(firestore, 'orders');
+    
+    const populateData = async () => {
+      const snapshot = await getDocs(ordersCollection);
+      if (snapshot.empty) {
+        const batch = writeBatch(firestore);
+        sampleOrders.forEach(order => {
+          const docRef = collection(firestore, 'orders');
+          batch.set(docRef.doc(order.id), order);
+        });
+        await batch.commit();
+      }
+    };
+    populateData();
+  }, [firestore]);
+  
+  // Ouve por mudanças na coleção 'orders' em tempo real
+  useEffect(() => {
+    if (!firestore) return;
+
+    const ordersQuery = query(collection(firestore, "orders"), orderBy("timestamp", "desc"), limit(5));
+
+    const unsubscribe = onSnapshot(ordersQuery, (querySnapshot) => {
+      const ordersData: any[] = [];
+      querySnapshot.forEach((doc) => {
+        ordersData.push({ id: doc.id, ...doc.data() });
+      });
+      setRecentOrders(ordersData);
+    });
+
+    return () => unsubscribe();
+  }, [firestore]);
+
+
   return (
     <div className="flex flex-col gap-8">
        <div className="flex flex-wrap items-end justify-between gap-6">
@@ -150,7 +173,7 @@ export default function AdminDashboardPage() {
                       <div className="font-medium">{order.user}</div>
                       <div className="text-sm text-muted-foreground">{order.email}</div>
                     </TableCell>
-                    <TableCell>{order.amount}</TableCell>
+                    <TableCell>R$ {order.amount.toFixed(2)}</TableCell>
                     <TableCell className="text-right">
                        <Badge
                         variant={
