@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import {
   Check,
@@ -8,7 +8,7 @@ import {
   HelpCircle,
   Lock,
   LockOpen,
-  Search,
+  Loader2,
   Trash2,
   Truck,
   User,
@@ -21,6 +21,8 @@ import { getImageById } from '@/lib/placeholder-images';
 import { formatCurrency, cn } from '@/lib/utils';
 import Link from 'next/link';
 import { LogoIcon } from '@/components/icons/logo-icon';
+import { getShippingRates } from './actions';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const steps = [
   { id: 1, name: 'Identificação', status: 'complete', icon: Check },
@@ -28,51 +30,88 @@ const steps = [
   { id: 3, name: 'Pagamento', status: 'upcoming', icon: null },
 ];
 
+type ShippingOption = {
+  id: number;
+  name: string;
+  price: string;
+  delivery_time: number;
+  error?: string;
+};
+
 export default function CheckoutPage() {
   const summaryImg1 = getImageById('summary-1');
   const summaryImg2 = getImageById('summary-2');
   const visaIcon = getImageById('visa-icon');
   const mastercardIcon = getImageById('mastercard-icon');
   const amexIcon = getImageById('amex-icon');
-  
+
   const [cep, setCep] = useState('');
-  const [address, setAddress] = useState('');
-  const [city, setCity] = useState('');
-  const [state, setState] = useState('');
+  const [address, setAddress] = useState({
+    street: '',
+    city: '',
+    state: '',
+  });
+
   const [isFetchingCep, setIsFetchingCep] = useState(false);
-  const [shippingOption, setShippingOption] = useState('sedex');
+  const [isFetchingRates, setIsFetchingRates] = useState(false);
+  const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
+  const [selectedShipping, setSelectedShipping] = useState<ShippingOption | null>(null);
+  const [shippingError, setShippingError] = useState<string | null>(null);
 
   const handleCepBlur = async (event: React.FocusEvent<HTMLInputElement>) => {
     const cepValue = event.target.value.replace(/\D/g, '');
-
     if (cepValue.length !== 8) {
+      setShippingOptions([]);
+      setSelectedShipping(null);
       return;
     }
 
     setIsFetchingCep(true);
+    setIsFetchingRates(true);
+    setShippingError(null);
+    setShippingOptions([]);
+    setSelectedShipping(null);
+
     try {
+      // Fetch address
       const response = await fetch(`https://viacep.com.br/ws/${cepValue}/json/`);
       const data = await response.json();
 
       if (!data.erro) {
-        setAddress(data.logradouro);
-        setCity(data.localidade);
-        setState(data.uf);
+        setAddress({
+          street: data.logradouro,
+          city: data.localidade,
+          state: data.uf,
+        });
+        
+        // Fetch shipping rates
+        const rates = await getShippingRates(cepValue);
+        if (rates && rates.length > 0) {
+          setShippingOptions(rates);
+          // Auto-select the first valid option
+          const firstValidOption = rates.find(rate => !rate.error);
+          if (firstValidOption) {
+            setSelectedShipping(firstValidOption);
+          }
+        } else {
+           setShippingError('Não foram encontradas opções de frete para este CEP. Verifique o CEP digitado.');
+        }
+
       } else {
-        // Limpar campos se CEP for inválido
-        setAddress('');
-        setCity('');
-        setState('');
-        alert('CEP não encontrado. Por favor, verifique.');
+        setAddress({ street: '', city: '', state: '' });
+        setShippingError('CEP não encontrado. Por favor, verifique.');
       }
     } catch (error) {
-      console.error('Erro ao buscar CEP:', error);
-      alert('Não foi possível buscar o CEP. Tente novamente.');
+      console.error('Erro ao buscar informações:', error);
+      setShippingError('Não foi possível buscar as informações de frete. Tente novamente.');
     } finally {
       setIsFetchingCep(false);
+      setIsFetchingRates(false);
     }
   };
 
+  const subtotal = 205;
+  const total = subtotal + (selectedShipping ? parseFloat(selectedShipping.price) : 0);
 
   return (
     <div className="flex min-h-screen flex-col bg-background font-display text-foreground selection:bg-primary selection:text-primary-foreground">
@@ -218,7 +257,7 @@ export default function CheckoutPage() {
                     <Label htmlFor="address" className="font-bold">
                       Endereço
                     </Label>
-                    <Input id="address" placeholder="Rua, Avenida, etc." value={address} onChange={e => setAddress(e.target.value)} />
+                    <Input id="address" placeholder="Rua, Avenida, etc." value={address.street} onChange={e => setAddress({...address, street: e.target.value})} />
                   </div>
                    <div className="sm:col-span-2 space-y-2">
                     <Label htmlFor="number" className="font-bold">
@@ -239,13 +278,13 @@ export default function CheckoutPage() {
                      <Label htmlFor="city" className="font-bold">
                       Cidade
                     </Label>
-                    <Input id="city" placeholder="Sua cidade" value={city} onChange={e => setCity(e.target.value)} />
+                    <Input id="city" placeholder="Sua cidade" value={address.city} onChange={e => setAddress({...address, city: e.target.value})} />
                   </div>
                    <div className="sm:col-span-2 space-y-2">
                      <Label htmlFor="state" className="font-bold">
                       Estado
                     </Label>
-                    <Input id="state" placeholder="UF" value={state} onChange={e => setState(e.target.value)} />
+                    <Input id="state" placeholder="UF" value={address.state} onChange={e => setAddress({...address, state: e.target.value})} />
                   </div>
                 </div>
               </div>
@@ -255,76 +294,66 @@ export default function CheckoutPage() {
               <h3 className="mb-4 text-base font-bold text-foreground">
                 Opções de Envio
               </h3>
-              <div className="space-y-3">
-                <Label
-                  htmlFor="shipping-sedex"
-                  className={cn(
-                    "relative flex cursor-pointer rounded-xl border bg-card p-4 shadow-sm transition-all",
-                    shippingOption === 'sedex' ? "border-2 border-primary" : "hover:border-muted-foreground"
-                  )}
-                >
-                  <div className="flex w-full items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="flex size-6 items-center justify-center rounded-full border border-border bg-card">
-                         {shippingOption === 'sedex' && <div className="size-3 rounded-full bg-primary"></div>}
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="block text-sm font-bold text-foreground">
-                          SEDEX (via Melhor Envio)
-                        </span>
-                        <span className="block text-xs text-muted-foreground">
-                          Entrega em 1 a 2 dias úteis
-                        </span>
-                      </div>
-                    </div>
-                    <span className="font-bold text-foreground">R$ 24,90</span>
+              {isFetchingRates && (
+                  <div className="flex items-center justify-center gap-2 py-8 text-muted-foreground">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span>Calculando frete...</span>
                   </div>
-                  <Input
-                    type="radio"
-                    name="shipping"
-                    id="shipping-sedex"
-                    value="sedex"
-                    checked={shippingOption === 'sedex'}
-                    onChange={(e) => setShippingOption(e.target.value)}
-                    className="sr-only"
-                  />
-                </Label>
-                <Label
-                  htmlFor="shipping-pac"
-                  className={cn(
-                    "relative flex cursor-pointer rounded-xl border bg-card p-4 shadow-sm transition-all",
-                    shippingOption === 'pac' ? "border-2 border-primary" : "hover:border-muted-foreground"
-                  )}
-                >
-                  <div className="flex w-full items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="flex size-6 items-center justify-center rounded-full border border-border bg-card">
-                        {shippingOption === 'pac' && <div className="size-3 rounded-full bg-primary"></div>}
+              )}
+              {shippingError && (
+                <Alert variant="destructive">
+                  <AlertTitle>Erro no Frete</AlertTitle>
+                  <AlertDescription>{shippingError}</AlertDescription>
+                </Alert>
+              )}
+              {!isFetchingRates && shippingOptions.length > 0 && (
+                <div className="space-y-3">
+                  {shippingOptions.map((option) => (
+                    <Label
+                      key={option.id}
+                      htmlFor={`shipping-${option.id}`}
+                      className={cn(
+                        "relative flex cursor-pointer rounded-xl border bg-card p-4 shadow-sm transition-all",
+                        selectedShipping?.id === option.id ? "border-2 border-primary" : "hover:border-muted-foreground",
+                        option.error && "cursor-not-allowed opacity-60"
+                      )}
+                    >
+                      <div className="flex w-full items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="flex size-6 items-center justify-center rounded-full border border-border bg-card">
+                             {selectedShipping?.id === option.id && <div className="size-3 rounded-full bg-primary"></div>}
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="block text-sm font-bold text-foreground">
+                              {option.name}
+                            </span>
+                            {!option.error ? (
+                              <span className="block text-xs text-muted-foreground">
+                                Entrega em até {option.delivery_time} dias úteis
+                              </span>
+                            ) : (
+                               <span className="block text-xs text-destructive">
+                                {option.error}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <span className="font-bold text-foreground">{!option.error ? formatCurrency(parseFloat(option.price)) : '--'}</span>
                       </div>
-                      <div className="flex flex-col">
-                        <span className="block text-sm font-medium text-foreground">
-                          PAC (Correios)
-                        </span>
-                        <span className="block text-xs text-muted-foreground">
-                          Entrega em 5 a 8 dias úteis
-                        </span>
-                      </div>
-                    </div>
-                    <span className="font-medium text-foreground">
-                      R$ 15,50
-                    </span>
-                  </div>
-                  <Input
-                    type="radio"
-                    name="shipping"
-                    id="shipping-pac"
-                    value="pac"
-                    checked={shippingOption === 'pac'}
-                    onChange={(e) => setShippingOption(e.target.value)}
-                    className="sr-only"
-                  />
-                </Label>
-              </div>
+                      <Input
+                        type="radio"
+                        name="shipping"
+                        id={`shipping-${option.id}`}
+                        value={option.id}
+                        checked={selectedShipping?.id === option.id}
+                        onChange={() => !option.error && setSelectedShipping(option)}
+                        className="sr-only"
+                        disabled={!!option.error}
+                      />
+                    </Label>
+                  ))}
+                </div>
+              )}
             </section>
 
             <section id="payment" className="scroll-mt-24 pt-4">
@@ -476,7 +505,7 @@ export default function CheckoutPage() {
                   <div className="flex flex-1 flex-col">
                     <div className="flex justify-between text-base font-bold text-foreground">
                       <h3>Dior Sauvage</h3>
-                      <p className="ml-2">R$ 85,00</p>
+                      <p className="ml-2">{formatCurrency(85)}</p>
                     </div>
                     <p className="text-sm text-muted-foreground">
                       Decant 5ml
@@ -508,13 +537,13 @@ export default function CheckoutPage() {
                 <div className="flex justify-between text-muted-foreground">
                   <p>Subtotal</p>
                   <p className="font-medium text-foreground">
-                    {formatCurrency(205)}
+                    {formatCurrency(subtotal)}
                   </p>
                 </div>
                 <div className="flex justify-between text-muted-foreground">
                   <p>Frete</p>
                   <p className="font-medium text-foreground">
-                    {formatCurrency(shippingOption === 'sedex' ? 24.9 : 15.5)}
+                    {selectedShipping ? formatCurrency(parseFloat(selectedShipping.price)) : '--'}
                   </p>
                 </div>
                 <div className="flex items-end justify-between border-t pt-4">
@@ -523,7 +552,7 @@ export default function CheckoutPage() {
                   </p>
                   <div className="text-right">
                     <p className="font-headline text-3xl font-black tracking-tight text-foreground">
-                      {formatCurrency(205 + (shippingOption === 'sedex' ? 24.9 : 15.5))}
+                      {formatCurrency(total)}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       em até 3x sem juros
@@ -559,3 +588,5 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
+    

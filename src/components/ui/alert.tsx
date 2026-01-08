@@ -1,5 +1,6 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
+import { AlertTriangle } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -28,7 +29,10 @@ const Alert = React.forwardRef<
     role="alert"
     className={cn(alertVariants({ variant }), className)}
     {...props}
-  />
+  >
+    {variant === "destructive" && <AlertTriangle className="h-4 w-4" />}
+    {props.children}
+  </div>
 ))
 Alert.displayName = "Alert"
 
@@ -57,3 +61,5 @@ const AlertDescription = React.forwardRef<
 AlertDescription.displayName = "AlertDescription"
 
 export { Alert, AlertTitle, AlertDescription }
+
+    
