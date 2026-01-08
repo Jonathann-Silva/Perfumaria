@@ -1,3 +1,5 @@
+'use client';
+
 import { AdminSidebar } from '@/components/layout/admin-sidebar';
 import { PageHeader } from '@/components/layout/page-header';
 import { NotificationProvider } from '@/context/notification-context';
