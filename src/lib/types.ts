@@ -8,12 +8,14 @@ export type Product = {
   name: string;
   brand: string;
   price: number;
+  costPrice?: number;
   oldPrice?: number;
   imageId: string;
   type: 'sealed' | 'decant';
   decantMl?: number;
   status: ProductStatus;
   stock: number;
+  weight?: number;
   category: string;
 };
 

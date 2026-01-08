@@ -39,12 +39,14 @@
             "name": { "type": "string" },
             "brand": { "type": "string" },
             "price": { "type": "number" },
+            "costPrice": { "type": "number" },
             "oldPrice": { "type": "number" },
             "imageId": { "type": "string" },
             "type": { "type": "string", "enum": ["sealed", "decant"] },
             "decantMl": { "type": "number" },
             "status": { "type": "string", "enum": ["in-stock", "low-stock", "out-of-stock"] },
             "stock": { "type": "number" },
+            "weight": { "type": "number" },
             "category": { "type": "string" }
         },
         "required": ["name", "brand", "price", "stock", "category", "type", "status"]

@@ -27,7 +27,9 @@ const productSchema = z.object({
   productName: z.string().min(1, 'Nome é obrigatório'),
   brand: z.string().min(1, 'Marca é obrigatória'),
   price: z.number().min(0.01, 'Preço é obrigatório'),
+  costPrice: z.number().optional(),
   stock: z.number().int().min(0, 'Estoque é obrigatório'),
+  weight: z.number().optional(),
   category: z.string().min(1, 'Categoria é obrigatória'),
   fragranceType: z.string().optional(),
   keyNotes: z.string().optional(),
@@ -64,7 +66,9 @@ export function ProductForm({ product, onSave }: ProductFormProps) {
         productName: product.name,
         brand: product.brand,
         price: product.price,
+        costPrice: product.costPrice,
         stock: product.stock,
+        weight: product.weight,
         category: product.category,
         description: 'Pre-filled description from data.', // Placeholder
       });
@@ -73,7 +77,9 @@ export function ProductForm({ product, onSave }: ProductFormProps) {
         productName: '',
         brand: '',
         price: 0,
+        costPrice: 0,
         stock: 0,
+        weight: 0,
         category: '',
         fragranceType: '',
         keyNotes: '',
@@ -205,16 +211,29 @@ export function ProductForm({ product, onSave }: ProductFormProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="price">Preço (R$)</Label>
-          <Input id="price" type="number" step="0.01" {...register('price', { valueAsNumber: true })} placeholder="0,00" />
+          <Label htmlFor="price">Preço de Venda (R$)</Label>
+          <Input id="price" type="number" step="0.01" {...register('price', { valueAsNumber: true })} placeholder="99,90" />
           {errors.price && <p className="text-sm text-destructive">{errors.price.message}</p>}
         </div>
+         <div className="flex flex-col gap-2">
+          <Label htmlFor="costPrice">Preço de Custo (R$)</Label>
+          <Input id="costPrice" type="number" step="0.01" {...register('costPrice', { valueAsNumber: true })} placeholder="50,00" />
+          {errors.costPrice && <p className="text-sm text-destructive">{errors.costPrice.message}</p>}
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <div className="flex flex-col gap-2">
           <Label htmlFor="stock">Estoque (Qtd)</Label>
           <Input id="stock" type="number" {...register('stock', { valueAsNumber: true })} placeholder="0" />
           {errors.stock && <p className="text-sm text-destructive">{errors.stock.message}</p>}
+        </div>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="weight">Peso (g)</Label>
+          <Input id="weight" type="number" {...register('weight', { valueAsNumber: true })} placeholder="300" />
+          {errors.weight && <p className="text-sm text-destructive">{errors.weight.message}</p>}
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="category">Categoria</Label>
