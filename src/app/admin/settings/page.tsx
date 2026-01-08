@@ -92,20 +92,20 @@ export default function AdminSettingsPage() {
     if (!firestore || !settingsRef) return;
     
     const dataToSave = {
-        storeName: formState.storeName,
-        slogan: formState.slogan,
+        storeName: formState.storeName || '',
+        slogan: formState.slogan || '',
         contact: {
-            phone1: formState.phone1,
-            phone2: formState.phone2,
-            supportEmail: formState.supportEmail,
+            phone1: formState.phone1 || '',
+            phone2: formState.phone2 || '',
+            supportEmail: formState.supportEmail || '',
         },
         address: {
-            zipCode: formState.zipCode,
-            street: formState.street,
-            number: formState.number,
-            complement: formState.complement,
-            city: formState.city,
-            state: formState.state,
+            zipCode: formState.zipCode || '',
+            street: formState.street || '',
+            number: formState.number || '',
+            complement: formState.complement || '',
+            city: formState.city || '',
+            state: formState.state || '',
         }
     };
 
