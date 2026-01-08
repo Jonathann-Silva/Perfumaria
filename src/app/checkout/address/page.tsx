@@ -29,8 +29,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useCart } from '@/context/cart-context';
 
 const steps = [
-  { id: 1, name: 'Identificação', status: 'complete', icon: Check },
-  { id: 2, name: 'Entrega', status: 'current', icon: null },
+  { id: 1, name: 'Identificação', status: 'current', icon: null },
+  { id: 2, name: 'Entrega', status: 'upcoming', icon: null },
   { id: 3, name: 'Pagamento', status: 'upcoming', icon: null },
 ];
 
@@ -237,23 +237,20 @@ export default function CheckoutAddressPage() {
             </nav>
 
             <section className="rounded-2xl border bg-card p-6 dark:bg-white/5">
-              <div className="mb-4 flex items-center justify-between">
+              <div className="mb-4">
                 <h2 className="flex items-center gap-2 text-lg font-bold text-foreground">
                   <User className="text-primary" />
                   Dados Pessoais
                 </h2>
-                <button className="text-sm font-bold text-muted-foreground transition-colors hover:text-primary">
-                  Editar
-                </button>
               </div>
-              <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
-                <div>
-                  <p className="mb-1 text-muted-foreground">E-mail cadastrado</p>
-                  <p className="font-medium">joao.silva@exemplo.com</p>
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="font-bold">E-mail</Label>
+                  <Input id="email" type="email" placeholder="seuemail@exemplo.com" required />
                 </div>
-                <div>
-                  <p className="mb-1 text-muted-foreground">Telefone / Celular</p>
-                  <p className="font-medium">(11) 99999-9999</p>
+                <div className="space-y-2">
+                  <Label htmlFor="phone" className="font-bold">Telefone / Celular</Label>
+                  <Input id="phone" type="tel" placeholder="(XX) 99999-9999" required />
                 </div>
               </div>
             </section>
