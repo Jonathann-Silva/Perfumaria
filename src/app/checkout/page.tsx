@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import {
   Check,
@@ -14,6 +15,7 @@ import {
   User,
   PartyPopper,
   ArrowLeft,
+  Warehouse,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,9 +25,18 @@ import { getImageById } from '@/lib/placeholder-images';
 import { formatCurrency, cn } from '@/lib/utils';
 import Link from 'next/link';
 import { LogoIcon } from '@/components/icons/logo-icon';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/context/cart-context';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 const steps = [
   { id: 1, name: 'Identificação', status: 'complete', icon: Check },
@@ -33,7 +44,9 @@ const steps = [
   { id: 3, name: 'Pagamento', status: 'current', icon: null },
 ];
 
-export default function CheckoutPage() {
+function CheckoutPaymentPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const visaIcon = getImageById('visa-icon');
   const mastercardIcon = getImageById('mastercard-icon');
   const amexIcon = getImageById('amex-icon');
@@ -44,8 +57,24 @@ export default function CheckoutPage() {
   
   const { cartItems, cartSubtotal, clearCart } = useCart();
   
-  // This should ideally be passed from the previous step
-  const [shippingCost, setShippingCost] = useState(24.90);
+  const [shippingCost, setShippingCost] = useState(0);
+  const [shippingName, setShippingName] = useState('');
+  const [shippingId, setShippingId] = useState('');
+
+  const [showPickupConfirm, setShowPickupConfirm] = useState(false);
+
+  useEffect(() => {
+    const cost = parseFloat(searchParams.get('shipping_cost') || '0');
+    const name = searchParams.get('shipping_name') || 'Não especificado';
+    const id = searchParams.get('shipping_id') || '';
+    setShippingCost(cost);
+    setShippingName(name);
+    setShippingId(id);
+
+    if (id === 'pickup') {
+      setShowPickupConfirm(true);
+    }
+  }, [searchParams]);
 
   const total = cartSubtotal + shippingCost;
 
@@ -81,6 +110,25 @@ export default function CheckoutPage() {
   }
 
   return (
+    <>
+    <AlertDialog open={showPickupConfirm} onOpenChange={setShowPickupConfirm}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <div className="flex justify-center mb-4">
+             <Warehouse className="size-12 text-primary" />
+          </div>
+          <AlertDialogTitle className="text-center">Confirmação de Retirada</AlertDialogTitle>
+          <AlertDialogDescription className="text-center">
+            Você confirma a retirada do seu pedido em nossa loja física em Arapongas-PR?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter className="sm:justify-center">
+          <AlertDialogCancel onClick={() => router.back()}>Voltar</AlertDialogCancel>
+          <AlertDialogAction onClick={() => setShowPickupConfirm(false)}>Confirmar</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
     <div className="flex min-h-screen flex-col bg-background font-display text-foreground selection:bg-primary selection:text-primary-foreground">
       <header className="sticky top-0 z-50 w-full border-b bg-card/80 backdrop-blur-md dark:bg-background-dark/80">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -321,7 +369,7 @@ export default function CheckoutPage() {
                   </p>
                 </div>
                 <div className="flex justify-between text-muted-foreground">
-                  <p>Frete</p>
+                  <p>Frete ({shippingName})</p>
                   <p className="font-medium text-foreground">
                     {formatCurrency(shippingCost)}
                   </p>
@@ -374,5 +422,14 @@ export default function CheckoutPage() {
         </div>
       </footer>
     </div>
+    </>
   );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div>Carregando...</div>}>
+      <CheckoutPaymentPage />
+    </Suspense>
+  )
 }

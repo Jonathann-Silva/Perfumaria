@@ -22,6 +22,7 @@ import { Label } from '@/components/ui/label';
 import { getImageById } from '@/lib/placeholder-images';
 import { formatCurrency, cn } from '@/lib/utils';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { LogoIcon } from '@/components/icons/logo-icon';
 import { getShippingRates } from '../actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -52,6 +53,7 @@ const motoboyRates: { [key: string]: number } = {
 
 
 export default function CheckoutAddressPage() {
+  const router = useRouter();
   const { cartItems, removeFromCart, cartSubtotal } = useCart();
   const [cep, setCep] = useState('');
   const [address, setAddress] = useState({
@@ -94,21 +96,17 @@ export default function CheckoutAddressPage() {
           state: data.uf,
         });
         
-        // Fetch shipping rates from Melhor Envio
-        const rates = await getShippingRates(cepValue);
         let allOptions: ShippingOption[] = [];
-
-        // Add local pickup option
-        if (city === 'arapongas') {
-          allOptions.push({
-            id: 'pickup',
-            name: 'Retirar no Local',
-            price: '0.00',
-            delivery_time: 0,
-            icon: MapPin,
-          });
-        }
         
+        // Always add local pickup option
+        allOptions.push({
+          id: 'pickup',
+          name: 'Retirar no Local',
+          price: '0.00',
+          delivery_time: 0,
+          icon: MapPin,
+        });
+
         // Add motoboy option
         if (motoboyRates[city]) {
           allOptions.push({
@@ -119,6 +117,9 @@ export default function CheckoutAddressPage() {
             icon: Bike,
           });
         }
+        
+        // Fetch shipping rates from Melhor Envio
+        const rates = await getShippingRates(cepValue);
         
         if (rates && rates.length > 0) {
           const correiosOptions = rates.map(rate => ({ ...rate, icon: Truck }));
@@ -149,6 +150,16 @@ export default function CheckoutAddressPage() {
       setIsFetchingRates(false);
     }
   };
+
+  const handleProceedToPayment = () => {
+    if (!selectedShipping) return;
+    const params = new URLSearchParams({
+      shipping_id: String(selectedShipping.id),
+      shipping_name: selectedShipping.name,
+      shipping_cost: selectedShipping.price,
+    });
+    router.push(`/checkout?${params.toString()}`);
+  }
 
   const shippingCost = selectedShipping ? parseFloat(selectedShipping.price) : 0;
   const total = cartSubtotal + shippingCost;
@@ -380,7 +391,7 @@ export default function CheckoutAddressPage() {
                             {!option.error ? (
                                <span className="block text-xs text-muted-foreground">
                                 {option.id === 'pickup'
-                                ? 'Disponível para retirada em Arapongas'
+                                ? 'Disponível para retirada em Arapongas-PR'
                                 : option.id === 'motoboy'
                                 ? `Entrega no mesmo dia para ${address.city}`
                                 : `Entrega em até ${option.delivery_time} dias úteis`}
@@ -490,14 +501,12 @@ export default function CheckoutAddressPage() {
               </div>
               <div className="mt-8">
                  <Button
+                  onClick={handleProceedToPayment}
                   disabled={!selectedShipping || cartItems.length === 0}
                   className="group flex h-auto w-full items-center justify-center rounded-full bg-primary py-4 px-6 text-lg font-bold text-primary-foreground shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] hover:bg-yellow-400 hover:shadow-primary/40 focus:ring-4 focus:ring-primary/30"
-                  asChild
                 >
-                  <Link href="/checkout">
-                    <LockOpen className="mr-2 transition-transform group-hover:scale-110" />
-                    Ir para Pagamento
-                  </Link>
+                  <LockOpen className="mr-2 transition-transform group-hover:scale-110" />
+                  Ir para Pagamento
                 </Button>
                 <div className="mt-6 flex flex-col items-center gap-3">
                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
@@ -522,5 +531,3 @@ export default function CheckoutAddressPage() {
     </div>
   );
 }
-
-    
