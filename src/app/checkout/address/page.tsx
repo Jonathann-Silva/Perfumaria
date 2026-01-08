@@ -74,7 +74,7 @@ export default function CheckoutAddressPage() {
 
   useEffect(() => {
     if (!userLoading && !user) {
-      router.push('/');
+      router.push('/checkout/login');
     }
   }, [user, userLoading, router]);
 

@@ -191,11 +191,11 @@ export function Header() {
   };
 
   const handleCheckout = () => {
-    setCartSheetOpen(false); // Fecha o carrinho
+    setCartSheetOpen(false);
     if (user) {
       router.push('/checkout/address');
     } else {
-      setAuthDialogOpen(true); // Abre o modal de login
+      router.push('/checkout/login');
     }
   };
 
@@ -383,13 +383,13 @@ export function Header() {
                 </DropdownMenu>
               ) : (
                 <Dialog open={isAuthDialogOpen} onOpenChange={(open) => {
-                  setAuthDialogOpen(open);
                   if (!open) {
                     setAuthView('login');
                     setEmail('');
                     setPassword('');
                     setName('');
                   }
+                  setAuthDialogOpen(open);
                 }}>
                   <DialogTrigger asChild>
                     <Button
