@@ -5,23 +5,19 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import {
   Check,
-  CreditCard,
   Copy,
   Lock,
-  LockOpen,
   Loader2,
-  Trash2,
   Truck,
-  User,
   PartyPopper,
   ArrowLeft,
   Warehouse,
   QrCode,
+  AlertCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { getImageById } from '@/lib/placeholder-images';
 import { formatCurrency, cn } from '@/lib/utils';
 import Link from 'next/link';
 import { LogoIcon } from '@/components/icons/logo-icon';
@@ -36,7 +32,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { createPixPayment } from './payment-actions';
 
 const steps = [
   { id: 1, name: 'Identificação', status: 'complete', icon: Check },
@@ -44,13 +42,14 @@ const steps = [
   { id: 3, name: 'Pagamento', status: 'current', icon: null },
 ];
 
+type PixData = {
+  qrCode: string;
+  qrCodeBase64: string;
+}
+
 function CheckoutPaymentPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const pixQrCodeImage = getImageById('pix-qr-code');
-  
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
   const { toast } = useToast();
   
   const { cartItems, cartSubtotal, clearCart } = useCart();
@@ -60,11 +59,23 @@ function CheckoutPaymentPage() {
   const [shippingId, setShippingId] = useState('');
 
   const [showPickupConfirm, setShowPickupConfirm] = useState(false);
+  const [isGeneratingPix, setIsGeneratingPix] = useState(true);
+  const [pixData, setPixData] = useState<PixData | null>(null);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
+  const total = cartSubtotal + shippingCost;
+  
   useEffect(() => {
     const cost = parseFloat(searchParams.get('shipping_cost') || '0');
     const name = searchParams.get('shipping_name') || 'Não especificado';
     const id = searchParams.get('shipping_id') || '';
+
+    if (cartSubtotal === 0) {
+      router.push('/products');
+      return;
+    }
+    
     setShippingCost(cost);
     setShippingName(name);
     setShippingId(id);
@@ -72,54 +83,71 @@ function CheckoutPaymentPage() {
     if (id === 'pickup' && !paymentSuccess) {
       setShowPickupConfirm(true);
     }
-  }, [searchParams, paymentSuccess]);
 
-  const total = cartSubtotal + shippingCost;
-  
-  const pixCopyPasteCode = "00020126360014br.gov.bcb.pix0114+5543999999999520400005303986540510.005802BR5913NOME DO LOJISTA6009SAO PAULO62070503***6304E2D5";
+    const generatePix = async () => {
+      setIsGeneratingPix(true);
+      setPaymentError(null);
+      
+      const paymentResult = await createPixPayment({
+        transaction_amount: total,
+        description: 'Pagamento de pedido na Perfumes & Decantes',
+        payer: {
+            email: 'test_user_12345@testuser.com', // Em um app real, pegar o email do usuário logado
+        }
+      });
+      
+      if (paymentResult.success && paymentResult.qrCode && paymentResult.qrCodeBase64) {
+        setPixData({
+            qrCode: paymentResult.qrCode,
+            qrCodeBase64: paymentResult.qrCodeBase64,
+        });
+      } else {
+        setPaymentError(paymentResult.error || 'Não foi possível gerar o PIX. Verifique as credenciais da API e tente novamente.');
+      }
+      setIsGeneratingPix(false);
+    }
+    
+    // Só gerar o PIX se não for retirada no local ou se a retirada for confirmada
+    if(id !== 'pickup' || (id === 'pickup' && !showPickupConfirm)) {
+       generatePix();
+    }
+    
+  }, [searchParams, paymentSuccess, cartSubtotal, router, total, showPickupConfirm]);
 
   const handleCopyPixCode = () => {
-    navigator.clipboard.writeText(pixCopyPasteCode);
+    if (!pixData?.qrCode) return;
+    navigator.clipboard.writeText(pixData.qrCode);
     toast({
       title: "Código PIX Copiado!",
       description: "Use a função 'PIX Copia e Cola' no seu banco.",
     });
   };
 
-  const handlePayment = async () => {
-    setIsProcessingPayment(true);
-    // Simula uma chamada de API de pagamento
-    await new Promise(resolve => setTimeout(resolve, 2500));
-    
-    // Simular notificação para o painel admin
-    const newSale = {
-      id: `sale_${new Date().getTime()}`,
-      user: 'Cliente PIX', // Placeholder
-      amount: total,
-      timestamp: new Date().toISOString(),
-      read: false,
-    };
-    const existingSales = JSON.parse(localStorage.getItem('newSales') || '[]');
-    localStorage.setItem('newSales', JSON.stringify([...existingSales, newSale]));
+  const handleConfirmPickupAndGeneratePix = async () => {
+      setShowPickupConfirm(false);
+      // A lógica para gerar PIX já está no useEffect e será acionada quando showPickupConfirm mudar.
+  }
 
-
-    setIsProcessingPayment(false);
+  // A função de finalização de pagamento agora só é relevante para
+  // cenários de simulação, já que o PIX real depende de webhook para confirmação.
+  // Mantemos a simulação para o usuário ver o fluxo.
+  const handleSimulateSuccess = async () => {
+    await new Promise(resolve => setTimeout(resolve, 1000));
     setPaymentSuccess(true);
     clearCart();
     toast({
-        title: "Pagamento Aprovado!",
-        description: "Seu pedido foi realizado com sucesso.",
+        title: "Pedido Recebido!",
+        description: "Aguardando confirmação do pagamento PIX.",
     })
   }
 
-  
   if (paymentSuccess) {
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-background p-8 text-center">
             <PartyPopper className="mb-6 h-24 w-24 text-primary animate-bounce"/>
             <h1 className="font-headline text-4xl font-bold text-foreground">Obrigado pela sua compra!</h1>
-            <p className="mt-4 max-w-md text-lg text-muted-foreground">Seu pedido <span className="font-bold text-foreground">#12345</span> foi confirmado e em breve será preparado para envio.</p>
-            <p className="mt-2 text-sm text-muted-foreground">Enviamos todos os detalhes para o seu e-mail.</p>
+            <p className="mt-4 max-w-md text-lg text-muted-foreground">Seu pedido <span className="font-bold text-foreground">#12345</span> foi recebido e está aguardando a confirmação do pagamento PIX.</p>
+            <p className="mt-2 text-sm text-muted-foreground">Enviaremos uma confirmação para o seu e-mail assim que o pagamento for aprovado.</p>
             <Button asChild className="mt-8 rounded-full">
                 <Link href="/products">
                     Continuar Comprando
@@ -128,6 +156,7 @@ function CheckoutPaymentPage() {
         </div>
     )
   }
+
 
   return (
     <>
@@ -144,7 +173,7 @@ function CheckoutPaymentPage() {
         </AlertDialogHeader>
         <AlertDialogFooter className="sm:justify-center">
           <AlertDialogCancel onClick={() => router.back()}>Voltar</AlertDialogCancel>
-          <AlertDialogAction onClick={() => setShowPickupConfirm(false)}>Confirmar</AlertDialogAction>
+          <AlertDialogAction onClick={handleConfirmPickupAndGeneratePix}>Confirmar e Pagar</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -235,46 +264,59 @@ function CheckoutPaymentPage() {
                     </h2>
                 </div>
                 <div className="rounded-2xl border bg-card p-6 shadow-sm dark:bg-white/5 sm:p-8">
-                  <div className='flex flex-col md:flex-row items-center justify-center md:justify-start gap-8'>
-                    <div className='flex flex-col items-center gap-4'>
-                      <p className='text-sm font-bold text-foreground text-center'>Escaneie o QR Code para pagar</p>
-                      {pixQrCodeImage && (
+                  {isGeneratingPix ? (
+                     <div className="flex flex-col items-center justify-center gap-4 py-12 text-muted-foreground">
+                        <Loader2 className="size-8 animate-spin" />
+                        <p className="font-bold">Gerando PIX...</p>
+                        <p className="text-sm text-center">Estamos criando uma cobrança segura para você.</p>
+                     </div>
+                  ) : paymentError ? (
+                     <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Erro ao Gerar Pagamento</AlertTitle>
+                        <AlertDescription>
+                           {paymentError}
+                        </AlertDescription>
+                     </Alert>
+                  ) : pixData ? (
+                    <div className='flex flex-col md:flex-row items-center justify-center md:justify-start gap-8'>
+                      <div className='flex flex-col items-center gap-4'>
+                        <p className='text-sm font-bold text-foreground text-center'>Escaneie o QR Code para pagar</p>
                         <div className="p-4 bg-white rounded-lg border shadow-inner">
                             <Image
-                              src={pixQrCodeImage.imageUrl}
-                              width={200}
-                              height={200}
-                              alt={pixQrCodeImage.description}
-                              data-ai-hint={pixQrCodeImage.imageHint}
+                                src={`data:image/png;base64,${pixData.qrCodeBase64}`}
+                                width={200}
+                                height={200}
+                                alt="QR Code para pagamento PIX"
                             />
                         </div>
-                      )}
-                    </div>
-                    <div className="flex-1 w-full text-center md:text-left">
-                        <h3 className="font-bold text-foreground">Instruções de Pagamento</h3>
-                        <ol className="list-decimal list-inside text-sm text-muted-foreground mt-2 space-y-2">
-                          <li>Abra o aplicativo do seu banco e acesse a área PIX.</li>
-                          <li>Escolha a opção "Pagar com QR Code".</li>
-                          <li>Escaneie o código ao lado.</li>
-                          <li>Se preferir, use o "PIX Copia e Cola" abaixo.</li>
-                          <li>Confirme os dados e o valor e finalize o pagamento.</li>
-                        </ol>
-                        <div className="mt-6">
-                          <Label className='text-xs font-bold uppercase text-muted-foreground'>PIX Copia e Cola</Label>
-                          <div className='relative mt-1'>
-                             <Input 
-                                readOnly 
-                                value={pixCopyPasteCode} 
-                                className="bg-muted dark:bg-background pr-12 truncate"
-                              />
-                             <Button size="icon" variant="ghost" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={handleCopyPixCode}>
-                               <Copy className="size-4" />
-                             </Button>
+                      </div>
+                      <div className="flex-1 w-full text-center md:text-left">
+                          <h3 className="font-bold text-foreground">Instruções de Pagamento</h3>
+                          <ol className="list-decimal list-inside text-sm text-muted-foreground mt-2 space-y-2">
+                            <li>Abra o aplicativo do seu banco e acesse a área PIX.</li>
+                            <li>Escolha a opção "Pagar com QR Code".</li>
+                            <li>Escaneie o código ao lado.</li>
+                            <li>Se preferir, use o "PIX Copia e Cola" abaixo.</li>
+                            <li>Confirme os dados e o valor e finalize o pagamento.</li>
+                          </ol>
+                          <div className="mt-6">
+                            <Label className='text-xs font-bold uppercase text-muted-foreground'>PIX Copia e Cola</Label>
+                            <div className='relative mt-1'>
+                               <Input 
+                                  readOnly 
+                                  value={pixData.qrCode} 
+                                  className="bg-muted dark:bg-background pr-12 truncate"
+                                />
+                               <Button size="icon" variant="ghost" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={handleCopyPixCode}>
+                                 <Copy className="size-4" />
+                               </Button>
+                            </div>
+                            <p className='text-xs text-muted-foreground mt-4'>O pagamento é confirmado em instantes. Após a confirmação, seu pedido será processado.</p>
                           </div>
-                          <p className='text-xs text-muted-foreground mt-4'>O pagamento é confirmado em instantes. Após a confirmação, seu pedido será processado.</p>
-                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ) : null }
                 </div>
             </section>
 
@@ -287,56 +329,36 @@ function CheckoutPaymentPage() {
               </h2>
                {cartItems.length > 0 ? (
                 <ul className="mb-6 divide-y divide-border">
-                  {cartItems.map((item) => {
-                    const itemImage = getImageById(item.imageId);
-                    return (
-                      <li key={item.id} className="flex gap-4 py-4">
-                        <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl border bg-muted">
-                          {itemImage && (
-                            <Image
-                              src={itemImage.imageUrl}
-                              alt={itemImage.description}
-                              fill
-                              className="object-cover"
-                              data-ai-hint={itemImage.imageHint}
-                            />
-                          )}
+                  {cartItems.map((item) => (
+                    <li key={item.id} className="flex gap-4 py-4">
+                      <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border bg-muted">
+                        <Image
+                          src={getImageById(item.imageId)?.imageUrl || '/placeholder.png'}
+                          alt={item.name}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="flex flex-1 flex-col">
+                        <div className="flex justify-between text-base font-bold text-foreground">
+                          <h3>{item.name}</h3>
+                          <p className="ml-2">{formatCurrency(item.price)}</p>
                         </div>
-                        <div className="flex flex-1 flex-col">
-                          <div className="flex justify-between text-base font-bold text-foreground">
-                            <h3>{item.name}</h3>
-                            <p className="ml-2">{formatCurrency(item.price)}</p>
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            {item.type === 'decant' ? `Decant ${item.decantMl}ml` : 'Frasco'}
-                          </p>
-                          <div className="mt-auto flex items-center justify-between">
-                            <p className="rounded-lg bg-muted px-2 py-0.5 text-sm font-medium text-muted-foreground">
-                              Qtd: {item.quantity}
-                            </p>
-                          </div>
-                        </div>
-                      </li>
-                    )
-                  })}
+                        <p className="text-sm text-muted-foreground">
+                          {item.type === 'decant' ? `Decant ${item.decantMl}ml` : 'Frasco'}
+                        </p>
+                        <p className="mt-1 rounded-lg bg-muted px-2 py-0.5 text-sm font-medium text-muted-foreground self-start">
+                          Qtd: {item.quantity}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
                 </ul>
                 ) : (
                 <div className="py-10 text-center text-sm text-muted-foreground">
                   Seu carrinho está vazio.
                 </div>
               )}
-              <div className="mb-6">
-                <div className="flex gap-2">
-                  <Input
-                    type="text"
-                    placeholder="Cupom de desconto"
-                    className="text-sm"
-                  />
-                  <Button variant="secondary" className="font-bold">
-                    Aplicar
-                  </Button>
-                </div>
-              </div>
               <div className="space-y-4 border-t border-dashed pt-6 text-sm">
                 <div className="flex justify-between text-muted-foreground">
                   <p>Subtotal</p>
@@ -366,16 +388,12 @@ function CheckoutPaymentPage() {
               </div>
               <div className="mt-8">
                 <Button
-                  onClick={handlePayment}
-                  disabled={isProcessingPayment || cartItems.length === 0}
+                  onClick={handleSimulateSuccess}
+                  disabled={!pixData || isGeneratingPix || paymentError}
                   className="group flex h-auto w-full items-center justify-center rounded-full bg-primary py-4 px-6 text-lg font-bold text-primary-foreground shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] hover:bg-yellow-400 hover:shadow-primary/40 focus:ring-4 focus:ring-primary/30"
                 >
-                  {isProcessingPayment ? (
-                    <Loader2 className="mr-2 animate-spin" />
-                  ) : (
-                    <LockOpen className="mr-2 transition-transform group-hover:scale-110" />
-                  )}
-                  {isProcessingPayment ? 'Aguardando Pagamento...' : `Finalizar Compra`}
+                  <Check className="mr-2 transition-transform group-hover:scale-110" />
+                  Já Paguei, Finalizar Pedido
                 </Button>
                 <div className="mt-6 flex flex-col items-center gap-3">
                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
@@ -404,7 +422,7 @@ function CheckoutPaymentPage() {
 
 export default function CheckoutPage() {
   return (
-    <Suspense fallback={<div>Carregando...</div>}>
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><Loader2 className="size-12 animate-spin text-primary"/></div>}>
       <CheckoutPaymentPage />
     </Suspense>
   )

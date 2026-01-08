@@ -268,7 +268,7 @@ export default function CheckoutAddressPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone" className="font-bold">Telefone / Celular</Label>
-                  <Input id="phone" type="tel" placeholder="(XX) 99999-9999" required value={user?.phoneNumber || ''} />
+                  <Input id="phone" type="tel" placeholder="(XX) 99999-9999" required defaultValue={user?.phoneNumber || ''} />
                 </div>
               </div>
             </section>
