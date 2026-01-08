@@ -14,6 +14,7 @@ import {
   Warehouse,
   QrCode,
   AlertCircle,
+  Ticket,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -58,6 +59,7 @@ function CheckoutPaymentPage() {
   const [shippingCost, setShippingCost] = useState(0);
   const [shippingName, setShippingName] = useState('');
   const [shippingId, setShippingId] = useState('');
+  const [discount, setDiscount] = useState(0);
 
   const [showPickupConfirm, setShowPickupConfirm] = useState(false);
   const [isGeneratingPix, setIsGeneratingPix] = useState(true);
@@ -66,12 +68,14 @@ function CheckoutPaymentPage() {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const isInitialLoad = useRef(true);
 
-  const total = cartSubtotal + shippingCost;
+  const total = cartSubtotal + shippingCost - discount;
   
   useEffect(() => {
     const cost = parseFloat(searchParams.get('shipping_cost') || '0');
     const name = searchParams.get('shipping_name') || 'Não especificado';
     const id = searchParams.get('shipping_id') || '';
+    const discountValue = parseFloat(searchParams.get('discount') || '0');
+    setDiscount(discountValue);
 
     if (cartSubtotal === 0 && !paymentSuccess) {
       router.push('/products');
@@ -92,7 +96,7 @@ function CheckoutPaymentPage() {
       setPaymentError(null);
       
       const paymentResult = await createPixPayment({
-        transaction_amount: total,
+        transaction_amount: total > 0 ? total : 0.01, // Mercado Pago requires a minimum amount
         description: 'Pagamento de pedido na Perfumes & Decantes',
         payer: {
             email: 'test_user_12345@testuser.com', // Em um app real, pegar o email do usuário logado
@@ -111,7 +115,7 @@ function CheckoutPaymentPage() {
     }
     
     // Only generate PIX if it's not local pickup or if local pickup has been confirmed
-    if (id !== 'pickup') {
+    if (id !== 'pickup' && total > 0) {
        generatePix();
     }
     
@@ -133,7 +137,7 @@ function CheckoutPaymentPage() {
         setIsGeneratingPix(true);
         setPaymentError(null);
         const paymentResult = await createPixPayment({
-            transaction_amount: total,
+            transaction_amount: total > 0 ? total : 0.01,
             description: 'Pagamento de pedido na Perfumes & Decantes',
             payer: { email: 'test_user_12345@testuser.com' }
         });
@@ -147,7 +151,11 @@ function CheckoutPaymentPage() {
         }
         setIsGeneratingPix(false);
     };
-    generatePix();
+    if (total > 0) {
+      generatePix();
+    } else {
+      setIsGeneratingPix(false);
+    }
   }
 
   // A função de finalização de pagamento agora só é relevante para
@@ -338,7 +346,13 @@ function CheckoutPaymentPage() {
                           </div>
                       </div>
                     </div>
-                  ) : null }
+                  ) : (
+                    <div className="flex flex-col items-center justify-center gap-4 py-12 text-muted-foreground">
+                        <Ticket className="size-8" />
+                        <p className="font-bold">Pagamento Gratuito</p>
+                        <p className="text-sm text-center">O total do seu pedido é R$ 0,00. Prossiga para finalizar.</p>
+                     </div>
+                  ) }
                 </div>
             </section>
 
@@ -394,6 +408,14 @@ function CheckoutPaymentPage() {
                     {formatCurrency(shippingCost)}
                   </p>
                 </div>
+                 {discount > 0 && (
+                  <div className="flex justify-between text-green-600 dark:text-green-400">
+                    <p className="flex items-center gap-1.5"><Ticket className="size-4" /> Desconto</p>
+                    <p className="font-medium">
+                      - {formatCurrency(discount)}
+                    </p>
+                  </div>
+                )}
                 <div className="flex items-end justify-between border-t pt-4">
                   <p className="font-headline text-lg font-black text-foreground">
                     Total
@@ -411,11 +433,11 @@ function CheckoutPaymentPage() {
               <div className="mt-8">
                 <Button
                   onClick={handleSimulateSuccess}
-                  disabled={!pixData || isGeneratingPix || paymentError}
+                  disabled={isGeneratingPix || paymentError && total > 0}
                   className="group flex h-auto w-full items-center justify-center rounded-full bg-primary py-4 px-6 text-lg font-bold text-primary-foreground shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] hover:bg-yellow-400 hover:shadow-primary/40 focus:ring-4 focus:ring-primary/30"
                 >
                   <Check className="mr-2 transition-transform group-hover:scale-110" />
-                  Já Paguei, Finalizar Pedido
+                  {total > 0 ? 'Já Paguei, Finalizar Pedido' : 'Finalizar Pedido Gratuito'}
                 </Button>
                 <div className="mt-6 flex flex-col items-center gap-3">
                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
@@ -449,3 +471,5 @@ export default function CheckoutPage() {
     </Suspense>
   )
 }
+
+    

@@ -15,6 +15,8 @@ import {
   PartyPopper,
   MapPin,
   Bike,
+  AlertCircle,
+  Ticket,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,7 +29,8 @@ import { LogoIcon } from '@/components/icons/logo-icon';
 import { getShippingRates } from '../actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useCart } from '@/context/cart-context';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 
 const steps = [
   { id: 1, name: 'Identificação', status: 'current', icon: null },
@@ -44,6 +47,15 @@ type ShippingOption = {
   error?: string;
 };
 
+interface Coupon {
+  id: string;
+  code: string;
+  discountPercentage: number;
+  quantity: number;
+  used: number;
+}
+
+
 const motoboyRates: { [key: string]: number } = {
   arapongas: 10.0,
   rolandia: 15.0,
@@ -57,6 +69,8 @@ export default function CheckoutAddressPage() {
   const router = useRouter();
   const { cartItems, removeFromCart, cartSubtotal } = useCart();
   const { user, loading: userLoading } = useUser();
+  const firestore = useFirestore();
+
 
   const [cep, setCep] = useState('');
   const [address, setAddress] = useState({
@@ -71,6 +85,12 @@ export default function CheckoutAddressPage() {
   const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
   const [selectedShipping, setSelectedShipping] = useState<ShippingOption | null>(null);
   const [shippingError, setShippingError] = useState<string | null>(null);
+
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [discount, setDiscount] = useState(0);
+
 
   useEffect(() => {
     if (!userLoading && !user) {
@@ -161,18 +181,58 @@ export default function CheckoutAddressPage() {
     }
   };
 
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim() || !firestore) {
+      setCouponError('Por favor, insira um código de cupom.');
+      return;
+    }
+    setCouponError(null);
+    setAppliedCoupon(null);
+    setDiscount(0);
+
+    const couponsRef = collection(firestore, 'coupons');
+    const q = query(couponsRef, where("code", "==", couponCode.trim().toUpperCase()));
+    
+    try {
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) {
+        setCouponError('Cupom inválido ou expirado.');
+        return;
+      }
+
+      const couponDoc = querySnapshot.docs[0];
+      const couponData = { id: couponDoc.id, ...couponDoc.data() } as Coupon;
+
+      if (couponData.used >= couponData.quantity) {
+        setCouponError('Este cupom já atingiu o limite de usos.');
+        return;
+      }
+      
+      setAppliedCoupon(couponData);
+      const calculatedDiscount = (cartSubtotal * couponData.discountPercentage) / 100;
+      setDiscount(calculatedDiscount);
+      setCouponCode('');
+
+    } catch (error) {
+      console.error("Error applying coupon:", error);
+      setCouponError('Não foi possível aplicar o cupom. Tente novamente.');
+    }
+  }
+
+
   const handleProceedToPayment = () => {
     if (!selectedShipping) return;
     const params = new URLSearchParams({
       shipping_id: String(selectedShipping.id),
       shipping_name: selectedShipping.name,
       shipping_cost: selectedShipping.price,
+      discount: discount.toFixed(2)
     });
     router.push(`/checkout?${params.toString()}`);
   }
 
   const shippingCost = selectedShipping ? parseFloat(selectedShipping.price) : 0;
-  const total = cartSubtotal + shippingCost;
+  const total = cartSubtotal + shippingCost - discount;
   
   if (userLoading || !user) {
     return (
@@ -476,17 +536,22 @@ export default function CheckoutAddressPage() {
                 </div>
               )}
               <div className="mb-6">
-                <div className="flex gap-2">
-                  <Input
-                    type="text"
-                    placeholder="Cupom de desconto"
-                    className="text-sm"
-                  />
-                  <Button variant="secondary" className="font-bold">
-                    Aplicar
-                  </Button>
-                </div>
+                 <div className="flex gap-2">
+                   <Input
+                     type="text"
+                     placeholder="Cupom de desconto"
+                     className="text-sm"
+                     value={couponCode}
+                     onChange={(e) => setCouponCode(e.target.value)}
+                     disabled={!!appliedCoupon}
+                   />
+                   <Button variant="secondary" className="font-bold" onClick={handleApplyCoupon} disabled={!!appliedCoupon}>
+                     {appliedCoupon ? 'Aplicado!' : 'Aplicar'}
+                   </Button>
+                 </div>
+                 {couponError && <p className="mt-2 text-xs text-destructive">{couponError}</p>}
               </div>
+
               <div className="space-y-4 border-t border-dashed pt-6 text-sm">
                 <div className="flex justify-between text-muted-foreground">
                   <p>Subtotal</p>
@@ -500,6 +565,14 @@ export default function CheckoutAddressPage() {
                     {selectedShipping ? formatCurrency(shippingCost) : '--'}
                   </p>
                 </div>
+                 {appliedCoupon && (
+                  <div className="flex justify-between text-green-600 dark:text-green-400">
+                    <p className="flex items-center gap-1.5"><Ticket className="size-4" /> Cupom: {appliedCoupon.code}</p>
+                    <p className="font-medium">
+                      - {formatCurrency(discount)}
+                    </p>
+                  </div>
+                )}
                 <div className="flex items-end justify-between border-t pt-4">
                   <p className="font-headline text-lg font-black text-foreground">
                     Total
@@ -546,3 +619,5 @@ export default function CheckoutAddressPage() {
     </div>
   );
 }
+
+    
