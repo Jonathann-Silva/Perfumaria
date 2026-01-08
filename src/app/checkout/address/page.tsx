@@ -13,6 +13,8 @@ import {
   Truck,
   User,
   PartyPopper,
+  MapPin,
+  Bike,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,12 +34,22 @@ const steps = [
 ];
 
 type ShippingOption = {
-  id: number;
+  id: number | string;
   name: string;
   price: string;
   delivery_time: number;
+  icon: React.ElementType;
   error?: string;
 };
+
+const motoboyRates: { [key: string]: number } = {
+  arapongas: 10.0,
+  rolandia: 15.0,
+  apucarana: 15.0,
+  londrina: 20.0,
+  maringa: 30.0,
+};
+
 
 export default function CheckoutAddressPage() {
   const { cartItems, removeFromCart, cartSubtotal } = useCart();
@@ -75,21 +87,51 @@ export default function CheckoutAddressPage() {
       const data = await response.json();
 
       if (!data.erro) {
+        const city = data.localidade.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         setAddress({
           street: data.logradouro,
           city: data.localidade,
           state: data.uf,
         });
         
-        // Fetch shipping rates
+        // Fetch shipping rates from Melhor Envio
         const rates = await getShippingRates(cepValue);
+        let allOptions: ShippingOption[] = [];
+
+        // Add local pickup option
+        if (city === 'arapongas') {
+          allOptions.push({
+            id: 'pickup',
+            name: 'Retirar no Local',
+            price: '0.00',
+            delivery_time: 0,
+            icon: MapPin,
+          });
+        }
+        
+        // Add motoboy option
+        if (motoboyRates[city]) {
+          allOptions.push({
+            id: 'motoboy',
+            name: 'Motoboy',
+            price: motoboyRates[city].toFixed(2),
+            delivery_time: 1,
+            icon: Bike,
+          });
+        }
+        
         if (rates && rates.length > 0) {
-          const validRates = rates.filter(rate => !rate.error);
-          setShippingOptions(rates);
+          const correiosOptions = rates.map(rate => ({ ...rate, icon: Truck }));
+          allOptions.push(...correiosOptions);
+        }
+        
+        if (allOptions.length > 0) {
+          const validRates = allOptions.filter(rate => !rate.error);
+          setShippingOptions(allOptions);
           if (validRates.length > 0) {
             setSelectedShipping(validRates[0]);
           } else {
-            setShippingError(rates[0]?.error || 'Nenhuma opção de frete válida encontrada.');
+             setShippingError(allOptions[0]?.error || 'Nenhuma opção de frete válida encontrada.');
           }
         } else {
            setShippingError('Não foram encontradas opções de frete para este CEP. Verifique o CEP digitado.');
@@ -328,13 +370,20 @@ export default function CheckoutAddressPage() {
                             className="h-4 w-4 border-muted-foreground text-primary focus:ring-primary"
                             disabled={!!option.error}
                           />
+                           <div className="flex items-center gap-3 text-primary">
+                              <option.icon className="size-6" />
+                           </div>
                           <div className="flex flex-col">
                             <span className="block text-sm font-bold text-foreground">
                               {option.name}
                             </span>
                             {!option.error ? (
-                              <span className="block text-xs text-muted-foreground">
-                                Entrega em até {option.delivery_time} dias úteis
+                               <span className="block text-xs text-muted-foreground">
+                                {option.id === 'pickup'
+                                ? 'Disponível para retirada em Arapongas'
+                                : option.id === 'motoboy'
+                                ? `Entrega no mesmo dia para ${address.city}`
+                                : `Entrega em até ${option.delivery_time} dias úteis`}
                               </span>
                             ) : (
                                <span className="block text-xs text-destructive">
@@ -473,3 +522,5 @@ export default function CheckoutAddressPage() {
     </div>
   );
 }
+
+    
