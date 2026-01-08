@@ -23,7 +23,7 @@ import Link from 'next/link';
 import { LogoIcon } from '@/components/icons/logo-icon';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/context/cart-context';
-import { 
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { createPixPayment } from './payment-actions';
+import { getImageById } from '@/lib/placeholder-images';
 
 const steps = [
   { id: 1, name: 'Identificação', status: 'complete', icon: Check },
