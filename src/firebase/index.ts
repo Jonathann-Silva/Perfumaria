@@ -15,6 +15,8 @@ import {
   FirebaseProvider,
 } from './provider';
 import { FirebaseClientProvider } from './client-provider';
+import { useCollection } from './firestore/use-collection';
+import { useDoc } from './firestore/use-doc';
 
 function initializeFirebase(): {
   app: FirebaseApp;
@@ -32,6 +34,8 @@ export {
   FirebaseProvider,
   FirebaseClientProvider,
   useUser,
+  useCollection,
+  useDoc,
   useFirebase,
   useFirebaseApp,
   useAuth,

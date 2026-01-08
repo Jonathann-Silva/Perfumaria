@@ -81,6 +81,37 @@
             "used": { "type": "number", "description": "How many times the coupon has been used." }
         },
         "required": ["code", "discountPercentage", "quantity"]
+    },
+    "StoreSettings": {
+      "title": "Store Settings",
+      "description": "Represents the general settings for the store.",
+      "type": "object",
+      "properties": {
+        "storeName": { "type": "string" },
+        "slogan": { "type": "string" },
+        "contact": {
+          "type": "object",
+          "properties": {
+            "phone1": { "type": "string" },
+            "phone2": { "type": "string" },
+            "supportEmail": { "type": "string", "format": "email" }
+          },
+          "required": ["phone1", "supportEmail"]
+        },
+        "address": {
+          "type": "object",
+          "properties": {
+            "zipCode": { "type": "string" },
+            "street": { "type": "string" },
+            "number": { "type": "string" },
+            "complement": { "type": "string" },
+            "city": { "type": "string" },
+            "state": { "type": "string" }
+          },
+           "required": ["zipCode", "street", "number", "city", "state"]
+        }
+      },
+      "required": ["storeName"]
     }
   },
   "auth": {
@@ -102,6 +133,10 @@
     "/coupons/{couponId}": {
         "schema": { "$ref": "#/entities/Coupon" },
         "description": "Stores all discount coupons."
+    },
+    "/settings/storeInfo": {
+      "schema": { "$ref": "#/entities/StoreSettings" },
+      "description": "Stores general settings for the store."
     }
   }
 }

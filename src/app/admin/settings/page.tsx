@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Store, Phone, Mail, MapPin, Save, Building, Ticket, Percent, Hash, Plus, Trash2 } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { Store, Phone, Mail, MapPin, Save, Building, Ticket, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,39 +21,112 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
+import { useFirestore, useCollection, useDoc } from '@/firebase';
+import { collection, addDoc, deleteDoc, doc, setDoc } from 'firebase/firestore';
+import { z } from 'zod';
 
 interface Coupon {
-  id: number;
+  id: string;
   code: string;
   discountPercentage: number;
   quantity: number;
   used: number;
 }
 
-const initialCoupons: Coupon[] = [
-    { id: 1, code: 'BEMVINDO10', discountPercentage: 10, quantity: 100, used: 23 },
-    { id: 2, code: 'NATALVIP', discountPercentage: 15, quantity: 50, used: 12 },
-];
+const storeSettingsSchema = z.object({
+    storeName: z.string().optional(),
+    slogan: z.string().optional(),
+    phone1: z.string().optional(),
+    phone2: z.string().optional(),
+    supportEmail: z.string().email().optional(),
+    zipCode: z.string().optional(),
+    street: z.string().optional(),
+    number: z.string().optional(),
+    complement: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().optional(),
+});
 
+type StoreSettings = z.infer<typeof storeSettingsSchema>;
 
 export default function AdminSettingsPage() {
   const { toast } = useToast();
-  const [coupons, setCoupons] = useState<Coupon[]>(initialCoupons);
+  const firestore = useFirestore();
+
+  const [formState, setFormState] = useState<StoreSettings>({});
+
+  const settingsRef = useMemo(() => firestore ? doc(firestore, 'settings', 'storeInfo') : null, [firestore]);
+  const { data: settingsData } = useDoc(settingsRef);
+
+  const couponsRef = useMemo(() => firestore ? collection(firestore, 'coupons') : null, [firestore]);
+  const { data: coupons, loading: couponsLoading } = useCollection<Coupon>(couponsRef);
 
   const [newCouponCode, setNewCouponCode] = useState('');
   const [newCouponDiscount, setNewCouponDiscount] = useState('');
   const [newCouponQuantity, setNewCouponQuantity] = useState('');
 
+  useEffect(() => {
+    if (settingsData) {
+      setFormState({
+          storeName: settingsData.storeName || '',
+          slogan: settingsData.slogan || '',
+          phone1: settingsData.contact?.phone1 || '',
+          phone2: settingsData.contact?.phone2 || '',
+          supportEmail: settingsData.contact?.supportEmail || '',
+          zipCode: settingsData.address?.zipCode || '',
+          street: settingsData.address?.street || '',
+          number: settingsData.address?.number || '',
+          complement: settingsData.address?.complement || '',
+          city: settingsData.address?.city || '',
+          state: settingsData.address?.state || '',
+      });
+    }
+  }, [settingsData]);
 
-  const handleSaveChanges = () => {
-    toast({
-      title: "Alterações Salvas!",
-      description: "As configurações da sua loja foram atualizadas com sucesso.",
-    });
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setFormState(prevState => ({...prevState, [id]: value}));
   }
 
-  const handleAddCoupon = () => {
-    if (!newCouponCode || !newCouponDiscount || !newCouponQuantity) {
+  const handleSaveChanges = async () => {
+    if (!firestore || !settingsRef) return;
+    
+    const dataToSave = {
+        storeName: formState.storeName,
+        slogan: formState.slogan,
+        contact: {
+            phone1: formState.phone1,
+            phone2: formState.phone2,
+            supportEmail: formState.supportEmail,
+        },
+        address: {
+            zipCode: formState.zipCode,
+            street: formState.street,
+            number: formState.number,
+            complement: formState.complement,
+            city: formState.city,
+            state: formState.state,
+        }
+    };
+
+    try {
+        await setDoc(settingsRef, dataToSave, { merge: true });
+        toast({
+        title: "Alterações Salvas!",
+        description: "As configurações da sua loja foram atualizadas com sucesso.",
+        });
+    } catch (error) {
+        console.error("Error saving settings: ", error);
+        toast({
+            variant: "destructive",
+            title: "Erro ao Salvar",
+            description: "Não foi possível salvar as configurações.",
+        });
+    }
+  }
+
+  const handleAddCoupon = async () => {
+    if (!couponsRef || !newCouponCode || !newCouponDiscount || !newCouponQuantity) {
       toast({
         variant: 'destructive',
         title: 'Campos obrigatórios',
@@ -62,36 +135,50 @@ export default function AdminSettingsPage() {
       return;
     }
 
-    const newCoupon: Coupon = {
-      id: Date.now(),
+    const newCoupon = {
       code: newCouponCode,
       discountPercentage: parseInt(newCouponDiscount, 10),
       quantity: parseInt(newCouponQuantity, 10),
       used: 0,
     };
 
-    setCoupons([...coupons, newCoupon]);
-
-    // Clear inputs
-    setNewCouponCode('');
-    setNewCouponDiscount('');
-    setNewCouponQuantity('');
-
-    toast({
-      title: 'Cupom Adicionado!',
-      description: `O cupom "${newCoupon.code}" foi criado com sucesso.`,
-    });
+    try {
+        await addDoc(couponsRef, newCoupon);
+        toast({
+            title: 'Cupom Adicionado!',
+            description: `O cupom "${newCoupon.code}" foi criado com sucesso.`,
+        });
+        setNewCouponCode('');
+        setNewCouponDiscount('');
+        setNewCouponQuantity('');
+    } catch (error) {
+        console.error("Error adding coupon: ", error);
+        toast({
+            variant: "destructive",
+            title: "Erro ao Adicionar",
+            description: "Não foi possível adicionar o cupom.",
+        });
+    }
   };
 
-  const handleRemoveCoupon = (couponId: number) => {
-    setCoupons(coupons.filter(c => c.id !== couponId));
-    toast({
-      variant: 'destructive',
-      title: 'Cupom Removido!',
-      description: 'O cupom foi removido da lista.',
-    });
+  const handleRemoveCoupon = async (couponId: string) => {
+    if (!firestore) return;
+    try {
+        await deleteDoc(doc(firestore, 'coupons', couponId));
+        toast({
+            variant: 'destructive',
+            title: 'Cupom Removido!',
+            description: 'O cupom foi removido com sucesso.',
+        });
+    } catch (error) {
+        console.error("Error removing coupon: ", error);
+        toast({
+            variant: "destructive",
+            title: "Erro ao Remover",
+            description: "Não foi possível remover o cupom.",
+        });
+    }
   };
-
 
   return (
     <div className="flex flex-col gap-8">
@@ -130,15 +217,17 @@ export default function AdminSettingsPage() {
                 <Input
                   id="storeName"
                   placeholder="Ex: Perfumes & Decantes"
-                  defaultValue="Perfumes & Decantes"
+                  value={formState.storeName || ''}
+                  onChange={handleInputChange}
                 />
               </div>
               <div className="md:col-span-2">
-                <Label htmlFor="storeSlogan">Slogan (Opcional)</Label>
+                <Label htmlFor="slogan">Slogan (Opcional)</Label>
                 <Input
-                  id="storeSlogan"
+                  id="slogan"
                   placeholder="Ex: Sua Assinatura Olfativa"
-                  defaultValue="Sua Assinatura Olfativa"
+                  value={formState.slogan || ''}
+                  onChange={handleInputChange}
                 />
               </div>
             </CardContent>
@@ -157,16 +246,16 @@ export default function AdminSettingsPage() {
             <CardContent className="flex flex-col gap-6">
                 <div className="grid grid-cols-1 items-end gap-4 md:grid-cols-[1fr_1fr_1fr_auto]">
                     <div>
-                        <Label htmlFor="couponCode">Código Promocional</Label>
-                        <Input id="couponCode" placeholder="EX: BEMVINDO10" value={newCouponCode} onChange={(e) => setNewCouponCode(e.target.value)} />
+                        <Label htmlFor="newCouponCode">Código Promocional</Label>
+                        <Input id="newCouponCode" placeholder="EX: BEMVINDO10" value={newCouponCode} onChange={(e) => setNewCouponCode(e.target.value)} />
                     </div>
                     <div>
-                        <Label htmlFor="discountPercentage">Desconto (%)</Label>
-                        <Input id="discountPercentage" type="number" placeholder="10" value={newCouponDiscount} onChange={(e) => setNewCouponDiscount(e.target.value)} />
+                        <Label htmlFor="newCouponDiscount">Desconto (%)</Label>
+                        <Input id="newCouponDiscount" type="number" placeholder="10" value={newCouponDiscount} onChange={(e) => setNewCouponDiscount(e.target.value)} />
                     </div>
                     <div>
-                        <Label htmlFor="couponQuantity">Quantidade</Label>
-                        <Input id="couponQuantity" type="number" placeholder="100" value={newCouponQuantity} onChange={(e) => setNewCouponQuantity(e.target.value)} />
+                        <Label htmlFor="newCouponQuantity">Quantidade</Label>
+                        <Input id="newCouponQuantity" type="number" placeholder="100" value={newCouponQuantity} onChange={(e) => setNewCouponQuantity(e.target.value)} />
                     </div>
                     <Button onClick={handleAddCoupon} className="w-full md:w-auto">
                         <Plus className="mr-2 size-4" />
@@ -185,7 +274,10 @@ export default function AdminSettingsPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {coupons.map((coupon) => (
+                            {couponsLoading && (
+                                <TableRow><TableCell colSpan={4} className="text-center">Carregando...</TableCell></TableRow>
+                            )}
+                            {coupons?.map((coupon) => (
                                 <TableRow key={coupon.id}>
                                     <TableCell className="font-medium">{coupon.code}</TableCell>
                                     <TableCell>{coupon.discountPercentage}%</TableCell>
@@ -220,6 +312,8 @@ export default function AdminSettingsPage() {
                   id="phone1"
                   type="tel"
                   placeholder="(XX) 99999-9999"
+                  value={formState.phone1 || ''}
+                  onChange={handleInputChange}
                 />
               </div>
               <div>
@@ -228,6 +322,8 @@ export default function AdminSettingsPage() {
                   id="phone2"
                   type="tel"
                   placeholder="(XX) 99999-9999"
+                  value={formState.phone2 || ''}
+                  onChange={handleInputChange}
                 />
               </div>
               <div className="md:col-span-2">
@@ -236,6 +332,8 @@ export default function AdminSettingsPage() {
                   id="supportEmail"
                   type="email"
                   placeholder="suporte@exemplo.com"
+                  value={formState.supportEmail || ''}
+                  onChange={handleInputChange}
                 />
               </div>
             </CardContent>
@@ -256,29 +354,29 @@ export default function AdminSettingsPage() {
             <CardContent className="flex flex-col gap-4">
               <div>
                 <Label htmlFor="zipCode">CEP</Label>
-                <Input id="zipCode" placeholder="00000-000" />
+                <Input id="zipCode" placeholder="00000-000" value={formState.zipCode || ''} onChange={handleInputChange} />
               </div>
               <div>
                 <Label htmlFor="street">Logradouro</Label>
-                <Input id="street" placeholder="Rua das Flores" />
+                <Input id="street" placeholder="Rua das Flores" value={formState.street || ''} onChange={handleInputChange} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="number">Número</Label>
-                  <Input id="number" placeholder="123" />
+                  <Input id="number" placeholder="123" value={formState.number || ''} onChange={handleInputChange} />
                 </div>
                 <div>
                   <Label htmlFor="complement">Complemento</Label>
-                  <Input id="complement" placeholder="Sala 10" />
+                  <Input id="complement" placeholder="Sala 10" value={formState.complement || ''} onChange={handleInputChange} />
                 </div>
               </div>
               <div>
                 <Label htmlFor="city">Cidade</Label>
-                <Input id="city" placeholder="São Paulo" />
+                <Input id="city" placeholder="São Paulo" value={formState.city || ''} onChange={handleInputChange} />
               </div>
               <div>
                 <Label htmlFor="state">Estado</Label>
-                <Input id="state" placeholder="SP" />
+                <Input id="state" placeholder="SP" value={formState.state || ''} onChange={handleInputChange} />
               </div>
             </CardContent>
           </Card>
