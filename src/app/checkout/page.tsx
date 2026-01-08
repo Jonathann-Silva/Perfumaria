@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { getImageById } from '@/lib/placeholder-images';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, cn } from '@/lib/utils';
 import Link from 'next/link';
 import { LogoIcon } from '@/components/icons/logo-icon';
 
@@ -40,6 +40,7 @@ export default function CheckoutPage() {
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
   const [isFetchingCep, setIsFetchingCep] = useState(false);
+  const [shippingOption, setShippingOption] = useState('sedex');
 
   const handleCepBlur = async (event: React.FocusEvent<HTMLInputElement>) => {
     const cepValue = event.target.value.replace(/\D/g, '');
@@ -257,12 +258,15 @@ export default function CheckoutPage() {
               <div className="space-y-3">
                 <Label
                   htmlFor="shipping-sedex"
-                  className="relative flex cursor-pointer rounded-xl border-2 border-primary bg-card p-4 shadow-sm transition-all"
+                  className={cn(
+                    "relative flex cursor-pointer rounded-xl border bg-card p-4 shadow-sm transition-all",
+                    shippingOption === 'sedex' ? "border-2 border-primary" : "hover:border-muted-foreground"
+                  )}
                 >
                   <div className="flex w-full items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className="flex size-6 items-center justify-center rounded-full border border-border bg-card">
-                        <div className="size-3 rounded-full bg-primary"></div>
+                         {shippingOption === 'sedex' && <div className="size-3 rounded-full bg-primary"></div>}
                       </div>
                       <div className="flex flex-col">
                         <span className="block text-sm font-bold text-foreground">
@@ -279,17 +283,24 @@ export default function CheckoutPage() {
                     type="radio"
                     name="shipping"
                     id="shipping-sedex"
-                    defaultChecked
+                    value="sedex"
+                    checked={shippingOption === 'sedex'}
+                    onChange={(e) => setShippingOption(e.target.value)}
                     className="sr-only"
                   />
                 </Label>
                 <Label
                   htmlFor="shipping-pac"
-                  className="relative flex cursor-pointer rounded-xl border border-border bg-card p-4 shadow-sm transition-all hover:border-muted-foreground"
+                  className={cn(
+                    "relative flex cursor-pointer rounded-xl border bg-card p-4 shadow-sm transition-all",
+                    shippingOption === 'pac' ? "border-2 border-primary" : "hover:border-muted-foreground"
+                  )}
                 >
                   <div className="flex w-full items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <div className="flex size-6 items-center justify-center rounded-full border border-border bg-card"></div>
+                      <div className="flex size-6 items-center justify-center rounded-full border border-border bg-card">
+                        {shippingOption === 'pac' && <div className="size-3 rounded-full bg-primary"></div>}
+                      </div>
                       <div className="flex flex-col">
                         <span className="block text-sm font-medium text-foreground">
                           PAC (Correios)
@@ -307,6 +318,9 @@ export default function CheckoutPage() {
                     type="radio"
                     name="shipping"
                     id="shipping-pac"
+                    value="pac"
+                    checked={shippingOption === 'pac'}
+                    onChange={(e) => setShippingOption(e.target.value)}
                     className="sr-only"
                   />
                 </Label>
@@ -500,7 +514,7 @@ export default function CheckoutPage() {
                 <div className="flex justify-between text-muted-foreground">
                   <p>Frete</p>
                   <p className="font-medium text-foreground">
-                    {formatCurrency(24.9)}
+                    {formatCurrency(shippingOption === 'sedex' ? 24.9 : 15.5)}
                   </p>
                 </div>
                 <div className="flex items-end justify-between border-t pt-4">
@@ -509,7 +523,7 @@ export default function CheckoutPage() {
                   </p>
                   <div className="text-right">
                     <p className="font-headline text-3xl font-black tracking-tight text-foreground">
-                      {formatCurrency(229.9)}
+                      {formatCurrency(205 + (shippingOption === 'sedex' ? 24.9 : 15.5))}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       em até 3x sem juros
@@ -545,5 +559,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-
-    
