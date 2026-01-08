@@ -25,6 +25,7 @@ import Link from 'next/link';
 import { LogoIcon } from '@/components/icons/logo-icon';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
+import { useCart } from '@/context/cart-context';
 
 const steps = [
   { id: 1, name: 'Identificação', status: 'complete', icon: Check },
@@ -32,17 +33,7 @@ const steps = [
   { id: 3, name: 'Pagamento', status: 'current', icon: null },
 ];
 
-type ShippingOption = {
-  id: number;
-  name: string;
-  price: string;
-  delivery_time: number;
-  error?: string;
-};
-
 export default function CheckoutPage() {
-  const summaryImg1 = getImageById('summary-1');
-  const summaryImg2 = getImageById('summary-2');
   const visaIcon = getImageById('visa-icon');
   const mastercardIcon = getImageById('mastercard-icon');
   const amexIcon = getImageById('amex-icon');
@@ -51,11 +42,12 @@ export default function CheckoutPage() {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const { toast } = useToast();
   
-  // Simulating fetching shipping/subtotal from a previous step
-  const [subtotal, setSubtotal] = useState(205);
+  const { cartItems, cartSubtotal, clearCart } = useCart();
+  
+  // This should ideally be passed from the previous step
   const [shippingCost, setShippingCost] = useState(24.90);
 
-  const total = subtotal + shippingCost;
+  const total = cartSubtotal + shippingCost;
 
 
   const handlePayment = async () => {
@@ -64,6 +56,7 @@ export default function CheckoutPage() {
     await new Promise(resolve => setTimeout(resolve, 2000));
     setIsProcessingPayment(false);
     setPaymentSuccess(true);
+    clearCart();
     toast({
         title: "Pagamento Aprovado!",
         description: "Seu pedido foi realizado com sucesso.",
@@ -268,62 +261,46 @@ export default function CheckoutPage() {
               <h2 className="mb-6 font-headline text-xl font-black text-foreground">
                 Resumo do Pedido
               </h2>
-              <ul className="mb-6 divide-y divide-border">
-                <li className="flex gap-4 py-4">
-                  <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl border bg-muted">
-                    {summaryImg1 && (
-                      <Image
-                        src={summaryImg1.imageUrl}
-                        alt={summaryImg1.description}
-                        fill
-                        className="object-cover"
-                        data-ai-hint={summaryImg1.imageHint}
-                      />
-                    )}
-                  </div>
-                  <div className="flex flex-1 flex-col">
-                    <div className="flex justify-between text-base font-bold text-foreground">
-                      <h3>Chanel Bleu</h3>
-                      <p className="ml-2">R$ 120,00</p>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Decant 10ml
-                    </p>
-                    <div className="mt-auto flex items-center justify-between">
-                       <p className="rounded-lg bg-muted px-2 py-0.5 text-sm font-medium text-muted-foreground">
-                        Qtd: 1
-                      </p>
-                    </div>
-                  </div>
-                </li>
-                <li className="flex gap-4 py-4">
-                  <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl border bg-muted">
-                    {summaryImg2 && (
-                      <Image
-                        src={summaryImg2.imageUrl}
-                        alt={summaryImg2.description}
-                        fill
-                        className="object-cover"
-                        data-ai-hint={summaryImg2.imageHint}
-                      />
-                    )}
-                  </div>
-                  <div className="flex flex-1 flex-col">
-                    <div className="flex justify-between text-base font-bold text-foreground">
-                      <h3>Dior Sauvage</h3>
-                      <p className="ml-2">{formatCurrency(85)}</p>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Decant 5ml
-                    </p>
-                     <div className="mt-auto flex items-center justify-between">
-                       <p className="rounded-lg bg-muted px-2 py-0.5 text-sm font-medium text-muted-foreground">
-                        Qtd: 1
-                      </p>
-                    </div>
-                  </div>
-                </li>
-              </ul>
+               {cartItems.length > 0 ? (
+                <ul className="mb-6 divide-y divide-border">
+                  {cartItems.map((item) => {
+                    const itemImage = getImageById(item.imageId);
+                    return (
+                      <li key={item.id} className="flex gap-4 py-4">
+                        <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl border bg-muted">
+                          {itemImage && (
+                            <Image
+                              src={itemImage.imageUrl}
+                              alt={itemImage.description}
+                              fill
+                              className="object-cover"
+                              data-ai-hint={itemImage.imageHint}
+                            />
+                          )}
+                        </div>
+                        <div className="flex flex-1 flex-col">
+                          <div className="flex justify-between text-base font-bold text-foreground">
+                            <h3>{item.name}</h3>
+                            <p className="ml-2">{formatCurrency(item.price)}</p>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {item.type === 'decant' ? `Decant ${item.decantMl}ml` : 'Frasco'}
+                          </p>
+                          <div className="mt-auto flex items-center justify-between">
+                            <p className="rounded-lg bg-muted px-2 py-0.5 text-sm font-medium text-muted-foreground">
+                              Qtd: {item.quantity}
+                            </p>
+                          </div>
+                        </div>
+                      </li>
+                    )
+                  })}
+                </ul>
+                ) : (
+                <div className="py-10 text-center text-sm text-muted-foreground">
+                  Seu carrinho está vazio.
+                </div>
+              )}
               <div className="mb-6">
                 <div className="flex gap-2">
                   <Input
@@ -340,7 +317,7 @@ export default function CheckoutPage() {
                 <div className="flex justify-between text-muted-foreground">
                   <p>Subtotal</p>
                   <p className="font-medium text-foreground">
-                    {formatCurrency(subtotal)}
+                    {formatCurrency(cartSubtotal)}
                   </p>
                 </div>
                 <div className="flex justify-between text-muted-foreground">
@@ -366,7 +343,7 @@ export default function CheckoutPage() {
               <div className="mt-8">
                 <Button
                   onClick={handlePayment}
-                  disabled={isProcessingPayment}
+                  disabled={isProcessingPayment || cartItems.length === 0}
                   className="group flex h-auto w-full items-center justify-center rounded-full bg-primary py-4 px-6 text-lg font-bold text-primary-foreground shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] hover:bg-yellow-400 hover:shadow-primary/40 focus:ring-4 focus:ring-primary/30"
                 >
                   {isProcessingPayment ? (

@@ -19,3 +19,7 @@ export type Category = {
   name: string;
   imageId: string;
 };
+
+export type CartItem = Product & {
+  quantity: number;
+};

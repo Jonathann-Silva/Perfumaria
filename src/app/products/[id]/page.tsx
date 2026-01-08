@@ -9,6 +9,8 @@ import {
   Sprout,
   Cloud,
   TreePine,
+  Plus,
+  Minus,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,8 +22,12 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { getImageById } from '@/lib/placeholder-images';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import { Footer } from '@/components/layout/footer';
+import { products } from '@/lib/data';
+import type { Product } from '@/lib/types';
+import { useCart } from '@/context/cart-context';
+import { useToast } from '@/hooks/use-toast';
 
 const galleryImages = [
   'details-main',
@@ -33,6 +39,21 @@ const galleryImages = [
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
   const [activeImageId, setActiveImageId] = useState(galleryImages[0]);
   const activeImage = getImageById(activeImageId);
+  const [quantity, setQuantity] = useState(1);
+
+  const { addToCart } = useCart();
+  const { toast } = useToast();
+
+  // In a real app, you would fetch product data based on the ID
+  const product = products.find(p => p.id === params.id) || products[0];
+
+  const handleAddToCart = () => {
+    addToCart(product, quantity);
+    toast({
+      title: "Adicionado ao Carrinho!",
+      description: `${quantity}x ${product.name} foi adicionado ao seu carrinho.`,
+    });
+  }
 
   return (
     <div className="bg-background font-display text-foreground antialiased">
@@ -50,10 +71,10 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
             href="/products"
             className="font-medium text-muted-foreground transition-colors hover:text-primary"
           >
-            Perfumes Masculinos
+            Perfumes
           </Link>
           <ChevronRight className="size-4 text-muted-foreground" />
-          <span className="font-semibold text-foreground">Perfume X</span>
+          <span className="font-semibold text-foreground">{product.name}</span>
         </div>
 
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
@@ -112,14 +133,14 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                 href="#"
                 className="mb-2 block text-sm font-bold uppercase tracking-wider text-muted-foreground transition-colors hover:text-primary hover:underline"
               >
-                Marca de Luxo
+                {product.brand}
               </a>
               <h1 className="font-headline text-4xl font-bold leading-[1.1] text-foreground md:text-5xl">
-                Perfume X - Eau de Parfum
+                {product.name}
               </h1>
               <div className="mt-4 flex items-center gap-4">
                 <span className="text-3xl font-bold text-foreground">
-                  R$ 450,00
+                  {formatCurrency(product.price)}
                 </span>
                 <div className="rounded-full bg-green-100 px-2 py-1 text-xs font-bold uppercase tracking-wide text-green-800">
                   Em Estoque
@@ -133,49 +154,28 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
               sua marca por onde passa.
             </p>
 
-            <div className="space-y-3">
-              <div className="flex items-end justify-between">
-                <span className="text-sm font-bold uppercase tracking-wider text-foreground">
-                  Tamanho
-                </span>
-                <a
-                  href="#"
-                  className="text-xs text-muted-foreground underline hover:text-primary"
-                >
-                  Guia de tamanhos
-                </a>
-              </div>
-              <div className="flex flex-wrap gap-3">
-                <Button
-                  variant="outline"
-                  className="group relative h-auto rounded-full border-2 bg-transparent px-6 py-3 transition-all hover:border-primary"
-                >
-                  <span className="block text-sm font-bold text-foreground">5ml</span>
-                  <span className="block text-xs text-muted-foreground group-hover:text-primary/80">
-                    (Decant)
-                  </span>
-                </Button>
-                <Button className="relative h-auto rounded-full border-2 border-primary px-6 py-3 shadow-[0_0_15px_rgba(249,245,6,0.3)] transition-all">
-                  <span className="block text-sm font-bold text-primary-foreground">50ml</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  className="group relative h-auto rounded-full border-2 bg-transparent px-6 py-3 transition-all hover:border-primary"
-                >
-                  <span className="block text-sm font-bold text-foreground">100ml</span>
-                </Button>
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-bold uppercase tracking-wider text-foreground">
+                  Quantidade
+              </span>
+              <div className="flex items-center gap-2 rounded-full border bg-card p-1">
+                  <Button size="icon" variant="ghost" className="size-8 rounded-full" onClick={() => setQuantity(q => Math.max(1, q-1))}>
+                      <Minus className="size-4"/>
+                  </Button>
+                  <span className="w-6 text-center font-bold">{quantity}</span>
+                  <Button size="icon" variant="ghost" className="size-8 rounded-full" onClick={() => setQuantity(q => q+1)}>
+                      <Plus className="size-4"/>
+                  </Button>
               </div>
             </div>
 
             <div className="flex gap-4 pt-4">
                <Button
+                onClick={handleAddToCart}
                 className="h-14 flex-1 gap-2 rounded-full font-bold text-lg text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-primary/40"
-                asChild
               >
-                <Link href="/checkout">
-                  <ShoppingBag />
-                  Adicionar ao Carrinho
-                </Link>
+                <ShoppingBag />
+                Adicionar ao Carrinho
               </Button>
               <Button
                 variant="outline"
@@ -227,7 +227,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                   Descrição Detalhada
                 </AccordionTrigger>
                 <AccordionContent>
-                  O Perfume X é uma obra-prima da perfumaria moderna. Criado para evocar a sensação de liberdade e sofisticação, ele abre com notas cítricas frescas que energizam, evoluindo para um coração aromático e finalizando com uma base amadeirada que perdura por horas na pele.
+                  O {product.name} é uma obra-prima da perfumaria moderna. Criado para evocar a sensação de liberdade e sofisticação, ele abre com notas cítricas frescas que energizam, evoluindo para um coração aromático e finalizando com uma base amadeirada que perdura por horas na pele.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-2">
@@ -254,5 +254,3 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
     </div>
   );
 }
-
-    

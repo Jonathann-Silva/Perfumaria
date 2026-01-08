@@ -1,3 +1,4 @@
+'use client';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Heart, ShoppingCart } from 'lucide-react';
@@ -7,6 +8,8 @@ import type { Product } from '@/lib/types';
 import { getImageById } from '@/lib/placeholder-images';
 import { formatCurrency } from '@/lib/utils';
 import { cn } from '@/lib/utils';
+import { useCart } from '@/context/cart-context';
+import { useToast } from '@/hooks/use-toast';
 
 interface ProductCardProps {
   product: Product;
@@ -14,6 +17,18 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const productImage = getImageById(product.imageId);
+  const { addToCart } = useCart();
+  const { toast } = useToast();
+
+  const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart(product, 1);
+    toast({
+      title: 'Adicionado ao Carrinho!',
+      description: `${product.name} foi adicionado ao seu carrinho.`,
+    });
+  };
 
   return (
     <div className="group relative rounded-[1.5rem] border border-transparent bg-card p-3 transition-all duration-300 hover:shadow-xl dark:bg-card-dark dark:hover:border-white/5">
@@ -80,17 +95,13 @@ export function ProductCard({ product }: ProductCardProps) {
               product.type === 'decant' && 'bg-muted dark:bg-white/10 hover:bg-primary hover:text-primary-foreground',
               product.type !== 'decant' && 'shadow-lg shadow-primary/20'
             )}
-            asChild
+            onClick={handleAddToCart}
           >
-           <Link href="/checkout">
               <ShoppingCart className="size-5" />
               <span className="sr-only">Adicionar ao carrinho</span>
-            </Link>
           </Button>
         </div>
       </div>
     </div>
   );
 }
-
-    

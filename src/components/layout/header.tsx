@@ -31,10 +31,12 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { LogoIcon } from '../icons/logo-icon';
+import { useCart } from '@/context/cart-context';
 
 export function Header() {
   const [isSheetOpen, setSheetOpen] = useState(false);
   const isMobile = useIsMobile();
+  const { cartCount } = useCart();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-card/90 backdrop-blur-md dark:bg-background-dark/90">
@@ -115,7 +117,7 @@ export function Header() {
                   </DialogHeader>
                   <div className="px-8 py-8">
                     <form
-                      action="/admin/products"
+                      action="/admin"
                       method="GET"
                       className="flex flex-col gap-5"
                     >
@@ -198,9 +200,16 @@ export function Header() {
                 variant="ghost"
                 size="icon"
                 className="group relative rounded-full bg-background hover:bg-muted dark:bg-white/10 dark:hover:bg-white/20"
+                asChild
               >
-                <ShoppingBag className="size-5 text-foreground transition-colors group-hover:text-primary" />
-                <span className="absolute right-0 top-0 size-2.5 rounded-full border-2 border-card bg-red-500 dark:border-background-dark"></span>
+                <Link href="/checkout/address">
+                  <ShoppingBag className="size-5 text-foreground transition-colors group-hover:text-primary" />
+                  {cartCount > 0 && (
+                    <span className="absolute right-0 top-0 flex size-4 items-center justify-center rounded-full border-2 border-card bg-red-500 text-[10px] font-bold text-white dark:border-background-dark">
+                      {cartCount}
+                    </span>
+                  )}
+                </Link>
               </Button>
 
               <Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
