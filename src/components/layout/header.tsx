@@ -77,13 +77,13 @@ export function Header() {
                 Início
               </Link>
               <Link
-                href="/products"
+                href="/perfumes"
                 className="text-sm font-medium text-foreground transition-colors hover:text-primary"
               >
                 Perfumes
               </Link>
               <Link
-                href="/products"
+                href="/decantes"
                 className="text-sm font-medium text-foreground transition-colors hover:text-primary"
               >
                 Decantes
@@ -233,14 +233,14 @@ export function Header() {
                       Início
                     </Link>
                     <Link
-                      href="/products"
+                      href="/perfumes"
                       className="text-lg font-medium"
                       onClick={() => setSheetOpen(false)}
                     >
                       Perfumes
                     </Link>
                     <Link
-                      href="/products"
+                      href="/decantes"
                       className="text-lg font-medium"
                       onClick={() => setSheetOpen(false)}
                     >
