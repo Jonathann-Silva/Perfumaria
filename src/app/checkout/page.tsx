@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import {
@@ -64,6 +64,7 @@ function CheckoutPaymentPage() {
   const [pixData, setPixData] = useState<PixData | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const isInitialLoad = useRef(true);
 
   const total = cartSubtotal + shippingCost;
   
@@ -72,7 +73,7 @@ function CheckoutPaymentPage() {
     const name = searchParams.get('shipping_name') || 'Não especificado';
     const id = searchParams.get('shipping_id') || '';
 
-    if (cartSubtotal === 0) {
+    if (cartSubtotal === 0 && !paymentSuccess) {
       router.push('/products');
       return;
     }
@@ -81,8 +82,9 @@ function CheckoutPaymentPage() {
     setShippingName(name);
     setShippingId(id);
 
-    if (id === 'pickup' && !paymentSuccess) {
+    if (id === 'pickup' && !paymentSuccess && isInitialLoad.current) {
       setShowPickupConfirm(true);
+      isInitialLoad.current = false;
     }
 
     const generatePix = async () => {
@@ -108,12 +110,12 @@ function CheckoutPaymentPage() {
       setIsGeneratingPix(false);
     }
     
-    // Só gerar o PIX se não for retirada no local ou se a retirada for confirmada
-    if(id !== 'pickup' || (id === 'pickup' && !showPickupConfirm)) {
+    // Only generate PIX if it's not local pickup or if local pickup has been confirmed
+    if (id !== 'pickup') {
        generatePix();
     }
     
-  }, [searchParams, paymentSuccess, cartSubtotal, router, total, showPickupConfirm]);
+  }, [searchParams, paymentSuccess, cartSubtotal, router, total]);
 
   const handleCopyPixCode = () => {
     if (!pixData?.qrCode) return;
@@ -126,7 +128,26 @@ function CheckoutPaymentPage() {
 
   const handleConfirmPickupAndGeneratePix = async () => {
       setShowPickupConfirm(false);
-      // A lógica para gerar PIX já está no useEffect e será acionada quando showPickupConfirm mudar.
+      // Logic to generate PIX will now run since the dialog is closed.
+      const generatePix = async () => {
+        setIsGeneratingPix(true);
+        setPaymentError(null);
+        const paymentResult = await createPixPayment({
+            transaction_amount: total,
+            description: 'Pagamento de pedido na Perfumes & Decantes',
+            payer: { email: 'test_user_12345@testuser.com' }
+        });
+        if (paymentResult.success && paymentResult.qrCode && paymentResult.qrCodeBase64) {
+            setPixData({
+                qrCode: paymentResult.qrCode,
+                qrCodeBase64: paymentResult.qrCodeBase64,
+            });
+        } else {
+            setPaymentError(paymentResult.error || 'Não foi possível gerar o PIX.');
+        }
+        setIsGeneratingPix(false);
+    };
+    generatePix();
   }
 
   // A função de finalização de pagamento agora só é relevante para
