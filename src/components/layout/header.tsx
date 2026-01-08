@@ -12,6 +12,7 @@ import {
   LogOut,
   ChevronDown,
   Loader2,
+  X,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -19,8 +20,10 @@ import { Input } from '@/components/ui/input';
 import {
   Sheet,
   SheetContent,
+  SheetHeader,
   SheetTitle,
   SheetTrigger,
+  SheetFooter,
 } from '../ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useState } from 'react';
@@ -54,13 +57,18 @@ import {
   updateProfile,
 } from 'firebase/auth';
 import { useUser, useAuth } from '@/firebase';
+import Image from 'next/image';
+import { getImageById } from '@/lib/placeholder-images';
+import { formatCurrency } from '@/lib/utils';
+import { Separator } from '../ui/separator';
 
 export function Header() {
-  const [isSheetOpen, setSheetOpen] = useState(false);
+  const [isMenuSheetOpen, setMenuSheetOpen] = useState(false);
+  const [isCartSheetOpen, setCartSheetOpen] = useState(false);
   const [isAuthDialogOpen, setAuthDialogOpen] = useState(false);
   const [authView, setAuthView] = useState<'login' | 'register'>('login');
   const isMobile = useIsMobile();
-  const { cartCount } = useCart();
+  const { cartCount, cartItems, cartSubtotal, removeFromCart } = useCart();
   const router = useRouter();
   const { toast } = useToast();
   
@@ -120,12 +128,10 @@ export function Header() {
       let message = 'Ocorreu um erro. Tente novamente.';
       if (errorCode === 'auth/email-already-in-use') {
         message = 'Este e-mail já está sendo usado por outra conta.';
-      } else if (errorCode === 'auth/wrong-password') {
+      } else if (errorCode === 'auth/wrong-password' || errorCode === 'auth/invalid-credential' || errorCode === 'auth/user-not-found') {
         message = 'E-mail ou senha incorretos.';
       } else if (errorCode === 'auth/invalid-email') {
         message = 'O formato do e-mail é inválido.';
-      } else if (errorCode === 'auth/user-not-found' || errorCode === 'auth/invalid-credential') {
-        message = 'E-mail ou senha incorretos.';
       }
       toast({
         variant: 'destructive',
@@ -256,7 +262,7 @@ export function Header() {
                     <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-primary/20 text-foreground dark:text-primary">
                       <LogoIcon className="size-8" />
                     </div>
-                    <DialogTitle className="font-headline text-center text-[28px] font-bold leading-tight tracking-tight text-foreground">
+                    <DialogTitle className="font-headline text-center text-2xl font-bold leading-tight tracking-tight text-foreground">
                       Bem-vindo de volta
                     </DialogTitle>
                     <DialogDescription className="mt-2 text-center text-base text-muted-foreground">
@@ -391,7 +397,7 @@ export function Header() {
                       <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-primary/20 text-foreground dark:text-primary">
                         <LogoIcon className="size-8" />
                       </div>
-                      <DialogTitle className="font-headline text-center text-[28px] font-bold leading-tight tracking-tight text-foreground">
+                      <DialogTitle className="font-headline text-center text-2xl font-bold leading-tight tracking-tight text-foreground">
                         {authView === 'login' ? 'Acesse sua Conta' : 'Crie sua Conta'}
                       </DialogTitle>
                       <DialogDescription className="mt-2 text-center text-base text-muted-foreground">
@@ -498,23 +504,82 @@ export function Header() {
               )}
 
 
-              <Button
-                variant="ghost"
-                size="icon"
-                className="group relative rounded-full bg-background hover:bg-muted dark:bg-white/10 dark:hover:bg-white/20"
-                asChild
-              >
-                <Link href="/checkout/address">
-                  <ShoppingBag className="size-5 text-foreground transition-colors group-hover:text-primary" />
-                  {cartCount > 0 && (
-                    <span className="absolute right-0 top-0 flex size-4 items-center justify-center rounded-full border-2 border-card bg-red-500 text-[10px] font-bold text-white dark:border-background-dark">
-                      {cartCount}
-                    </span>
+               <Sheet open={isCartSheetOpen} onOpenChange={setCartSheetOpen}>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="group relative rounded-full bg-background hover:bg-muted dark:bg-white/10 dark:hover:bg-white/20"
+                  >
+                    <ShoppingBag className="size-5 text-foreground transition-colors group-hover:text-primary" />
+                    {cartCount > 0 && (
+                      <span className="absolute right-0 top-0 flex size-4 items-center justify-center rounded-full border-2 border-card bg-red-500 text-[10px] font-bold text-white dark:border-background-dark">
+                        {cartCount}
+                      </span>
+                    )}
+                  </Button>
+                </SheetTrigger>
+                <SheetContent className="flex w-full flex-col pr-0 sm:max-w-lg">
+                  <SheetHeader className="px-6">
+                    <SheetTitle>Carrinho ({cartCount})</SheetTitle>
+                  </SheetHeader>
+                  <Separator />
+                  {cartItems.length > 0 ? (
+                    <>
+                      <div className="flex-1 overflow-y-auto px-6">
+                        <div className="flex flex-col gap-6">
+                          {cartItems.map((item) => {
+                             const itemImage = getImageById(item.imageId);
+                             return (
+                                <div key={item.id} className="flex items-center gap-4">
+                                   <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg border bg-muted">
+                                     {itemImage && (
+                                       <Image
+                                         src={itemImage.imageUrl}
+                                         alt={itemImage.description}
+                                         fill
+                                         className="object-cover"
+                                         data-ai-hint={itemImage.imageHint}
+                                       />
+                                     )}
+                                   </div>
+                                   <div className="flex flex-1 flex-col gap-1">
+                                      <h3 className="font-bold">{item.name}</h3>
+                                      <p className="text-sm text-muted-foreground">{formatCurrency(item.price)}</p>
+                                      <p className="text-sm text-muted-foreground">Qtd: {item.quantity}</p>
+                                   </div>
+                                   <Button variant="ghost" size="icon" className="group -mr-2 h-8 w-8 rounded-full" onClick={() => removeFromCart(item.id)}>
+                                     <X className="size-4 text-muted-foreground transition-colors group-hover:text-red-500" />
+                                   </Button>
+                                </div>
+                             )
+                          })}
+                        </div>
+                      </div>
+                      <SheetFooter className="mt-auto flex-col gap-4 border-t bg-background p-6">
+                         <div className="flex justify-between font-bold">
+                            <span>Subtotal</span>
+                            <span>{formatCurrency(cartSubtotal)}</span>
+                         </div>
+                         <Button asChild className="w-full rounded-full" onClick={() => setCartSheetOpen(false)}>
+                            <Link href="/checkout/address">Finalizar Compra</Link>
+                         </Button>
+                      </SheetFooter>
+                    </>
+                  ) : (
+                    <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
+                       <ShoppingBag className="size-16 text-muted-foreground" />
+                       <h3 className="text-xl font-bold">Seu carrinho está vazio</h3>
+                       <p className="text-sm text-muted-foreground">Adicione alguns perfumes para começar.</p>
+                       <Button asChild className="rounded-full" onClick={() => setCartSheetOpen(false)}>
+                          <Link href="/products">Explorar Perfumes</Link>
+                       </Button>
+                    </div>
                   )}
-                </Link>
-              </Button>
+                </SheetContent>
+              </Sheet>
 
-              <Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
+              <Sheet open={isMenuSheetOpen} onOpenChange={setMenuSheetOpen}>
                 <SheetTrigger asChild>
                   <Button
                     variant="ghost"
@@ -530,28 +595,28 @@ export function Header() {
                     <Link
                       href="/"
                       className="text-lg font-medium"
-                      onClick={() => setSheetOpen(false)}
+                      onClick={() => setMenuSheetOpen(false)}
                     >
                       Início
                     </Link>
                     <Link
                       href="/perfumes"
                       className="text-lg font-medium"
-                      onClick={() => setSheetOpen(false)}
+                      onClick={() => setMenuSheetOpen(false)}
                     >
                       Perfumes
                     </Link>
                     <Link
                       href="/decantes"
                       className="text-lg font-medium"
-                      onClick={() => setSheetOpen(false)}
+                      onClick={() => setMenuSheetOpen(false)}
                     >
                       Decantes
                     </Link>
                     <Link
                       href="/products"
                       className="text-lg font-medium"
-                      onClick={() => setSheetOpen(false)}
+                      onClick={() => setMenuSheetOpen(false)}
                     >
                       Todos Produtos
                     </Link>
@@ -580,5 +645,3 @@ export function Header() {
     </header>
   );
 }
-
-    
