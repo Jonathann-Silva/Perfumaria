@@ -1,6 +1,7 @@
 'use client';
 
-import { Store, Phone, Mail, MapPin, Save, Building, Ticket, Percent, Hash } from 'lucide-react';
+import { useState } from 'react';
+import { Store, Phone, Mail, MapPin, Save, Building, Ticket, Percent, Hash, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,10 +12,38 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
+
+interface Coupon {
+  id: number;
+  code: string;
+  discountPercentage: number;
+  quantity: number;
+  used: number;
+}
+
+const initialCoupons: Coupon[] = [
+    { id: 1, code: 'BEMVINDO10', discountPercentage: 10, quantity: 100, used: 23 },
+    { id: 2, code: 'NATALVIP', discountPercentage: 15, quantity: 50, used: 12 },
+];
+
 
 export default function AdminSettingsPage() {
   const { toast } = useToast();
+  const [coupons, setCoupons] = useState<Coupon[]>(initialCoupons);
+
+  const [newCouponCode, setNewCouponCode] = useState('');
+  const [newCouponDiscount, setNewCouponDiscount] = useState('');
+  const [newCouponQuantity, setNewCouponQuantity] = useState('');
+
 
   const handleSaveChanges = () => {
     toast({
@@ -22,6 +51,47 @@ export default function AdminSettingsPage() {
       description: "As configurações da sua loja foram atualizadas com sucesso.",
     });
   }
+
+  const handleAddCoupon = () => {
+    if (!newCouponCode || !newCouponDiscount || !newCouponQuantity) {
+      toast({
+        variant: 'destructive',
+        title: 'Campos obrigatórios',
+        description: 'Por favor, preencha todos os campos do cupom.',
+      });
+      return;
+    }
+
+    const newCoupon: Coupon = {
+      id: Date.now(),
+      code: newCouponCode,
+      discountPercentage: parseInt(newCouponDiscount, 10),
+      quantity: parseInt(newCouponQuantity, 10),
+      used: 0,
+    };
+
+    setCoupons([...coupons, newCoupon]);
+
+    // Clear inputs
+    setNewCouponCode('');
+    setNewCouponDiscount('');
+    setNewCouponQuantity('');
+
+    toast({
+      title: 'Cupom Adicionado!',
+      description: `O cupom "${newCoupon.code}" foi criado com sucesso.`,
+    });
+  };
+
+  const handleRemoveCoupon = (couponId: number) => {
+    setCoupons(coupons.filter(c => c.id !== couponId));
+    toast({
+      variant: 'destructive',
+      title: 'Cupom Removido!',
+      description: 'O cupom foi removido da lista.',
+    });
+  };
+
 
   return (
     <div className="flex flex-col gap-8">
@@ -84,19 +154,52 @@ export default function AdminSettingsPage() {
                 Crie e gerencie códigos promocionais para seus clientes.
               </CardDescription>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 gap-6 md:grid-cols-3">
-              <div>
-                <Label htmlFor="couponCode">Código Promocional</Label>
-                <Input id="couponCode" placeholder="EX: BEMVINDO10" />
-              </div>
-              <div>
-                <Label htmlFor="discountPercentage">Desconto (%)</Label>
-                <Input id="discountPercentage" type="number" placeholder="10" />
-              </div>
-              <div>
-                <Label htmlFor="couponQuantity">Quantidade</Label>
-                <Input id="couponQuantity" type="number" placeholder="100" />
-              </div>
+            <CardContent className="flex flex-col gap-6">
+                <div className="grid grid-cols-1 items-end gap-4 md:grid-cols-[1fr_1fr_1fr_auto]">
+                    <div>
+                        <Label htmlFor="couponCode">Código Promocional</Label>
+                        <Input id="couponCode" placeholder="EX: BEMVINDO10" value={newCouponCode} onChange={(e) => setNewCouponCode(e.target.value)} />
+                    </div>
+                    <div>
+                        <Label htmlFor="discountPercentage">Desconto (%)</Label>
+                        <Input id="discountPercentage" type="number" placeholder="10" value={newCouponDiscount} onChange={(e) => setNewCouponDiscount(e.target.value)} />
+                    </div>
+                    <div>
+                        <Label htmlFor="couponQuantity">Quantidade</Label>
+                        <Input id="couponQuantity" type="number" placeholder="100" value={newCouponQuantity} onChange={(e) => setNewCouponQuantity(e.target.value)} />
+                    </div>
+                    <Button onClick={handleAddCoupon} className="w-full md:w-auto">
+                        <Plus className="mr-2 size-4" />
+                        Adicionar
+                    </Button>
+                </div>
+
+                <div className="overflow-hidden rounded-lg border">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Código</TableHead>
+                                <TableHead>Desconto</TableHead>
+                                <TableHead>Uso</TableHead>
+                                <TableHead className="text-right">Ações</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {coupons.map((coupon) => (
+                                <TableRow key={coupon.id}>
+                                    <TableCell className="font-medium">{coupon.code}</TableCell>
+                                    <TableCell>{coupon.discountPercentage}%</TableCell>
+                                    <TableCell>{coupon.used} / {coupon.quantity}</TableCell>
+                                    <TableCell className="text-right">
+                                        <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600" onClick={() => handleRemoveCoupon(coupon.id)}>
+                                            <Trash2 className="size-4" />
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
             </CardContent>
           </Card>
 
