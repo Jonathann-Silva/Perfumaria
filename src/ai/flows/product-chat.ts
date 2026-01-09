@@ -4,6 +4,7 @@
  * @fileoverview A conversational AI agent that can answer questions about products.
  */
 import {ai} from '@/ai/genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 import {z} from 'zod';
 import {getProductInfo} from '../tools/product-knowledge-base';
 
@@ -29,7 +30,7 @@ export async function productChat(input: z.infer<typeof ProductChatInputSchema>)
       User question: ${input.prompt}`;
 
   const { stream } = await ai.generate({
-    model: 'googleai/gemini-1.5-flash-latest',
+    model: googleAI('gemini-1.5-flash-latest'),
     tools: [getProductInfo],
     prompt: prompt,
     history: input.history,
