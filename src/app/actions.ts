@@ -10,7 +10,7 @@ export async function productChat(prompt: string) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'microsoft/phi-2',
+        model: 'TinyLlama/TinyLlama-1.1B-Chat-v1.0',
         messages: [
           {
             role: 'user',
