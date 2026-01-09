@@ -15,8 +15,9 @@ export async function productChatAction(history: Message[], prompt: string) {
   // Transform the stream to what the client expects
   const readableStream = new ReadableStream({
     async start(controller) {
+      const encoder = new TextEncoder();
       for await (const chunk of stream) {
-        controller.enqueue(chunk);
+        controller.enqueue(encoder.encode(JSON.stringify(chunk)));
       }
       controller.close();
     },
