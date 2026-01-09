@@ -2,7 +2,7 @@
 
 export async function productChat(prompt: string) {
   const response = await fetch(
-    'https://router.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2',
+    'https://router.huggingface.co/v1/chat/completions',
     {
       method: 'POST',
       headers: {
@@ -10,11 +10,15 @@ export async function productChat(prompt: string) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        inputs: prompt,
-        parameters: {
-          max_new_tokens: 300,
-          temperature: 0.7,
-        },
+        model: 'mistralai/Mistral-7B-Instruct-v0.2',
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        max_tokens: 300,
+        temperature: 0.7,
       }),
     }
   );
@@ -26,6 +30,5 @@ export async function productChat(prompt: string) {
 
   const data = await response.json();
 
-  // resposta padrão desses modelos
-  return data[0]?.generated_text ?? data;
+  return data.choices?.[0]?.message?.content;
 }
