@@ -17,7 +17,7 @@ import ReactMarkdown from 'react-markdown';
 import { productChatAction } from '@/app/actions';
 import { useAuth, useUser } from '@/firebase';
 
-interface Message {
+export interface Message {
   role: 'user' | 'model';
   content: string;
 }
@@ -48,18 +48,21 @@ export default function ProductChatAssistant() {
     setInput('');
     setIsPending(true);
 
-    const history = messages.map((msg) => ({
-      role: msg.role,
-      content: [{ text: msg.content }],
-    }));
-
     try {
-      const stream = await productChatAction(history, input);
+      const stream = await productChatAction(messages, input);
       let modelResponse = '';
       
       setMessages((prev) => [...prev, { role: 'model', content: '' }]);
 
-      for await (const chunk of stream) {
+      const reader = stream.getReader();
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        
+        const chunk = JSON.parse(decoder.decode(value));
+
         modelResponse += chunk.content?.[0]?.text || '';
         setMessages((prev) =>
           prev.map((msg, index) =>
@@ -69,6 +72,7 @@ export default function ProductChatAssistant() {
           )
         );
       }
+
     } catch (error) {
       console.error('Error streaming response:', error);
       const errorMessage: Message = {

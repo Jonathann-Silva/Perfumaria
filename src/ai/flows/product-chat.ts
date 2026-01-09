@@ -28,7 +28,7 @@ export async function productChat(input: z.infer<typeof ProductChatInputSchema>)
       
       User question: ${input.prompt}`;
 
-  const {stream} = await ai.generate({
+  const { stream } = await ai.generate({
     model: 'googleai/gemini-2.5-flash',
     tools: [getProductInfo],
     prompt: prompt,
@@ -36,5 +36,5 @@ export async function productChat(input: z.infer<typeof ProductChatInputSchema>)
     stream: true,
   });
 
-  return stream;
+  return { stream };
 }
