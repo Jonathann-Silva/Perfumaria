@@ -11,7 +11,7 @@ export async function productChat(prompt: string) {
     });
 
     const { textStream } = await streamText({
-        model: huggingface('gpt2'),
+        model: huggingface('meta-llama/Meta-Llama-3-8B-Instruct'),
         prompt,
     });
 
