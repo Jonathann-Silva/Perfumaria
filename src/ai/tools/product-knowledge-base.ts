@@ -1,5 +1,6 @@
+'use server';
+
 import {ai} from '@/ai/genkit';
-import {defineTool} from 'genkit';
 import {z} from 'zod';
 import * as admin from 'firebase-admin';
 
@@ -10,7 +11,7 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
-export const getProductInfo = defineTool(
+export const getProductInfo = ai.defineTool(
   {
     name: 'getProductInfo',
     description: 'Get information about available perfume products. Can be used to find price, stock, brand, and other details.',
