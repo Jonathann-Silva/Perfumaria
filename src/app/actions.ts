@@ -10,7 +10,7 @@ export async function productChat(prompt: string) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'HuggingFaceH4/zephyr-7b-beta',
+        model: 'microsoft/phi-2',
         messages: [
           {
             role: 'user',
