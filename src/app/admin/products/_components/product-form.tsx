@@ -18,7 +18,6 @@ import { Label } from '@/components/ui/label';
 import { CloudUpload, Sparkles, X } from 'lucide-react';
 import Image from 'next/image';
 import { getImageById } from '@/lib/placeholder-images';
-import { generateDescriptionAction } from '../actions';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import type { Product } from '@/lib/types';
@@ -33,9 +32,6 @@ const productSchema = z.object({
   stock: z.number().int().min(0, 'Estoque é obrigatório'),
   weight: z.number().optional(),
   category: z.string().min(1, 'Categoria é obrigatória'),
-  fragranceType: z.string().optional(),
-  keyNotes: z.string().optional(),
-  targetAudience: z.string().optional(),
   description: z.string().min(1, 'Descrição é obrigatória'),
   type: z.enum(['sealed', 'decant']),
   decantMl: z.number().optional(),
@@ -49,7 +45,6 @@ interface ProductFormProps {
 }
 
 export function ProductForm({ product, onSave }: ProductFormProps) {
-  const [isPending, setIsPending] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
   const firestore = useFirestore();
@@ -89,9 +84,6 @@ export function ProductForm({ product, onSave }: ProductFormProps) {
         stock: 0,
         weight: 0,
         category: '',
-        fragranceType: '',
-        keyNotes: '',
-        targetAudience: '',
         description: '',
         type: 'sealed',
         decantMl: 0,
@@ -107,7 +99,6 @@ export function ProductForm({ product, onSave }: ProductFormProps) {
 
     setIsSaving(true);
     
-    // Determine product status based on stock
     let status: 'in-stock' | 'low-stock' | 'out-of-stock' = 'in-stock';
     if (data.stock === 0) {
         status = 'out-of-stock';
@@ -118,7 +109,7 @@ export function ProductForm({ product, onSave }: ProductFormProps) {
     const productData = {
         ...data,
         status,
-        imageId: 'product-1', // Placeholder imageId
+        imageId: 'product-1',
         price: Number(data.price),
         costPrice: Number(data.costPrice) || null,
         stock: Number(data.stock),
@@ -127,63 +118,20 @@ export function ProductForm({ product, onSave }: ProductFormProps) {
 
     try {
         if (product && product.id) {
-            // Update existing product
             const productRef = doc(firestore, 'products', product.id);
             await setDoc(productRef, { ...productData, updatedAt: serverTimestamp() }, { merge: true });
             toast({ title: 'Produto Atualizado!', description: `O produto "${data.name}" foi atualizado com sucesso.` });
         } else {
-            // Create new product
             const productsCollection = collection(firestore, 'products');
             await addDoc(productsCollection, { ...productData, createdAt: serverTimestamp() });
             toast({ title: 'Produto Criado!', description: `O produto "${data.name}" foi criado com sucesso.` });
         }
-        onSave(); // Close form on success
+        onSave();
     } catch (error) {
         console.error("Error saving product: ", error);
         toast({ variant: 'destructive', title: 'Erro ao Salvar', description: 'Não foi possível salvar o produto.' });
     } finally {
         setIsSaving(false);
-    }
-  };
-
-  const handleGenerateDescription = async () => {
-    const { name, brand, fragranceType, keyNotes, targetAudience } = watch();
-
-    if (!name || !brand) {
-      toast({
-        variant: 'destructive',
-        title: 'Campos Faltando',
-        description: 'Por favor, preencha o Nome do Perfume e a Marca antes de gerar a descrição.',
-      });
-      return;
-    }
-
-    setIsPending(true);
-    try {
-      const result = await generateDescriptionAction({
-        productName: name,
-        brand,
-        fragranceType: fragranceType || 'Não especificado',
-        keyNotes: keyNotes || 'Não especificado',
-        targetAudience: targetAudience || 'Unissex',
-      });
-      if (result.productDescription) {
-        setValue('description', result.productDescription);
-        toast({
-          title: 'Descrição Gerada!',
-          description: 'A descrição foi gerada com IA.',
-        });
-      } else {
-        throw new Error('A descrição gerada está vazia.');
-      }
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Erro na Geração',
-        description: 'Não foi possível gerar a descrição com IA.',
-      });
-    } finally {
-      setIsPending(false);
     }
   };
 
@@ -329,31 +277,9 @@ export function ProductForm({ product, onSave }: ProductFormProps) {
             )}
         </div>
       
-      <div className="rounded-lg border bg-muted/30 p-4 space-y-4">
-        <h3 className="font-bold text-foreground">Gerar Descrição com IA</h3>
-         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="fragranceType">Tipo de Fragrância</Label>
-              <Input id="fragranceType" {...register('fragranceType')} placeholder="Ex: Eau de Parfum" />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="keyNotes">Notas Chave</Label>
-              <Input id="keyNotes" {...register('keyNotes')} placeholder="Ex: Bergamota, Lavanda, Vetiver" />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="targetAudience">Público Alvo</Label>
-              <Input id="targetAudience" {...register('targetAudience')} placeholder="Ex: Homem moderno" />
-            </div>
-         </div>
-      </div>
-
       <div className="flex flex-col gap-2">
           <div className="flex justify-between items-center">
             <Label htmlFor="description">Descrição do Produto</Label>
-            <Button type="button" size="sm" variant="outline" onClick={handleGenerateDescription} disabled={isPending} className="gap-2 rounded-full">
-              <Sparkles className={cn("size-4", isPending && "animate-spin")} />
-              {isPending ? 'Gerando...' : 'Gerar com IA'}
-            </Button>
           </div>
           <Textarea
             id="description"
