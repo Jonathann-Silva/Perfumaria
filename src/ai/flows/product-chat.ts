@@ -29,7 +29,6 @@ export async function productChat(input: z.infer<typeof ProductChatInputSchema>)
       User question: ${input.prompt}`;
 
   const { stream } = await ai.generate({
-    model: 'googleai/gemini-pro',
     tools: [getProductInfo],
     prompt: prompt,
     history: input.history,
