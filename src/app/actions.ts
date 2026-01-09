@@ -1,9 +1,7 @@
-'use server';
-
-import { AIStream, StreamingTextResponse } from 'ai';
-
 // IMPORTANT! Set the runtime to edge
 export const runtime = 'edge';
+
+import { AIStream, StreamingTextResponse } from 'ai';
 
 export async function productChat(prompt: string) {
     const huggingFaceResponse = await fetch(
