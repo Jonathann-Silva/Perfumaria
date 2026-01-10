@@ -32,9 +32,6 @@ import { useFirestore, useCollection } from '@/firebase';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
 import type { Product } from '@/lib/types';
 
-// IMPORTAÇÃO DO CHAT CORRIGIDA
-import ChatComponent from '@/components/chat/ChatComponent';
-
 export default function Home() {
   const heroImage = getImageById('hero');
   const firestore = useFirestore();
@@ -238,11 +235,6 @@ export default function Home() {
           </Carousel>
         </section>
       </main>
-
-      {/* CHAT COMPONENT POSICIONADO FIXO NO CANTO INFERIOR */}
-      <div className="fixed bottom-6 right-6 z-50">
-        <ChatComponent />
-      </div>
 
       <Footer />
     </div>
