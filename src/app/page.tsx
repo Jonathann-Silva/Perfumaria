@@ -1,4 +1,5 @@
 'use client';
+
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
@@ -10,9 +11,6 @@ import {
   FlaskConical,
   Banknote,
   Globe,
-  ArrowLeft,
-  ArrowRight,
-  Sprout,
   Star,
   Loader2,
 } from 'lucide-react';
@@ -27,7 +25,6 @@ import {
 import { ProductCard } from '@/components/shared/product-card';
 import { categories } from '@/lib/data-static';
 import {
-  placeholderImages,
   getImageById,
 } from '@/lib/placeholder-images';
 import { useMemo } from 'react';
@@ -35,6 +32,8 @@ import { useFirestore, useCollection } from '@/firebase';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
 import type { Product } from '@/lib/types';
 
+// IMPORTAÇÃO DO CHAT CORRIGIDA
+import ChatComponent from '@/components/chat/ChatComponent';
 
 export default function Home() {
   const heroImage = getImageById('hero');
@@ -46,11 +45,12 @@ export default function Home() {
   );
   const { data: products, loading } = useCollection<Product>(productsRef);
 
-
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
       <Header />
+      
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 lg:px-10">
+        {/* Hero Section */}
         <section className="mb-12">
           <div className="flex flex-col-reverse items-center gap-8 rounded-[2rem] bg-card p-6 shadow-sm dark:bg-card-dark lg:flex-row lg:gap-16 lg:p-12">
             <div className="flex flex-1 flex-col items-center gap-6 text-center lg:items-start lg:text-left">
@@ -104,7 +104,6 @@ export default function Home() {
                   alt={heroImage.description}
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  data-ai-hint={heroImage.imageHint}
                   priority
                 />
               )}
@@ -112,6 +111,7 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Categorias Section */}
         <section className="mb-16">
           <div className="mb-6 flex items-center justify-between px-2">
             <h2 className="font-headline text-2xl font-bold tracking-tight">
@@ -143,7 +143,6 @@ export default function Home() {
                               alt={categoryImage.description}
                               fill
                               className="object-cover transition-transform group-hover/item:scale-110"
-                              data-ai-hint={categoryImage.imageHint}
                             />
                           ) : (
                             <div className="flex size-full items-center justify-center rounded-full bg-primary/20 transition-colors group-hover/item:bg-primary/40">
@@ -163,6 +162,7 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Info Section */}
         <section className="mb-16 rounded-xl border border-border bg-card p-8 dark:bg-card-dark">
           <div className="grid grid-cols-1 gap-8 text-center md:grid-cols-3 md:text-left">
             <div className="flex flex-col items-center gap-4 md:flex-row md:items-start">
@@ -170,12 +170,9 @@ export default function Home() {
                 <FlaskConical />
               </div>
               <div>
-                <h3 className="font-headline text-lg font-bold">
-                  O que é um Decante?
-                </h3>
+                <h3 className="font-headline text-lg font-bold">O que é um Decante?</h3>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Uma fração do perfume original transferida para um frasco
-                  menor. Ideal para testar.
+                  Uma fração do perfume original transferida para um frasco menor. Ideal para testar.
                 </p>
               </div>
             </div>
@@ -184,12 +181,9 @@ export default function Home() {
                 <Banknote />
               </div>
               <div>
-                <h3 className="font-headline text-lg font-bold">
-                  Economia Inteligente
-                </h3>
+                <h3 className="font-headline text-lg font-bold">Economia Inteligente</h3>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Tenha acesso a perfumes de luxo por uma fração do preço do
-                  frasco grande.
+                  Tenha acesso a perfumes de luxo por uma fração do preço do frasco grande.
                 </p>
               </div>
             </div>
@@ -198,18 +192,16 @@ export default function Home() {
                 <Globe />
               </div>
               <div>
-                <h3 className="font-headline text-lg font-bold">
-                  Perfeito para Viagem
-                </h3>
+                <h3 className="font-headline text-lg font-bold">Perfeito para Viagem</h3>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Tamanho compacto e seguro para levar sua fragrância favorita
-                  onde for.
+                  Tamanho compacto e seguro para levar sua fragrância favorita onde for.
                 </p>
               </div>
             </div>
           </div>
         </section>
 
+        {/* Carousel de Produtos */}
         <section className="mb-12">
           <Carousel
             opts={{
@@ -246,6 +238,12 @@ export default function Home() {
           </Carousel>
         </section>
       </main>
+
+      {/* CHAT COMPONENT POSICIONADO FIXO NO CANTO INFERIOR */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <ChatComponent />
+      </div>
+
       <Footer />
     </div>
   );
