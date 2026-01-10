@@ -13,18 +13,19 @@ import {
 import { cn } from '@/lib/utils';
 import { useChat } from 'ai/react';
 import ReactMarkdown from 'react-markdown';
+import { productChat } from '@/app/actions';
 
 export default function ProductChatAssistant() {
   const [isOpen, setIsOpen] = useState(false);
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
-      api: '/api/chat',
+      action: productChat,
   });
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      chatContainerRef.current.scrollTop = chatContainer.current.scrollHeight;
     }
   }, [messages]);
 
