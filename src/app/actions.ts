@@ -2,8 +2,8 @@
 
 import { AIStream, StreamingTextResponse } from 'ai';
 
-// IMPORTANT! Set the runtime to edge
-export const runtime = 'edge';
+// IMPORTANT! The runtime must be defined in the page that uses this action.
+// We are removing it from here to solve a build error.
 
 export async function productChat(prompt: string) {
   const response = await fetch(
