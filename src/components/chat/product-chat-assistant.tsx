@@ -18,7 +18,7 @@ import { productChat } from '@/app/actions';
 export default function ProductChatAssistant() {
   const [isOpen, setIsOpen] = useState(false);
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
-      action: productChat,
+      api: '/api/chat', // We will use a route handler for this
   });
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -53,7 +53,7 @@ export default function ProductChatAssistant() {
           'fixed bottom-6 right-6 z-50 flex h-[85vh] max-h-[700px] w-[90vw] max-w-sm flex-col overflow-hidden rounded-2xl border bg-card shadow-2xl transition-all duration-300 ease-in-out',
           isOpen
             ? 'translate-y-0 opacity-100'
-            : 'translate-y-24 opacity-0 pointer-events-none'
+            : 'translate-y-0 opacity-0 pointer-events-none'
         )}
       >
         <header className="flex items-center justify-between border-b bg-primary px-4 py-3 text-primary-foreground">
@@ -139,4 +139,3 @@ export default function ProductChatAssistant() {
       </div>
     </>
   );
-}
