@@ -1,7 +1,7 @@
 'use server';
 
 import { ai } from '@/ai/genkit';
-import { generate } from 'genkit/ai';
+import { generate } from 'genkit';
 
 const systemPrompt = `Você é um assistente virtual especialista em perfumes e decantes, trabalhando para a loja "Perfumes & Decantes". Você é amigável, experiente e seu objetivo é ajudar os clientes a encontrar a fragrância perfeita.
 
