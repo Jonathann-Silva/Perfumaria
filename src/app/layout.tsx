@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { CartProvider } from '@/context/cart-context';
 import { FirebaseClientProvider } from '@/firebase';
+import ProductChatAssistant from '@/components/chat/product-chat-assistant';
 
 export const metadata: Metadata = {
   title: 'Aroma Allure',
@@ -41,6 +42,7 @@ export default function RootLayout({
         <FirebaseClientProvider>
           <CartProvider>
             {children}
+            <ProductChatAssistant />
           </CartProvider>
         </FirebaseClientProvider>
         <Toaster />
