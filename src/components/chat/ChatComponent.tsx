@@ -44,7 +44,7 @@ export default function ChatComponent() {
         {error && <div className="text-xs text-red-500">Erro ao enviar mensagem.</div>}
       </div>
 
-      {/* --- O CÓDIGO QUE VOCÊ PERGUNTOU ENTRA AQUI (Formulário) --- */}
+      {/* Formulário de envio de mensagem */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
