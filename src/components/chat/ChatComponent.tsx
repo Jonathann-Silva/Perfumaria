@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Bot, X, Send, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import ReactMarkdown from 'react-markdown';
 
 type Message = {
   text: string;
@@ -90,11 +91,20 @@ export function ChatComponent() {
             <div
               key={index}
               className={cn(
-                'p-3 rounded-lg max-w-[85%]',
+                'p-3 rounded-lg max-w-[85%] prose prose-sm',
                 msg.type === 'user' ? 'bg-primary text-primary-foreground self-end rounded-br-none ml-auto' : 'bg-muted text-foreground self-start rounded-bl-none'
               )}
             >
-              {msg.text}
+              <ReactMarkdown
+                components={{
+                  p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
+                  ol: ({node, ...props}) => <ol className="list-decimal list-inside" {...props} />,
+                  ul: ({node, ...props}) => <ul className="list-disc list-inside" {...props} />,
+                  li: ({node, ...props}) => <li className="mb-1" {...props} />,
+                }}
+              >
+                {msg.text}
+              </ReactMarkdown>
             </div>
           ))}
            {isLoading && (
