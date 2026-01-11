@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
 
 export default function AdminLoginPage() {
   const bgImage = getImageById('login-bg');
@@ -20,7 +20,7 @@ export default function AdminLoginPage() {
   const { toast } = useToast();
   const auth = useAuth();
 
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('admin@gmail.com');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -38,19 +38,17 @@ export default function AdminLoginPage() {
     setIsSubmitting(true);
     
     try {
-      // Tenta autenticar o usuário com Firebase Auth
+      // Tenta fazer login primeiro
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Verifica se o email do usuário autenticado é o do admin
       if (user.email === 'admin@gmail.com') {
         toast({
           title: 'Login bem-sucedido!',
           description: 'Bem-vindo ao painel de administração.',
         });
-        router.push('/admin'); // Redireciona para o painel do admin
+        router.push('/admin');
       } else {
-        // Se não for o admin, faz logout e mostra erro
         await auth.signOut();
         toast({
           variant: 'destructive',
@@ -59,12 +57,31 @@ export default function AdminLoginPage() {
         });
       }
     } catch (error: any) {
-      console.error(error);
-      toast({
-        variant: 'destructive',
-        title: 'Falha no Login',
-        description: 'E-mail ou senha incorretos. Verifique suas credenciais.',
-      });
+      // Se o usuário não existir, tenta criá-lo
+      if (error.code === 'auth/invalid-credential' && email === 'admin@gmail.com') {
+        try {
+          const newUserCredential = await createUserWithEmailAndPassword(auth, email, password);
+          await updateProfile(newUserCredential.user, { displayName: 'Admin' });
+          toast({
+            title: 'Conta de Admin Criada!',
+            description: 'Bem-vindo ao painel de administração.',
+          });
+          router.push('/admin');
+        } catch (creationError: any) {
+          toast({
+            variant: 'destructive',
+            title: 'Falha na Criação do Admin',
+            description: 'Não foi possível criar a conta de administrador. A senha deve ter pelo menos 6 caracteres.',
+          });
+        }
+      } else {
+        // Outros erros de login
+        toast({
+          variant: 'destructive',
+          title: 'Falha no Login',
+          description: 'E-mail ou senha incorretos. Verifique suas credenciais.',
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -187,5 +204,3 @@ export default function AdminLoginPage() {
     </div>
   );
 }
-
-    

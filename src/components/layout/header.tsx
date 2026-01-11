@@ -150,43 +150,47 @@ export function Header() {
 
   const handleAdminLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!auth) {
+    if (!auth || !adminEmail) {
       toast({
         variant: 'destructive',
         title: 'Erro de Autenticação',
-        description: 'O serviço de autenticação não está disponível.',
+        description: 'O serviço de autenticação não está disponível ou o e-mail está em branco.',
       });
       return;
     }
     
     setIsSubmitting(true);
+
+    const loginAndRedirect = async () => {
+      setAdminAuthDialogOpen(false);
+      router.push('/admin');
+    }
     
     try {
+      // Tenta fazer login primeiro
       const userCredential = await signInWithEmailAndPassword(auth, adminEmail, adminPassword);
-      const user = userCredential.user;
-
-      if (user.email === 'admin@gmail.com') {
-        toast({
-          title: 'Login bem-sucedido!',
-          description: 'Bem-vindo ao painel de administração.',
-        });
-        setAdminAuthDialogOpen(false);
-        router.push('/admin');
+      if (userCredential.user.email === 'admin@gmail.com') {
+        toast({ title: 'Login bem-sucedido!', description: 'Bem-vindo ao painel de administração.' });
+        await loginAndRedirect();
       } else {
         await signOut(auth);
-        toast({
-          variant: 'destructive',
-          title: 'Acesso Negado',
-          description: 'Este usuário não tem permissão de administrador.',
-        });
+        toast({ variant: 'destructive', title: 'Acesso Negado', description: 'Este usuário não tem permissão de administrador.' });
       }
     } catch (error: any) {
-      console.error(error);
-      toast({
-        variant: 'destructive',
-        title: 'Falha no Login',
-        description: 'E-mail ou senha incorretos. Verifique suas credenciais.',
-      });
+      // Se o erro for 'invalid-credential' (usuário não existe ou senha errada), tenta criar o usuário admin
+      if (error.code === 'auth/invalid-credential' && adminEmail === 'admin@gmail.com') {
+        try {
+          const newUserCredential = await createUserWithEmailAndPassword(auth, adminEmail, adminPassword);
+          await updateProfile(newUserCredential.user, { displayName: 'Admin' });
+          toast({ title: 'Conta de Admin Criada!', description: 'Bem-vindo ao painel de administração.' });
+          await loginAndRedirect();
+        } catch (creationError: any) {
+          toast({ variant: 'destructive', title: 'Falha na Criação do Admin', description: creationError.message });
+        }
+      } else {
+        // Outros erros de login
+        toast({ variant: 'destructive', title: 'Falha no Login', description: 'E-mail ou senha incorretos. Verifique suas credenciais.' });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -295,7 +299,7 @@ export function Header() {
                           htmlFor="email-modal"
                           className="font-bold leading-normal text-foreground"
                         >
-                          E-mail ou Usuário
+                          E-mail de Administrador
                         </Label>
                         <div className="relative flex items-center">
                           <User className="absolute left-4 text-muted-foreground" />
