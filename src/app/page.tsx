@@ -31,6 +31,7 @@ import { useMemo } from 'react';
 import { useFirestore, useCollection } from '@/firebase';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
 import type { Product } from '@/lib/types';
+import { ChatComponent } from '@/components/chat/ChatComponent';
 
 export default function Home() {
   const heroImage = getImageById('hero');
@@ -237,6 +238,7 @@ export default function Home() {
       </main>
 
       <Footer />
+      <ChatComponent />
     </div>
   );
 }
