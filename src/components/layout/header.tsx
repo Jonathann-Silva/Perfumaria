@@ -215,7 +215,7 @@ export function Header() {
                 <Sprout className="size-8" />
               </div>
               <h2 className="hidden text-lg font-bold tracking-tight text-foreground md:block">
-                Perfumes & Decantes
+                Luxo & Aroma
               </h2>
             </Link>
           </div>
