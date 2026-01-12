@@ -57,7 +57,7 @@ export async function createPixPayment(paymentData: PaymentData): Promise<Paymen
         }
 
     } catch (error: any) {
-        console.error('Error creating Mercado Pago PIX payment:', error);
+        console.error('Error creating Mercado Pago PIX payment:', error.cause || error);
         return { 
             success: false, 
             error: error.cause?.message || 'Ocorreu um erro ao se comunicar com o provedor de pagamento.' 
