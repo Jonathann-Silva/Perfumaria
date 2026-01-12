@@ -27,7 +27,6 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
-import { getImageById } from '@/lib/placeholder-images';
 import type { Product } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
 import { ProductForm } from './_components/product-form';
@@ -47,21 +46,19 @@ function RecentAddItem({
   product: Product;
   onEdit: (product: Product) => void;
 }) {
-  const image = getImageById(product.imageId);
   return (
     <div
       onClick={() => onEdit(product)}
       className="group flex cursor-pointer items-center gap-3 rounded-lg p-3 transition-colors hover:bg-muted/50 dark:hover:bg-neutral-800/50"
     >
       <div className="size-12 shrink-0 overflow-hidden rounded-lg bg-muted dark:bg-neutral-800">
-        {image && (
+        {product.imageUrl && (
           <Image
-            src={image.imageUrl}
-            alt={image.description || product.name}
+            src={product.imageUrl}
+            alt={product.name}
             width={48}
             height={48}
             className="size-full object-cover"
-            data-ai-hint={image.imageHint}
           />
         )}
       </div>
@@ -89,7 +86,6 @@ function ProductRow({
   onEdit: (product: Product) => void;
   onDelete: (productId: string) => void;
 }) {
-  const image = getImageById(product.imageId);
   const statusConfig = {
     'in-stock': {
       label: `Em Estoque (${product.stock})`,
@@ -115,14 +111,13 @@ function ProductRow({
     <TableRow className="transition-colors hover:bg-muted/50">
       <TableCell className="p-4">
         <div className="flex items-center gap-3">
-          {image && (
+          {product.imageUrl && (
             <Image
-              src={image.imageUrl}
-              alt={image.description || product.name}
+              src={product.imageUrl}
+              alt={product.name}
               width={40}
               height={40}
               className="size-10 rounded-lg object-cover bg-muted"
-              data-ai-hint={image.imageHint}
             />
           )}
           <span className="text-sm font-medium text-foreground">

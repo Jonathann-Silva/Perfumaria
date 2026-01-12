@@ -21,7 +21,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { getImageById } from '@/lib/placeholder-images';
 import { formatCurrency, cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -495,17 +494,15 @@ export default function CheckoutAddressPage() {
               {cartItems.length > 0 ? (
                 <ul className="mb-6 divide-y divide-border">
                   {cartItems.map((item) => {
-                    const itemImage = getImageById(item.imageId);
                     return (
                       <li key={item.id} className="flex gap-4 py-4">
                         <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl border bg-muted">
-                          {itemImage && (
+                          {item.imageUrl && (
                             <Image
-                              src={itemImage.imageUrl}
-                              alt={itemImage.description}
+                              src={item.imageUrl}
+                              alt={item.name}
                               fill
                               className="object-cover"
-                              data-ai-hint={itemImage.imageHint}
                             />
                           )}
                         </div>

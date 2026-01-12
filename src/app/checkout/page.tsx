@@ -36,7 +36,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { createPixPayment } from './payment-actions';
-import { getImageById } from '@/lib/placeholder-images';
 
 const steps = [
   { id: 1, name: 'Identificação', status: 'complete', icon: Check },
@@ -369,7 +368,7 @@ function CheckoutPaymentPage() {
                     <li key={item.id} className="flex gap-4 py-4">
                       <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border bg-muted">
                         <Image
-                          src={getImageById(item.imageId)?.imageUrl || '/placeholder.png'}
+                          src={item.imageUrl || '/placeholder.png'}
                           alt={item.name}
                           fill
                           className="object-cover"
@@ -471,5 +470,3 @@ export default function CheckoutPage() {
     </Suspense>
   )
 }
-
-    

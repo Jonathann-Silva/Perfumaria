@@ -57,7 +57,6 @@ import {
 } from 'firebase/auth';
 import { useUser, useAuth } from '@/firebase';
 import Image from 'next/image';
-import { getImageById } from '@/lib/placeholder-images';
 import { formatCurrency } from '@/lib/utils';
 import { Separator } from '../ui/separator';
 
@@ -549,17 +548,15 @@ export function Header() {
                       <div className="flex-1 overflow-y-auto px-6">
                         <div className="flex flex-col gap-6">
                           {cartItems.map((item) => {
-                             const itemImage = getImageById(item.imageId);
                              return (
                                 <div key={item.id} className="flex items-center gap-4">
                                    <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg border bg-muted">
-                                     {itemImage && (
+                                     {item.imageUrl && (
                                        <Image
-                                         src={itemImage.imageUrl}
-                                         alt={itemImage.description}
+                                         src={item.imageUrl}
+                                         alt={item.name}
                                          fill
                                          className="object-cover"
-                                         data-ai-hint={itemImage.imageHint}
                                        />
                                      )}
                                    </div>

@@ -5,7 +5,6 @@ import { Heart, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { Product } from '@/lib/types';
-import { getImageById } from '@/lib/placeholder-images';
 import { formatCurrency } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/context/cart-context';
@@ -16,7 +15,6 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const productImage = getImageById(product.imageId);
   const { addToCart } = useCart();
   const { toast } = useToast();
 
@@ -43,13 +41,12 @@ export function ProductCard({ product }: ProductCardProps) {
       </div>
       <Link href={`/products/${product.id}`}>
         <div className="relative mb-4 aspect-[4/5] w-full overflow-hidden rounded-2xl bg-muted dark:bg-white/5">
-          {productImage && (
+          {product.imageUrl && (
             <Image
-              src={productImage.imageUrl}
-              alt={productImage.description}
+              src={product.imageUrl}
+              alt={product.name}
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-110"
-              data-ai-hint={productImage.imageHint}
             />
           )}
 

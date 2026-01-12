@@ -11,7 +11,7 @@ export type Product = {
   price: number;
   costPrice?: number;
   oldPrice?: number;
-  imageId: string;
+  imageUrl: string;
   type: 'sealed' | 'decant';
   decantMl?: number;
   status: ProductStatus;

@@ -33,15 +33,13 @@ import { doc } from 'firebase/firestore';
 
 
 const galleryImages = [
-  'details-main',
   'details-thumb-1',
   'details-thumb-2',
   'details-thumb-3',
 ];
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
-  const [activeImageId, setActiveImageId] = useState(galleryImages[0]);
-  const activeImage = getImageById(activeImageId);
+  const [activeImageUrl, setActiveImageUrl] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
 
   const { addToCart } = useCart();
@@ -50,6 +48,12 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
 
   const productRef = firestore ? doc(firestore, 'products', params.id) : null;
   const { data: product, loading } = useDoc<Product>(productRef);
+
+  useEffect(() => {
+    if (product && product.imageUrl) {
+      setActiveImageUrl(product.imageUrl);
+    }
+  }, [product]);
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -80,6 +84,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
     )
   }
 
+  const otherImages = galleryImages.map(id => getImageById(id)).filter(Boolean) as any[];
 
   return (
     <div className="bg-background font-display text-foreground antialiased">
@@ -107,13 +112,12 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
           <div className="lg:col-span-7">
             <div className="flex flex-col gap-4">
               <div className="group relative aspect-[4/3] w-full overflow-hidden rounded-2xl border bg-card shadow-sm dark:bg-stone-800 sm:aspect-square lg:aspect-[4/3]">
-                {activeImage && (
+                {activeImageUrl && (
                   <Image
-                    src={activeImage.imageUrl}
-                    alt={activeImage.description}
+                    src={activeImageUrl}
+                    alt={product.name}
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
-                    data-ai-hint={activeImage.imageHint}
                   />
                 )}
                 <Button
@@ -124,31 +128,26 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                 </Button>
               </div>
               <div className="grid grid-cols-4 gap-4">
-                {galleryImages.map((id, index) => {
-                  const thumb = getImageById(id);
-                  if (!thumb) return null;
-                  return (
+                 {[product.imageUrl, ...otherImages.map(img => img.imageUrl)].map((url, index) => (
                     <button
-                      key={id}
-                      onClick={() => setActiveImageId(id)}
+                      key={index}
+                      onClick={() => setActiveImageUrl(url)}
                       className={cn(
                         'aspect-square cursor-pointer overflow-hidden rounded-xl border-2 transition-colors',
-                        activeImageId === id
+                        activeImageUrl === url
                           ? 'border-primary'
                           : 'border-transparent opacity-70 hover:opacity-100'
                       )}
                     >
                       <Image
-                        src={thumb.imageUrl}
-                        alt={thumb.description}
+                        src={url}
+                        alt={`Thumbnail ${index + 1}`}
                         width={200}
                         height={200}
                         className="size-full object-cover"
-                        data-ai-hint={thumb.imageHint}
                       />
                     </button>
-                  );
-                })}
+                  ))}
               </div>
             </div>
           </div>

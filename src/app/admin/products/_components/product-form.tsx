@@ -27,6 +27,7 @@ import { collection, addDoc, setDoc, doc, serverTimestamp } from 'firebase/fires
 const productSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   brand: z.string().min(1, 'Marca é obrigatória'),
+  imageUrl: z.string().url('URL da imagem inválida'),
   price: z.number().min(0.01, 'Preço é obrigatório'),
   costPrice: z.number().optional(),
   stock: z.number().int().min(0, 'Estoque é obrigatório'),
@@ -66,6 +67,7 @@ export function ProductForm({ product, onSave }: ProductFormProps) {
       reset({
         name: product.name,
         brand: product.brand,
+        imageUrl: product.imageUrl,
         price: product.price,
         costPrice: product.costPrice,
         stock: product.stock,
@@ -79,6 +81,7 @@ export function ProductForm({ product, onSave }: ProductFormProps) {
       reset({
         name: '',
         brand: '',
+        imageUrl: '',
         price: 0,
         costPrice: 0,
         stock: 0,
@@ -109,7 +112,6 @@ export function ProductForm({ product, onSave }: ProductFormProps) {
     const productData = {
         ...data,
         status,
-        imageId: 'product-1',
         price: Number(data.price),
         costPrice: Number(data.costPrice) || null,
         stock: Number(data.stock),
@@ -135,47 +137,24 @@ export function ProductForm({ product, onSave }: ProductFormProps) {
     }
   };
 
-  const uploadPreviewImage = getImageById('upload-preview');
+  const imageUrl = watch('imageUrl');
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6 pt-4">
-      <div className="flex flex-col gap-3">
-        <Label>Imagens do Produto</Label>
-        <div className="group flex cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-border bg-muted/50 p-8 transition-colors hover:bg-muted dark:bg-neutral-900/50 dark:hover:bg-neutral-900">
-          <div className="flex size-12 items-center justify-center rounded-full bg-card text-muted-foreground shadow-sm transition-colors group-hover:text-primary dark:bg-neutral-800">
-            <CloudUpload />
-          </div>
-          <div className="text-center">
-            <p className="text-sm font-medium text-foreground">
-              Clique para upload ou arraste e solte
-            </p>
-            <p className="text-xs text-muted-foreground">
-              SVG, PNG, JPG ou GIF (max. 5MB)
-            </p>
-          </div>
+        <div className="flex flex-col gap-2">
+            <Label htmlFor="imageUrl">URL da Imagem do Produto</Label>
+            <Input id="imageUrl" {...register('imageUrl')} placeholder="https://exemplo.com/imagem.jpg" />
+            {errors.imageUrl && <p className="text-sm text-destructive">{errors.imageUrl.message}</p>}
+             {imageUrl && (
+                <div className="mt-4">
+                    <p className="text-sm font-medium mb-2">Pré-visualização da Imagem:</p>
+                    <div className="relative w-32 h-32 rounded-lg border overflow-hidden">
+                        <Image src={imageUrl} alt="Pré-visualização do produto" fill className="object-cover" />
+                    </div>
+                </div>
+            )}
         </div>
-        <div className="flex gap-3 overflow-x-auto pb-2">
-          {uploadPreviewImage && (
-            <div className="group relative size-20 shrink-0 overflow-hidden rounded-xl border">
-              <Image
-                src={uploadPreviewImage.imageUrl}
-                alt={uploadPreviewImage.description}
-                width={80}
-                height={80}
-                className="size-full object-cover"
-                data-ai-hint={uploadPreviewImage.imageHint}
-              />
-              <Button
-                size="icon"
-                variant="destructive"
-                className="absolute top-1 right-1 size-5 rounded-full opacity-0 transition-opacity group-hover:opacity-100"
-              >
-                <X className="size-3" />
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
+
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="flex flex-col gap-2">
