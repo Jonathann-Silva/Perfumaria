@@ -185,23 +185,7 @@ export function ProductForm({ product, onSave }: ProductFormProps) {
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="brand">Marca</Label>
-          <Controller
-            name="brand"
-            control={control}
-            render={({ field }) => (
-              <Select onValueChange={field.onChange} value={field.value}>
-                <SelectTrigger><SelectValue placeholder="Selecione a marca" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Dior">Dior</SelectItem>
-                  <SelectItem value="Chanel">Chanel</SelectItem>
-                  <SelectItem value="Tom Ford">Tom Ford</SelectItem>
-                  <SelectItem value="YSL">YSL</SelectItem>
-                  <SelectItem value="Giorgio Armani">Giorgio Armani</SelectItem>
-                  <SelectItem value="Lancôme">Lancôme</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
-          />
+          <Input id="brand" {...register('brand')} placeholder="Ex: Dior" />
            {errors.brand && <p className="text-sm text-destructive">{errors.brand.message}</p>}
         </div>
       </div>
