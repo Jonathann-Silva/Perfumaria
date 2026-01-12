@@ -98,7 +98,7 @@ function CheckoutPaymentPage() {
         transaction_amount: total > 0 ? total : 0.01, // Mercado Pago requires a minimum amount
         description: 'Pagamento de pedido na Perfumes & Decantes',
         payer: {
-            email: 'test_user_12345@testuser.com', // Em um app real, pegar o email do usuário logado
+            email: 'test_user_99887766@testuser.com', // Em um app real, pegar o email do usuário logado
         }
       });
       
@@ -138,7 +138,7 @@ function CheckoutPaymentPage() {
         const paymentResult = await createPixPayment({
             transaction_amount: total > 0 ? total : 0.01,
             description: 'Pagamento de pedido na Perfumes & Decantes',
-            payer: { email: 'test_user_12345@testuser.com' }
+            payer: { email: 'test_user_99887766@testuser.com' }
         });
         if (paymentResult.success && paymentResult.qrCode && paymentResult.qrCodeBase64) {
             setPixData({
