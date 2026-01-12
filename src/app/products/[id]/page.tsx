@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import { Header } from '@/components/layout/header';
 import {
   ChevronRight,
@@ -38,7 +39,10 @@ const galleryImages = [
   'details-thumb-3',
 ];
 
-export default function ProductDetailPage({ params: { id } }: { params: { id: string } }) {
+export default function ProductDetailPage() {
+  const params = useParams<{ id: string }>();
+  const id = params.id;
+  
   const [activeImageUrl, setActiveImageUrl] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
 
@@ -277,3 +281,5 @@ export default function ProductDetailPage({ params: { id } }: { params: { id: st
     </div>
   );
 }
+
+    
