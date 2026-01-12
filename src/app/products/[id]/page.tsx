@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { Header } from '@/components/layout/header';
 import {
@@ -50,7 +50,11 @@ export default function ProductDetailPage() {
   const { toast } = useToast();
   const firestore = useFirestore();
 
-  const productRef = firestore ? doc(firestore, 'products', id) : null;
+  const productRef = useMemo(() => {
+    if (!firestore || !id) return null;
+    return doc(firestore, 'products', id);
+  }, [firestore, id]);
+
   const { data: product, loading } = useDoc<Product>(productRef);
 
   useEffect(() => {
@@ -281,5 +285,3 @@ export default function ProductDetailPage() {
     </div>
   );
 }
-
-    
