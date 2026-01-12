@@ -42,6 +42,8 @@
             "costPrice": { "type": "number" },
             "oldPrice": { "type": "number" },
             "imageUrl": { "type": "string", "format": "uri" },
+            "imageUrl2": { "type": "string", "format": "uri" },
+            "imageUrl3": { "type": "string", "format": "uri" },
             "type": { "type": "string", "enum": ["sealed", "decant"] },
             "decantMl": { "type": "number" },
             "status": { "type": "string", "enum": ["in-stock", "low-stock", "out-of-stock"] },
@@ -49,7 +51,7 @@
             "weight": { "type": "number" },
             "category": { "type": "string" }
         },
-        "required": ["name", "brand", "price", "stock", "category", "type", "status", "imageUrl"]
+        "required": ["name", "brand", "price", "stock", "category", "type", "imageUrl"]
     },
     "Order": {
         "title": "Order",

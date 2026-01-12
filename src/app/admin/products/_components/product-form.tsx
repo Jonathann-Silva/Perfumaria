@@ -27,7 +27,9 @@ import { collection, addDoc, setDoc, doc, serverTimestamp } from 'firebase/fires
 const productSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   brand: z.string().min(1, 'Marca é obrigatória'),
-  imageUrl: z.string().url('URL da imagem inválida'),
+  imageUrl: z.string().url('URL da imagem inválida').min(1, 'URL da Imagem 1 é obrigatória'),
+  imageUrl2: z.string().url('URL da imagem inválida').optional().or(z.literal('')),
+  imageUrl3: z.string().url('URL da imagem inválida').optional().or(z.literal('')),
   price: z.number().min(0.01, 'Preço é obrigatório'),
   costPrice: z.number().optional(),
   stock: z.number().int().min(0, 'Estoque é obrigatório'),
@@ -68,6 +70,8 @@ export function ProductForm({ product, onSave }: ProductFormProps) {
         name: product.name,
         brand: product.brand,
         imageUrl: product.imageUrl,
+        imageUrl2: product.imageUrl2,
+        imageUrl3: product.imageUrl3,
         price: product.price,
         costPrice: product.costPrice,
         stock: product.stock,
@@ -82,6 +86,8 @@ export function ProductForm({ product, onSave }: ProductFormProps) {
         name: '',
         brand: '',
         imageUrl: '',
+        imageUrl2: '',
+        imageUrl3: '',
         price: 0,
         costPrice: 0,
         stock: 0,
@@ -141,13 +147,25 @@ export function ProductForm({ product, onSave }: ProductFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6 pt-4">
-        <div className="flex flex-col gap-2">
-            <Label htmlFor="imageUrl">URL da Imagem do Produto</Label>
-            <Input id="imageUrl" {...register('imageUrl')} placeholder="https://exemplo.com/imagem.jpg" />
-            {errors.imageUrl && <p className="text-sm text-destructive">{errors.imageUrl.message}</p>}
+        <div className="flex flex-col gap-4">
+            <div>
+                <Label htmlFor="imageUrl">URL da Imagem Principal</Label>
+                <Input id="imageUrl" {...register('imageUrl')} placeholder="https://exemplo.com/imagem.jpg" />
+                {errors.imageUrl && <p className="text-sm text-destructive">{errors.imageUrl.message}</p>}
+            </div>
+             <div>
+                <Label htmlFor="imageUrl2">URL da Imagem 2 (Opcional)</Label>
+                <Input id="imageUrl2" {...register('imageUrl2')} placeholder="https://exemplo.com/imagem2.jpg" />
+                {errors.imageUrl2 && <p className="text-sm text-destructive">{errors.imageUrl2.message}</p>}
+            </div>
+             <div>
+                <Label htmlFor="imageUrl3">URL da Imagem 3 (Opcional)</Label>
+                <Input id="imageUrl3" {...register('imageUrl3')} placeholder="https://exemplo.com/imagem3.jpg" />
+                {errors.imageUrl3 && <p className="text-sm text-destructive">{errors.imageUrl3.message}</p>}
+            </div>
              {imageUrl && (
-                <div className="mt-4">
-                    <p className="text-sm font-medium mb-2">Pré-visualização da Imagem:</p>
+                <div className="mt-2">
+                    <p className="text-sm font-medium mb-2">Pré-visualização da Imagem Principal:</p>
                     <div className="relative w-32 h-32 rounded-lg border overflow-hidden">
                         <Image src={imageUrl} alt="Pré-visualização do produto" fill className="object-cover" />
                     </div>

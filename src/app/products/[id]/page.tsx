@@ -23,7 +23,6 @@ import {
 } from '@/components/ui/accordion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getImageById } from '@/lib/placeholder-images';
 import { cn, formatCurrency } from '@/lib/utils';
 import { Footer } from '@/components/layout/footer';
 import type { Product } from '@/lib/types';
@@ -32,12 +31,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useDoc } from '@/firebase';
 import { doc } from 'firebase/firestore';
 
-
-const galleryImages = [
-  'details-thumb-1',
-  'details-thumb-2',
-  'details-thumb-3',
-];
 
 export default function ProductDetailPage() {
   const params = useParams<{ id: string }>();
@@ -91,8 +84,8 @@ export default function ProductDetailPage() {
         </div>
     )
   }
-
-  const otherImages = galleryImages.map(id => getImageById(id)).filter(Boolean) as any[];
+  
+  const galleryImages = [product.imageUrl, product.imageUrl2, product.imageUrl3].filter(Boolean) as string[];
 
   return (
     <div className="bg-background font-display text-foreground antialiased">
@@ -136,7 +129,7 @@ export default function ProductDetailPage() {
                 </Button>
               </div>
               <div className="grid grid-cols-4 gap-4">
-                 {[product.imageUrl, ...otherImages.map(img => img.imageUrl)].map((url, index) => (
+                 {galleryImages.map((url, index) => (
                     <button
                       key={index}
                       onClick={() => setActiveImageUrl(url)}
