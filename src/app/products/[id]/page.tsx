@@ -1,5 +1,5 @@
 'use client';
-import { useState, use, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/header';
 import {
   ChevronRight,
@@ -38,7 +38,7 @@ const galleryImages = [
   'details-thumb-3',
 ];
 
-export default function ProductDetailPage({ params }: { params: { id: string } }) {
+export default function ProductDetailPage({ params: { id } }: { params: { id: string } }) {
   const [activeImageUrl, setActiveImageUrl] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
 
@@ -46,7 +46,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   const { toast } = useToast();
   const firestore = useFirestore();
 
-  const productRef = firestore ? doc(firestore, 'products', params.id) : null;
+  const productRef = firestore ? doc(firestore, 'products', id) : null;
   const { data: product, loading } = useDoc<Product>(productRef);
 
   useEffect(() => {
